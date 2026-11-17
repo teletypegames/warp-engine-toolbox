@@ -40,9 +40,10 @@ function released(version) {
 }
 
 async function waitForRelease(version) {
-  const deadline = Date.now() + 15 * 60_000
+  const minutes = Number(process.env.WALK_TIMEOUT_MIN ?? 15)
+  const deadline = Date.now() + minutes * 60_000
   while (!released(version)) {
-    if (Date.now() > deadline) throw new Error(`${name} ${version} was not published within 15 minutes`)
+    if (Date.now() > deadline) throw new Error(`${name} ${version} was not published within ${minutes} minutes`)
     await new Promise((done) => setTimeout(done, 10_000))
   }
   console.log(`  ok  the CI published ${name} ${version}`)
