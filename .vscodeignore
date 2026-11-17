@@ -12,3 +12,4 @@ eslint.config.mjs
 media/icon.svg
 .vscode-test/**
 Makefile
+.github/**

@@ -1,7 +1,8 @@
 #!/bin/sh
-# Publishes the packaged VSIX of a vX.Y.Z tag: a Gitea release with the VSIX attached,
-# then the marketplaces whose token the pipeline has (OVSX_PAT: Open VSX, VSCE_PAT: the
-# Visual Studio Marketplace). A missing marketplace token skips that marketplace.
+# Publishes the packaged VSIX of a vX.Y.Z tag: a Gitea release with the VSIX attached, and
+# Open VSX when the pipeline has its token (OVSX_PAT). The Visual Studio Marketplace is not
+# published from here: it takes the extension through Trusted Publishing, from the GitHub
+# mirror's Actions (.github/workflows/publish.yml).
 set -eu
 
 FORGE="${FORGE_API:-https://git.teletypegames.org/api/v1}"
@@ -30,4 +31,3 @@ curl -fsS -X POST -H "$AUTH" "$FORGE/repos/$REPO/releases/$release_id/assets?nam
 echo "attached $name to the $TAG release"
 
 if [ -n "${OVSX_PAT:-}" ]; then npx --yes ovsx@0.10.6 publish "$VSIX" -p "$OVSX_PAT"; else echo "no OVSX_PAT: Open VSX skipped"; fi
-if [ -n "${VSCE_PAT:-}" ]; then npx vsce publish --packagePath "$VSIX" -p "$VSCE_PAT"; else echo "no VSCE_PAT: Visual Studio Marketplace skipped"; fi

@@ -1,8 +1,8 @@
 # The toolbox is no WarpEngine game: its pipeline lives here. Every push checks it; a
-# vX.Y.Z tag packages it and attaches the VSIX to the Gitea release. The marketplaces
-# join when their tokens exist as secrets: add ovsx_pat / vsce_pat under the release
-# step's environment (OVSX_PAT, VSCE_PAT); scripts/ci-release.sh publishes to each one
-# it has a token for.
+# vX.Y.Z tag packages it and attaches the VSIX to the Gitea release; Open VSX joins when
+# its token exists as a secret (ovsx_pat, as OVSX_PAT under the release step). The Visual
+# Studio Marketplace is published by the GitHub mirror's Actions (Trusted Publishing,
+# .github/workflows/publish.yml), which the same tag starts there.
 when:
   - event: [push, manual]
     branch: master
