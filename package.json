@@ -1,0 +1,444 @@
+{
+  "name": "warpengine-toolbox",
+  "displayName": "WarpEngine Toolbox",
+  "description": "Make a game from nothing to a released, playable WarpEngine catalog entry without leaving the editor.",
+  "version": "1.0.0",
+  "publisher": "TeletypeGames",
+  "license": "MIT",
+  "author": "Teletype Games",
+  "homepage": "https://git.teletypegames.org/tools/warp-engine-toolbox",
+  "repository": {
+    "type": "git",
+    "url": "https://git.teletypegames.org/tools/warp-engine-toolbox"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.101.0",
+    "node": ">=22"
+  },
+  "categories": [
+    "Other",
+    "Snippets",
+    "Linters"
+  ],
+  "keywords": [
+    "warpengine",
+    "gamedev",
+    "retro",
+    "c64",
+    "tic-80",
+    "godot",
+    "catalog"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "workspaceContains:metadata.json",
+    "workspaceContains:.woodpecker.yaml",
+    "workspaceContains:.gitlab-ci.yml"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "warpengine.newGame",
+        "title": "New Game…",
+        "category": "WarpEngine",
+        "icon": "$(add)"
+      },
+      {
+        "command": "warpengine.addToProject",
+        "title": "Add WarpEngine to This Project",
+        "category": "WarpEngine"
+      },
+      {
+        "command": "warpengine.connect",
+        "title": "Connect Project (Repository, CI, Catalog)",
+        "category": "WarpEngine",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "warpengine.signIn",
+        "title": "Sign In",
+        "category": "WarpEngine",
+        "icon": "$(sign-in)"
+      },
+      {
+        "command": "warpengine.signOut",
+        "title": "Sign Out",
+        "category": "WarpEngine"
+      },
+      {
+        "command": "warpengine.selectHost",
+        "title": "Select Host",
+        "category": "WarpEngine",
+        "icon": "$(server)"
+      },
+      {
+        "command": "warpengine.previewPipeline",
+        "title": "Preview Pipeline",
+        "category": "WarpEngine"
+      },
+      {
+        "command": "warpengine.play",
+        "title": "Play in the Web Runtime",
+        "category": "WarpEngine",
+        "icon": "$(play)"
+      },
+      {
+        "command": "warpengine.buildLikeCi",
+        "title": "Build Like CI (Docker)",
+        "category": "WarpEngine"
+      },
+      {
+        "command": "warpengine.checkPublish",
+        "title": "Check Publish",
+        "category": "WarpEngine",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "warpengine.release",
+        "title": "Release…",
+        "category": "WarpEngine",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "warpengine.editMetadata",
+        "title": "Edit Metadata",
+        "category": "WarpEngine",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "warpengine.refresh",
+        "title": "Refresh",
+        "category": "WarpEngine",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "warpengine.openUrl",
+        "title": "Open in Browser",
+        "category": "WarpEngine",
+        "icon": "$(link-external)"
+      },
+      {
+        "command": "warpengine.triggerPipeline",
+        "title": "Run Pipeline",
+        "category": "WarpEngine",
+        "icon": "$(debug-rerun)"
+      },
+      {
+        "command": "warpengine.editSoftwareField",
+        "title": "Change…",
+        "category": "WarpEngine",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "warpengine.showChecklist",
+        "title": "Asset Checklist",
+        "category": "WarpEngine",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "warpengine.showStatistics",
+        "title": "Download Statistics",
+        "category": "WarpEngine",
+        "icon": "$(graph)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "warpengine.newGame",
+          "when": "view == warpengine.project",
+          "group": "navigation@1"
+        },
+        {
+          "command": "warpengine.refresh",
+          "when": "view == warpengine.project || view == warpengine.catalog",
+          "group": "navigation@9"
+        },
+        {
+          "command": "warpengine.selectHost",
+          "when": "view == warpengine.catalog",
+          "group": "navigation@2"
+        },
+        {
+          "command": "warpengine.signIn",
+          "when": "view == warpengine.catalog && !warpengine.signedIn",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "warpengine.openUrl",
+          "when": "viewItem =~ /link/",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.triggerPipeline",
+          "when": "viewItem =~ /pipeline/",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.editSoftwareField",
+          "when": "viewItem =~ /field/",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.showChecklist",
+          "when": "viewItem =~ /release/",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.showStatistics",
+          "when": "viewItem =~ /software/",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "warpengine.openUrl",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.triggerPipeline",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.editSoftwareField",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.showChecklist",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.showStatistics",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.refresh",
+          "when": "false"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "warpengine.editMetadata",
+          "when": "resourceFilename == metadata.json",
+          "group": "navigation"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "warpengine",
+          "title": "WarpEngine",
+          "icon": "media/warp.svg"
+        }
+      ]
+    },
+    "views": {
+      "warpengine": [
+        {
+          "id": "warpengine.project",
+          "name": "This Project"
+        },
+        {
+          "id": "warpengine.catalog",
+          "name": "Catalog"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "warpengine.project",
+        "contents": "This folder is no WarpEngine project yet.\n[New Game…](command:warpengine.newGame)\n[Add WarpEngine to This Project](command:warpengine.addToProject)"
+      },
+      {
+        "view": "warpengine.catalog",
+        "contents": "Sign in to see the catalog, your pipelines and your releases.\n[Sign In](command:warpengine.signIn)",
+        "when": "!warpengine.signedIn"
+      }
+    ],
+    "authentication": [
+      {
+        "id": "warpengine",
+        "label": "WarpEngine"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "warpengine.metadata",
+        "displayName": "WarpEngine Metadata",
+        "selector": [
+          {
+            "filenamePattern": "metadata.json"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "metadata.json",
+        "url": "warpengine-schema://current/metadata.schema.json"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "warpengine",
+        "required": [
+          "target"
+        ],
+        "properties": {
+          "target": {
+            "type": "string",
+            "description": "The Makefile target to run"
+          },
+          "ci": {
+            "type": "boolean",
+            "description": "Run it in the platform's CI builder image"
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "warp-acme",
+        "owner": "warpengine",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(Error|Warning|Serious error) - File ([^,]+), line (\\d+) \\([^)]*\\): (.*)$",
+          "severity": 1,
+          "file": 2,
+          "line": 3,
+          "message": 4
+        }
+      },
+      {
+        "name": "warp-cc65",
+        "owner": "warpengine",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^([^(\\s]+)\\((\\d+)\\): (Error|Warning): (.*)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      },
+      {
+        "name": "warp-gcc",
+        "owner": "warpengine",
+        "fileLocation": [
+          "autoDetect",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^([^:\\s][^:]*):(\\d+):(\\d+):\\s+(?:(error|warning|note):\\s+)?(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      },
+      {
+        "name": "warp-lua",
+        "owner": "warpengine",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(?:lua\\S*:\\s+)?([^:\\s]+\\.lua):(\\d+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        }
+      }
+    ],
+    "configuration": {
+      "title": "WarpEngine",
+      "properties": {
+        "warpengine.hosts": {
+          "type": "array",
+          "description": "The WarpEngine hosts you work with.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "url"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "default": [
+            {
+              "name": "Teletype Games",
+              "url": "https://teletypegames.org"
+            }
+          ]
+        },
+        "warpengine.host": {
+          "type": "string",
+          "description": "The URL of the host in use; the first of warpengine.hosts when empty.",
+          "default": ""
+        },
+        "warpengine.checkOnSave": {
+          "type": "boolean",
+          "description": "Ask the host what a publish would refuse whenever the metadata is saved.",
+          "default": true
+        },
+        "warpengine.docker": {
+          "type": "string",
+          "description": "The docker command Build Like CI runs.",
+          "default": "docker"
+        },
+        "warpengine.defaultLocation": {
+          "type": "string",
+          "description": "The folder New Game offers for new projects.",
+          "default": ""
+        }
+      }
+    },
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "warpengine",
+        "label": "WarpEngine Admin API"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "node scripts/build.mjs --tests && node --test dist-test/*.test.cjs",
+    "package": "npm run build && vsce package --no-dependencies -o dist/warpengine-toolbox.vsix",
+    "vscode:prepublish": "node scripts/build.mjs --production",
+    "test:integration": "node scripts/integration.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "~1.101.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.30.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.35.0"
+  }
+}

@@ -1,0 +1,30 @@
+# The toolbox is no WarpEngine game: its pipeline lives here. Every push checks it; a
+# vX.Y.Z tag packages it and attaches the VSIX to the Gitea release. The marketplaces
+# join when their tokens exist as secrets: add ovsx_pat / vsce_pat under the release
+# step's environment (OVSX_PAT, VSCE_PAT); scripts/ci-release.sh publishes to each one
+# it has a token for.
+when:
+  - event: [push, manual]
+    branch: master
+  - event: tag
+
+steps:
+  - name: check
+    image: node:22-bookworm-slim
+    commands:
+      - npm ci --no-audit --no-fund
+      - npm run typecheck
+      - npm run lint
+      - npm test
+      - npm run package
+
+  - name: release
+    image: node:22-bookworm-slim
+    environment:
+      GITEA_TOKEN:
+        from_secret: gitea_token
+    commands:
+      - apt-get update -qq && apt-get install -y -qq curl ca-certificates >/dev/null
+      - scripts/ci-release.sh
+    when:
+      - event: tag

@@ -1,0 +1,13 @@
+.vscode/**
+src/**
+test/**
+scripts/**
+dist-test/**
+node_modules/**
+tsconfig.json
+eslint.config.mjs
+**/*.map
+.gitignore
+.woodpecker.yaml
+media/icon.svg
+.vscode-test/**

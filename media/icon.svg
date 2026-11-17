@@ -1,0 +1,28 @@
+<!--
+  The WarpEngine Toolbox mark: the WarpEngine W with its motion lines, on the same tile as
+  the WarpEngine Client, so the editor tool and the client read as one family. The source
+  of media/icon.png (rsvg-convert -w 256 -h 256 media/icon.svg -o media/icon.png).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e2937"/>
+      <stop offset="1" stop-color="#0d1116"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0" stop-color="#37b98a" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#37b98a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="72" y="72" width="880" height="880" rx="200" fill="url(#tile)"/>
+  <rect x="72" y="72" width="880" height="880" rx="200" fill="url(#glow)"/>
+  <rect x="72" y="72" width="880" height="880" rx="200" fill="none" stroke="#2a3440" stroke-width="8"/>
+  <g stroke="#2c8f6c" stroke-width="48" stroke-linecap="round">
+    <path d="M196 400 H286"/>
+    <path d="M172 512 H274"/>
+    <path d="M196 624 H286"/>
+  </g>
+  <path d="M366 348 L462 676 L588 456 L714 676 L810 348" fill="none" stroke="#37b98a"
+        stroke-width="82" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="352" y="742" width="472" height="36" rx="18" fill="#2c8f6c"/>
+</svg>
