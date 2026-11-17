@@ -25,6 +25,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Pipeline marker** | Completion and hover for `platform:` in `.woodpecker.yaml`, and a lens that shows the full pipeline the host serves. |
 | **Build** | The Makefile's targets as tasks with problem matchers (ACME, cc65, gcc-style, Lua), and **Build Like CI**: the same builder image the pipeline uses, in Docker. |
 | **Play** | Builds and plays the game in a panel: in the runtime its release will play in on the web (EmulatorJS, TIC-80 …) with your local build, or its own web build. One click starts it: the browser lets the game's sound start only after a click. |
+| **Platform docs** | A book button on the platform in the project panel opens the host's page about the platform (the `docs` link of its tooling), when the host gives one. |
 | **Pipeline** | The status bar follows the run of your current commit after a push. |
 | **Release…** | Asks for the channel (stable, or a beta: `1.3.0-beta.1`), bumps the version where the platform reads it, writes the changelog from the commits, tags and pushes; the CI publishes. |
 | **This branch** | On a branch other than the default one: its development build (not listed in the catalog), with a play link to share with testers; a notification when a push has built it. |
@@ -32,7 +33,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
 Everything a platform needs — what it publishes, where its metadata and version live, how it
-plays on the web, its builder image and template — comes from the host
+plays on the web, its builder image, template and documentation — comes from the host
 (`GET /build/platforms`). A platform the host adds works here without a new toolbox.
 
 ## In the editor

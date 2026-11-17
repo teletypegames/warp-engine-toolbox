@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { checklist, checklistMark } from '../domain/checklist'
-import type { Pipeline, PipelineRun, Release, Software } from '../domain/types'
+import type { Pipeline, PipelineRun, PlatformDescription, Release, Software } from '../domain/types'
 import { Git } from '../infrastructure/git'
 import { WarpEngineAuth } from './auth'
 import { catalogRoots, type FieldData } from './catalogView'
@@ -14,7 +14,7 @@ import { addToProject, newGame } from './newGame'
 import { Player } from './play'
 import { Platforms } from './platforms'
 import { Projects, type Project } from './project'
-import { projectRoots } from './projectView'
+import { platformDocs, projectRoots } from './projectView'
 import { release } from './release'
 import { PipelineStatusBar, RemoteStates, watchGit } from './remoteState'
 import { Reports } from './reports'
@@ -117,6 +117,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
     command('warpengine.openUrl', async (target?: string | Node) => {
       const url: string | undefined = typeof target === 'string' ? target : linkOf(target)
       if (url) await vscode.env.openExternal(vscode.Uri.parse(url))
+    }),
+    command('warpengine.openPlatformDocs', async (node?: Node) => {
+      const platform: PlatformDescription | null = projects.current()?.platform ?? null
+      const url: string | null = typeof node?.data === 'string' ? node.data : platform ? platformDocs(platform) : null
+      if (!url) throw new Error('The host links no documentation for this platform.')
+      await vscode.env.openExternal(vscode.Uri.parse(url))
     }),
     command('warpengine.copyLink', async (target?: string | Node) => {
       const url: string | undefined = typeof target === 'string' ? target : linkOf(target)

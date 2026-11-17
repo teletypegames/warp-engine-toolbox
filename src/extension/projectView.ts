@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { checklist, checklistMark } from '../domain/checklist'
-import type { PipelineRun, Release, ReleaseAsset } from '../domain/types'
+import type { PipelineRun, PlatformDescription, Release, ReleaseAsset } from '../domain/types'
 import type { Hosts } from './hosts'
 import { describe } from './markerSupport'
 import type { Project, Projects } from './project'
@@ -13,10 +13,12 @@ export function projectRoots(hosts: Hosts, projects: Projects, states: RemoteSta
     if (!project) return []
     const state: RemoteState | null = states.current()
     const version: string | null = await projects.version(project)
+    const docs: string | null = project.platform ? platformDocs(project.platform) : null
     const nodes: Node[] = [
       new Node(project.platform?.label ?? project.platformName, {
         description: project.platform ? project.platformName : 'unknown on this host', icon: 'circuit-board',
-        tooltip: project.platform ? new vscode.MarkdownString(describe(project.platform)) : 'The host does not know this platform'
+        tooltip: project.platform ? new vscode.MarkdownString(describe(project.platform)) : 'The host does not know this platform',
+        ...(docs ? { context: 'docs', data: docs } : {})
       }),
       new Node(project.name, { description: version ?? 'no version', icon: 'tag' })
     ]
@@ -77,4 +79,9 @@ export function releaseNode(hosts: Hosts, project: Project, release: Release): N
       ...release.assets.map((asset: ReleaseAsset) => new Node(asset.kind, { description: asset.path.split('/').pop() ?? '', icon: 'file-binary' }))
     ]
   })
+}
+
+export function platformDocs(platform: PlatformDescription): string | null {
+  const docs: unknown = platform.tooling['docs']
+  return typeof docs === 'string' && docs.length > 0 ? docs : null
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+- **Platform Documentation**: a book button on the platform in the project panel (and a
+  command) opens the host's page about the platform — the `docs` link of the platform's
+  `tooling` in `GET /build/platforms`. Hosts without one show no button.
+
 ## 1.1.0
 
 Release channels (needs WarpEngine 4.0 on the host).
