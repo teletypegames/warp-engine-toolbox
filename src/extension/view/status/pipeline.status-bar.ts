@@ -1,0 +1,64 @@
+import * as vscode from 'vscode'
+import { isRunning, isSuccess, type PipelineRun } from '../../../domain/model/pipeline.model'
+import { latestRun, type RemoteState } from '../../../domain/model/remote-state.model'
+import { t } from '../../ui/l10n'
+import type { RemoteStateStore } from '../../workspace/remote-state.store'
+import { TreeNode } from '../tree/tree.node'
+
+const PRIORITY = 50
+
+export class PipelineStatusBar implements vscode.Disposable {
+  private readonly item: vscode.StatusBarItem = vscode.window.createStatusBarItem('warpengine.pipeline', vscode.StatusBarAlignment.Left, PRIORITY)
+  private readonly subscription: vscode.Disposable
+
+  public constructor(states: RemoteStateStore) {
+    this.item.name = t('WarpEngine pipeline')
+    this.subscription = states.onDidChange((state: RemoteState | null) => { this.render(state) })
+  }
+
+  public dispose(): void {
+    this.subscription.dispose()
+    this.item.dispose()
+  }
+
+  private render(state: RemoteState | null): void {
+    if (!state) {
+      this.item.hide()
+      return
+    }
+    const label = `${state.project.platformLabel} · ${state.project.name}`
+    if (!state.signedIn) this.renderSignedOut(label)
+    else if (!state.pipeline) this.renderUnlinked(label, state)
+    else this.renderRun(label, state, latestRun(state))
+    this.item.show()
+  }
+
+  private renderSignedOut(label: string): void {
+    this.item.text = `$(rocket) ${label}`
+    this.item.tooltip = t('WarpEngine: sign in to see the pipeline')
+    this.item.command = 'warpengine.signIn'
+  }
+
+  private renderUnlinked(label: string, state: RemoteState): void {
+    this.item.text = `$(rocket) ${label}`
+    this.item.tooltip = state.software ? t('No pipeline is linked to this software') : t('Not on WarpEngine yet: Connect creates the repository, CI and catalog entry')
+    this.item.command = state.software ? 'warpengine.refresh' : 'warpengine.connect'
+  }
+
+  private renderRun(label: string, state: RemoteState, run: PipelineRun | null): void {
+    this.item.text = `${PipelineStatusBar.icon(run)} ${label}${run ? ` · ${run.status}` : ''}`
+    this.item.tooltip = run ? PipelineStatusBar.tooltip(run, state.headRun !== null) : t('No runs yet')
+    this.item.command = run?.url ? TreeNode.openUrl(run.url) : 'warpengine.refresh'
+  }
+
+  private static icon(run: PipelineRun | null): string {
+    if (run === null) return '$(circle-outline)'
+    if (isRunning(run)) return '$(sync~spin)'
+    return isSuccess(run) ? '$(pass-filled)' : '$(error)'
+  }
+
+  private static tooltip(run: PipelineRun, ofHead: boolean): string {
+    const head: string = ofHead ? '' : ` — ${t('not of the current commit')}`
+    return `${t('Pipeline #{0}', run.number)} (${run.event ?? ''} ${run.branch ?? ''}) ${run.commit?.slice(0, 7) ?? ''}${head}`
+  }
+}

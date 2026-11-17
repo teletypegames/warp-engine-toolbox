@@ -461,7 +461,7 @@
     "watch": "node scripts/build.mjs --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "test": "node scripts/build.mjs --tests && node --test dist-test/*.test.cjs",
+    "test": "node scripts/build.mjs --tests && node --test 'dist-test/**/*.test.cjs'",
     "package": "npm run build && vsce package --no-dependencies -o dist/warpengine-toolbox.vsix",
     "vscode:prepublish": "node scripts/build.mjs --production",
     "test:integration": "node scripts/integration.mjs",

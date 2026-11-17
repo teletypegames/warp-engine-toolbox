@@ -3,9 +3,9 @@ import { mkdtempSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as vscode from 'vscode'
-import type { ToolboxApi } from '../../src/extension/main'
-import { writeProject } from '../../src/extension/scaffolding'
-import type { Project } from '../../src/extension/project'
+import type { Project } from '../../src/domain/model/project.model'
+import type { PublishProblem } from '../../src/domain/model/publish-check.model'
+import type { ToolboxApi } from '../../src/extension/bootstrap/toolbox.api'
 
 async function until<T>(what: string, probe: () => T | null | undefined | Promise<T | null | undefined>, timeout: number = 20_000): Promise<T> {
   const deadline: number = Date.now() + timeout
@@ -54,8 +54,8 @@ export async function run(): Promise<void> {
   await step('asks the host what a publish would refuse', async () => {
     const result = await api.diagnostics.check(api.projects.require(), false)
     assert.ok(result)
-    assert.ok(result.problems.some((problem) => problem.field === 'title' && problem.level === 'error'))
-    assert.ok(result.problems.some((problem) => problem.field === 'colour' && problem.level === 'warning'))
+    assert.ok(result.problems.some((problem: PublishProblem) => problem.field === 'title' && problem.level === 'error'))
+    assert.ok(result.problems.some((problem: PublishProblem) => problem.field === 'colour' && problem.level === 'warning'))
   })
 
   await step('offers the Makefile targets and the CI builder as tasks', async () => {
@@ -86,7 +86,7 @@ export async function run(): Promise<void> {
     const platform = await api.platforms.find('c64')
     assert.ok(platform)
     const target: string = mkdtempSync(join(tmpdir(), 'warp-new-'))
-    const result = await writeProject({
+    const result = await api.scaffold.write({
       folder: target, platform, host: api.hosts.require().url, withDemo: false, overwrite: true, report: () => undefined,
       answers: { name: 'hopper', title: 'Hopper', author: 'Test', license: 'MIT', category: null, description: 'Hops', version: '0.1.0' }
     })

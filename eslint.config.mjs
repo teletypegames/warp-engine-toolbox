@@ -1,8 +1,18 @@
 // Strict on purpose: the toolbox writes projects, pushes repositories and holds tokens.
 import tseslint from 'typescript-eslint'
 
+const DOMAIN_FORBIDDEN = ['vscode', 'node:*', '**/infrastructure/**', '**/extension/**']
+
+function layer(files, patterns, ignores = []) {
+  return {
+    files: [files],
+    ignores,
+    rules: { 'no-restricted-imports': ['error', { patterns: patterns.map((group) => ({ group: [group], message: 'This import crosses a layer boundary: see STRUCTURE.md.' })) }] }
+  }
+}
+
 export default tseslint.config(
-  { ignores: ['dist/**', 'dist-test/**', 'node_modules/**', 'scripts/*.mjs', 'scripts/*.cjs', '.vscode-test/**', 'eslint.config.mjs'] },
+  { ignores: ['dist/**', 'dist-test/**', 'node_modules/**', 'scripts/*.mjs', 'scripts/*.cjs', 'media/**', '.vscode-test/**', 'eslint.config.mjs'] },
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
@@ -42,11 +52,27 @@ export default tseslint.config(
 
       'no-console': 'off',
       curly: ['error', 'multi-line'],
-      eqeqeq: ['error', 'always']
+      eqeqeq: ['error', 'always'],
+
+      // Small pieces: STRUCTURE.md, "Size".
+      'max-lines-per-function': ['error', { max: 25, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['error', { max: 200, skipBlankLines: true, skipComments: true }],
+      complexity: ['error', 8],
+      'max-params': ['error', 4],
+      // A class of static methods names one concept (Version, FilePath, Dialogs) where loose functions would not.
+      '@typescript-eslint/no-extraneous-class': ['error', { allowStaticOnly: true }]
     }
   },
+
+  // The layers: STRUCTURE.md. Each block states the whole list for its folder.
+  layer('src/domain/model/**', [...DOMAIN_FORBIDDEN, '../repository/*', '../service/*']),
+  layer('src/domain/repository/**', [...DOMAIN_FORBIDDEN, '../service/*']),
+  layer('src/domain/service/**', DOMAIN_FORBIDDEN),
+  layer('src/infrastructure/**', ['**/extension/**', '**/domain/service/**', 'vscode'], ['src/infrastructure/vscode/**']),
+  layer('src/infrastructure/vscode/**', ['**/extension/**', '**/domain/service/**']),
+  layer('src/extension/**', ['**/infrastructure/**'], ['src/extension/bootstrap/container.ts']),
   {
     files: ['test/**/*.ts'],
-    rules: { '@typescript-eslint/no-floating-promises': 'off' }
+    rules: { '@typescript-eslint/no-floating-promises': 'off', 'max-lines-per-function': 'off', 'max-lines': 'off' }
   }
 )

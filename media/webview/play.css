@@ -1,0 +1,6 @@
+#warpengine-toolbar{position:fixed;top:8px;right:8px;z-index:2147483647;display:flex;gap:6px;font:12px var(--vscode-font-family,system-ui);opacity:.35;transition:opacity .15s}
+#warpengine-toolbar:hover{opacity:1}
+#warpengine-toolbar span{color:#ccc;align-self:center;margin-right:4px}
+#warpengine-toolbar button{background:var(--vscode-button-secondaryBackground,#333);color:var(--vscode-button-secondaryForeground,#eee);border:0;padding:4px 10px;cursor:pointer;border-radius:3px}
+#warpengine-start{position:fixed;inset:0;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;z-index:2147483646;pointer-events:none;color:#e6edf3;font:600 18px var(--vscode-font-family,system-ui);text-shadow:0 1px 3px #000}
+#warpengine-start small{font-weight:400;font-size:12px;opacity:.7}

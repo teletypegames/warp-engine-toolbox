@@ -8,7 +8,7 @@ import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron'
 const host = process.env.WARPENGINE_TEST_URL ?? 'http://localhost:8080'
 const name = process.env.WALK_NAME ?? `walk-${Date.now().toString(36)}`
 
-await build({ entryPoints: ['src/extension/main.ts'], outfile: 'dist/extension.js', bundle: true, platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'], sourcemap: true })
+await build({ entryPoints: ['src/extension/bootstrap/main.ts'], outfile: 'dist/extension.js', bundle: true, platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'], sourcemap: true })
 await build({ entryPoints: ['test/integration/walkthrough.ts'], outfile: 'dist-test/walkthrough.cjs', bundle: true, platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'] })
 
 const parent = mkdtempSync(join(tmpdir(), 'warp-walk-'))

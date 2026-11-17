@@ -1,0 +1,109 @@
+import { homedir } from 'node:os'
+import * as vscode from 'vscode'
+import type { GameAnswers } from '../../domain/model/game-answers.model'
+import { FilePath } from '../../domain/model/path.model'
+import type { Platform } from '../../domain/model/platform.model'
+import type { Project } from '../../domain/model/project.model'
+import type { HostService } from '../../domain/service/host.service'
+import type { ScaffoldService, WriteResult } from '../../domain/service/scaffold.service'
+import { Dialogs } from '../ui/dialogs'
+import { t } from '../ui/l10n'
+import type { ProjectRegistry } from '../workspace/project.registry'
+import type { ConnectController } from './connect.controller'
+import type { GameAnswersDialog } from './game-answers.dialog'
+import type { HostController } from './host.controller'
+
+interface NewGame {
+  readonly platform: Platform
+  readonly answers: GameAnswers
+  readonly folder: string
+  readonly withDemo: boolean
+}
+
+export interface NewGameDependencies {
+  readonly hosts: HostService
+  readonly hostController: HostController
+  readonly dialog: GameAnswersDialog
+  readonly scaffold: ScaffoldService
+  readonly projects: ProjectRegistry
+  readonly connect: ConnectController
+}
+
+export class NewGameController {
+  public constructor(private readonly deps: NewGameDependencies) {}
+
+  public async newGame(): Promise<void> {
+    const game: NewGame | null = await this.askNewGame()
+    if (!game) return
+    const result: WriteResult = await Dialogs.progress(t('WarpEngine: creating {0}', game.answers.title), async (report) =>
+      this.deps.scaffold.createGame({ ...game, host: this.deps.hosts.require().url, overwrite: true, report }))
+    await NewGameController.offerOpen(game, result)
+  }
+
+  public async addToProject(): Promise<void> {
+    if (!(await this.deps.hostController.ensure())) return
+    const folder: vscode.WorkspaceFolder | undefined = await NewGameController.pickFolder()
+    if (!folder) return
+    const platform: Platform | null = await this.deps.dialog.platform(t('{0}: platform', folder.name))
+    const answers: GameAnswers | null = platform ? await this.deps.dialog.answers(platform, folder.name) : null
+    if (!platform || !answers) return
+    const result: WriteResult = await Dialogs.progress(t('WarpEngine: adding {0} to {1}', platform.label, folder.name), async (report) =>
+      this.deps.scaffold.write({ folder: folder.uri.fsPath, platform, answers, host: this.deps.hosts.require().url, withDemo: false, overwrite: false, report }))
+    await this.deps.projects.refresh()
+    await this.offerConnect(result)
+  }
+
+  private async askNewGame(): Promise<NewGame | null> {
+    if (!(await this.deps.hostController.ensure())) return null
+    const platform: Platform | null = await this.deps.dialog.platform(t('New game: platform'))
+    const answers: GameAnswers | null = platform ? await this.deps.dialog.answers(platform, null) : null
+    if (!platform || !answers) return null
+    const parent: string | null = await NewGameController.askParent(answers.name)
+    if (!parent) return null
+    const folder: string = FilePath.join(parent, answers.name)
+    if (await this.deps.scaffold.exists(folder)) {
+      Dialogs.error(t('{0} exists already.', folder))
+      return null
+    }
+    return { platform, answers, folder, withDemo: await this.askDemo(platform) }
+  }
+
+  private async askDemo(platform: Platform): Promise<boolean> {
+    if (!platform.demoUrl) return false
+    const templateOnly: string = t('Start from the template only')
+    const picked: string | undefined = await vscode.window.showQuickPick([t('Start from the demo game'), templateOnly], { title: t('Starting point') })
+    return picked !== templateOnly
+  }
+
+  private async offerConnect(result: WriteResult): Promise<void> {
+    const skipped: string = result.skipped.length > 0 ? ` ${t('Kept your own: {0}.', result.skipped.join(', '))}` : ''
+    const connect: string = t('Connect')
+    const answer: string | undefined = await Dialogs.ask(`${t('Added {0}.', result.written.join(', '))}${skipped}`, connect)
+    const project: Project | null = this.deps.projects.current()
+    if (answer === connect && project) await this.deps.connect.connectProject(project)
+  }
+
+  private static async askParent(name: string): Promise<string | null> {
+    const configured: string = (vscode.workspace.getConfiguration('warpengine').get<string>('defaultLocation') ?? '').trim()
+    const parent: vscode.Uri[] | undefined = await vscode.window.showOpenDialog({
+      title: t('Where should the {0} folder go?', name), canSelectFolders: true, canSelectFiles: false,
+      defaultUri: vscode.Uri.file(configured || homedir()), openLabel: t('Create the project here')
+    })
+    return parent?.[0]?.fsPath ?? null
+  }
+
+  private static async pickFolder(): Promise<vscode.WorkspaceFolder | undefined> {
+    const folders: readonly vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders
+    if (folders?.length === 1) return folders[0]
+    return vscode.window.showWorkspaceFolderPick({ placeHolder: t('The project to add WarpEngine to') })
+  }
+
+  private static async offerOpen(game: NewGame, result: WriteResult): Promise<void> {
+    const open: string = t('Open')
+    const add: string = t('Add to Workspace')
+    const answer: string | undefined = await Dialogs.ask(t('{0} is ready ({1} files). Open it to build, play and connect it.', game.answers.title, result.written.length), open, add)
+    const uri: vscode.Uri = vscode.Uri.file(game.folder)
+    if (answer === open) await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow: false })
+    if (answer === add) vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders?.length ?? 0, 0, { uri })
+  }
+}

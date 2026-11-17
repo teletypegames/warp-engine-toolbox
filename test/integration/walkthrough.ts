@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import * as vscode from 'vscode'
-import type { ToolboxApi } from '../../src/extension/main'
+import type { ToolboxApi } from '../../src/extension/bootstrap/toolbox.api'
 
 const exec = promisify(execFile)
 
@@ -32,11 +32,11 @@ async function until<T>(what: string, probe: () => T | null | undefined, timeout
   }
 }
 
-type Item = string | (vscode.QuickPickItem & { readonly platform?: { readonly name: string } })
+type Item = string | (vscode.QuickPickItem & { readonly value?: { readonly name?: string } | null })
 
 function pickAnswer(title: string, items: readonly Item[]): Item | undefined {
   const label = (item: Item): string => typeof item === 'string' ? item : item.label
-  if (/platform/i.test(title)) return items.find((item: Item) => typeof item !== 'string' && item.platform?.name === PLATFORM)
+  if (/platform/i.test(title)) return items.find((item: Item) => typeof item !== 'string' && item.value?.name === PLATFORM)
   if (/licence/i.test(title)) return items.find((item: Item) => label(item) === 'MIT')
   if (/category/i.test(title)) return items[0]
   if (/starting point/i.test(title)) return items.find((item: Item) => label(item) === 'Start from the demo game')

@@ -1,0 +1,45 @@
+import type * as vscode from 'vscode'
+import type { Controllers } from '../bootstrap/container'
+import type { TreeNode } from '../view/tree/tree.node'
+import type { CommandHandler } from './command.registry'
+
+export type CommandRow = readonly [string, CommandHandler]
+
+export function commandTable(controllers: Controllers): CommandRow[] {
+  return [...projectCommands(controllers), ...accountCommands(controllers), ...catalogCommands(controllers)]
+}
+
+function projectCommands({ newGame, connect, project, release }: Controllers): CommandRow[] {
+  return [
+    ['warpengine.newGame', async (): Promise<void> => { await newGame.newGame() }],
+    ['warpengine.addToProject', async (): Promise<void> => { await newGame.addToProject() }],
+    ['warpengine.connect', async (): Promise<void> => { await connect.connect() }],
+    ['warpengine.previewPipeline', async (): Promise<void> => { await project.previewPipeline() }],
+    ['warpengine.play', async (): Promise<void> => { await project.play() }],
+    ['warpengine.buildLikeCi', async (): Promise<void> => { await project.buildLikeCi() }],
+    ['warpengine.checkPublish', async (): Promise<void> => { await project.checkPublish() }],
+    ['warpengine.release', async (): Promise<void> => { await release.run() }],
+    ['warpengine.editMetadata', async (uri?: vscode.Uri): Promise<void> => { await project.editMetadata(uri) }],
+    ['warpengine.openPlatformDocs', async (node?: TreeNode): Promise<void> => { await project.openPlatformDocs(node) }]
+  ]
+}
+
+function accountCommands({ signIn, host, refresh, link }: Controllers): CommandRow[] {
+  return [
+    ['warpengine.signIn', async (): Promise<void> => { await signIn.signIn() }],
+    ['warpengine.signOut', async (): Promise<void> => { await signIn.signOut() }],
+    ['warpengine.selectHost', async (): Promise<void> => { await host.select() }],
+    ['warpengine.refresh', async (): Promise<void> => { await refresh.refresh() }],
+    ['warpengine.openUrl', async (target?: string | TreeNode): Promise<void> => { await link.open(target) }],
+    ['warpengine.copyLink', async (target?: string | TreeNode): Promise<void> => { await link.copy(target) }]
+  ]
+}
+
+function catalogCommands({ catalog }: Controllers): CommandRow[] {
+  return [
+    ['warpengine.triggerPipeline', async (node?: TreeNode): Promise<void> => { await catalog.triggerPipeline(node) }],
+    ['warpengine.editSoftwareField', async (node?: TreeNode): Promise<void> => { await catalog.editField(node) }],
+    ['warpengine.showChecklist', async (node?: TreeNode): Promise<void> => { await catalog.showChecklist(node) }],
+    ['warpengine.showStatistics', async (node?: TreeNode): Promise<void> => { await catalog.showStatistics(node) }]
+  ]
+}
