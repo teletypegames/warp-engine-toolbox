@@ -49,9 +49,12 @@ switches between them or adds one. A host needs WarpEngine 3.7 or later.
 ## Development
 
 ```sh
-npm install
-npm run lint && npm run typecheck && npm test
-npm run package        # dist/warpengine-toolbox.vsix
+make check          # typecheck, lint, unit tests
+make package        # dist/warpengine-toolbox.vsix
+make localinstall   # package and install it into your VS Code (code --install-extension --force)
+make uninstall
 ```
+
+`npm run test:integration` runs the extension in a downloaded VS Code against the default host.
 
 Press F5 in this folder to run it in an Extension Development Host.

@@ -11,3 +11,4 @@ eslint.config.mjs
 .woodpecker.yaml
 media/icon.svg
 .vscode-test/**
+Makefile
