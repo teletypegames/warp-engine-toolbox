@@ -73,4 +73,10 @@ make uninstall
 
 `npm run test:integration` runs the extension in a downloaded VS Code against the default host.
 
+`npm run test:walkthrough` plays a new studio's first hour against the WarpEngine example stack
+(`examples/compose/bin/setup` in the engine, `COMPOSE_PROJECT_NAME=warpkittest`): New Game, Sign In, Connect, the
+first published release, then Release and the second one. The dialogs get scripted answers, VS Code's own
+access prompt is skipped, and the admin's approval is given with `docker exec` on the app container
+(`WALK_APP_CONTAINER`, default `warpkittest-app-1`). `WARPENGINE_TEST_URL` points it at another host.
+
 Press F5 in this folder to run it in an Extension Development Host.

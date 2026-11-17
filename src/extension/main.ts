@@ -29,6 +29,7 @@ export interface ToolboxApi {
   readonly diagnostics: PublishDiagnostics
   readonly player: Player
   readonly hosts: Hosts
+  readonly auth: WarpEngineAuth
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<ToolboxApi> {
@@ -159,7 +160,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
 
   await projects.refresh()
   await vscode.commands.executeCommand('setContext', 'warpengine.signedIn', (await auth.token(false)) !== null)
-  return { projects, platforms, schemas, diagnostics, player, hosts }
+  return { projects, platforms, schemas, diagnostics, player, hosts, auth }
 }
 
 export function deactivate(): void {

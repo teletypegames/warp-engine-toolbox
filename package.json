@@ -453,7 +453,8 @@
     "test": "node scripts/build.mjs --tests && node --test dist-test/*.test.cjs",
     "package": "npm run build && vsce package --no-dependencies -o dist/warpengine-toolbox.vsix",
     "vscode:prepublish": "node scripts/build.mjs --production",
-    "test:integration": "node scripts/integration.mjs"
+    "test:integration": "node scripts/integration.mjs",
+    "test:walkthrough": "node scripts/walkthrough.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
