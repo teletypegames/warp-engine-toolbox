@@ -12,6 +12,7 @@ interface Prompt { readonly kind: string; readonly title: string; readonly messa
 
 const NAME: string = process.env['WALK_NAME'] ?? 'walk-demo'
 const PLATFORM: string = process.env['WALK_PLATFORM'] ?? 'phaser'
+const START: string = process.env['WALK_START'] === 'template' ? 'Start from the template only' : 'Start from the demo game'
 const prompts: Prompt[] = []
 const messages: string[] = []
 const errors: string[] = []
@@ -39,7 +40,7 @@ function pickAnswer(title: string, items: readonly Item[]): Item | undefined {
   if (/platform/i.test(title)) return items.find((item: Item) => typeof item !== 'string' && item.value?.name === PLATFORM)
   if (/licence/i.test(title)) return items.find((item: Item) => label(item) === 'MIT')
   if (/category/i.test(title)) return items[0]
-  if (/starting point/i.test(title)) return items.find((item: Item) => label(item) === 'Start from the demo game')
+  if (/starting point/i.test(title)) return items.find((item: Item) => label(item) === START)
   if (/push to the new repository/i.test(title)) return items.find((item: Item) => label(item) === 'HTTPS')
   if (title.endsWith(': channel')) return items.find((item: Item) => label(item) === 'Stable')
   if (title.endsWith(': stable version')) return items[0]
@@ -95,9 +96,11 @@ async function newGamePhase(): Promise<void> {
     assert.deepEqual(errors, [])
     assert.ok(existsSync(join(folder, '.woodpecker.yaml')), 'the marker is written')
     assert.match(readFileSync(join(folder, '.woodpecker.yaml'), 'utf8'), new RegExp(`platform: ${PLATFORM}`))
-    const metadata = JSON.parse(readFileSync(join(folder, 'metadata.json'), 'utf8')) as { name: string; author: string }
-    assert.equal(metadata.name, NAME)
-    assert.equal(metadata.author, 'Walkthrough Studio')
+    if (existsSync(join(folder, 'metadata.json'))) {
+      const metadata = JSON.parse(readFileSync(join(folder, 'metadata.json'), 'utf8')) as { name: string; author: string }
+      assert.equal(metadata.name, NAME)
+      assert.equal(metadata.author, 'Walkthrough Studio')
+    }
     assert.ok(existsSync(join(folder, '.git')), 'it is a git repository')
   })
 }

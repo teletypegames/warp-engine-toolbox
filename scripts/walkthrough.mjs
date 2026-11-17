@@ -29,7 +29,7 @@ async function phase(label, workspace) {
     extensionDevelopmentPath: resolve('.'),
     extensionTestsPath: resolve('scripts/walkthrough-entry.cjs'),
     launchArgs: [workspace, '--disable-extensions', '--skip-welcome', '--skip-release-notes', `--user-data-dir=${userData}`],
-    extensionTestsEnv: { WALK_PHASE: label, WALK_PARENT: parent, WALK_NAME: name }
+    extensionTestsEnv: { WALK_PHASE: label, WALK_PARENT: parent, WALK_NAME: name, WALK_PLATFORM: process.env.WALK_PLATFORM ?? 'phaser', WALK_START: process.env.WALK_START ?? 'demo' }
   })
 }
 
