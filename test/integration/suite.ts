@@ -76,13 +76,11 @@ export async function run(): Promise<void> {
   await step('builds and plays the local build in the host runtime', async () => {
     await api.player.play()
     const url: string = await until('the play URL', () => api.player.lastUrl, 60_000)
-    assert.match(url, /\/play-preview\/c64\?payload=http%3A%2F%2F127\.0\.0\.1%3A\d+%2Frabbit\.prg/)
-    const payload: string = decodeURIComponent(/payload=([^&]+)/.exec(url)?.[1] ?? '')
-    assert.equal((await fetch(payload)).status, 200)
+    assert.match(url, /\/play-preview\/c64\?payload=message/)
     const page: Response = await fetch(url)
     assert.equal(page.status, 200, `the host answered ${String(page.status)} for ${url}`)
     assert.equal(page.headers.get('x-frame-options'), null, 'the panel may frame the preview')
-    assert.match(await page.text(), /127\.0\.0\.1/)
+    assert.match(await page.text(), /warpengine\.ready/)
   })
 
   await step('writes a new project from the host template', async () => {

@@ -24,6 +24,7 @@ const TYPES: Readonly<Record<string, string>> = {
 export class PreviewServer {
   private server: Server | null = null
   private root = ''
+  private readonly pages = new Map<string, string>()
 
   public async serve(root: string): Promise<string> {
     this.root = resolve(root)
@@ -34,6 +35,10 @@ export class PreviewServer {
     }
     const address: AddressInfo = this.server.address() as AddressInfo
     return `http://127.0.0.1:${String(address.port)}/`
+  }
+
+  public page(path: string, html: string): void {
+    this.pages.set(path, html)
   }
 
   public async close(): Promise<void> {
@@ -50,6 +55,12 @@ export class PreviewServer {
     response.setHeader('Cache-Control', 'no-store')
     if (request.method === 'OPTIONS') { response.writeHead(204).end(); return }
     const path: string = decodeURIComponent(new URL(request.url ?? '/', 'http://127.0.0.1').pathname)
+    const page: string | undefined = this.pages.get(path)
+    if (page !== undefined) {
+      response.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none')
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(page)
+      return
+    }
     let file: string = normalize(join(this.root, path))
     if (file !== this.root && !file.startsWith(this.root + sep)) { response.writeHead(403).end(); return }
     try {
