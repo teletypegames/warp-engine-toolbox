@@ -1,7 +1,7 @@
 {
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
-  "description": "Make a game from nothing to a released, playable WarpEngine catalog entry without leaving the editor.",
+  "description": "Make a game for a WarpEngine host from nothing to a released, playable catalog entry without leaving the editor. Needs a WarpEngine 3.9+ host.",
   "version": "1.0.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
@@ -11,7 +11,15 @@
     "type": "git",
     "url": "https://git.teletypegames.org/tools/warp-engine-toolbox"
   },
+  "bugs": {
+    "url": "https://git.teletypegames.org/tools/warp-engine-toolbox/issues"
+  },
+  "qna": false,
   "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0f1720",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.101.0",
     "node": ">=22"

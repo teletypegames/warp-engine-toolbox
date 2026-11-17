@@ -8,6 +8,12 @@ WarpEngine is the engine behind a game catalog: a repository holds one line
 catalog and goes out to the web, the desktop client and the store outlets. The toolbox is
 the developer's side of it.
 
+**It needs a WarpEngine host.** The toolbox works against a site that runs WarpEngine 3.9 or
+later (for example [teletypegames.org](https://teletypegames.org)); it ships no host of its own,
+so set `warpengine.url` first. Without one, there is nothing for it to do.
+
+![The toolbox with the C64 demo open: the WarpEngine panel and the metadata form built from the host's schema](https://wiki.teletypegames.org/wiki-assets/development/warpengine-toolbox-metadata.png)
+
 ## What it does
 
 | | |
@@ -18,7 +24,7 @@ the developer's side of it.
 | **Metadata** | `metadata.json` is validated against the host's schema for the platform (or edited in a form), and on every save the host says what a publish would refuse. TIC-80 headers are read the same way. |
 | **Pipeline marker** | Completion and hover for `platform:` in `.woodpecker.yaml`, and a lens that shows the full pipeline the host serves. |
 | **Build** | The Makefile's targets as tasks with problem matchers (ACME, cc65, gcc-style, Lua), and **Build Like CI**: the same builder image the pipeline uses, in Docker. |
-| **Play** | Builds and plays the game in a panel: in the runtime its release will play in on the web (EmulatorJS, TIC-80 …) with your local build, or its own web build. |
+| **Play** | Builds and plays the game in a panel: in the runtime its release will play in on the web (EmulatorJS, TIC-80 …) with your local build, or its own web build. One click starts it: the browser lets the game's sound start only after a click. |
 | **Pipeline** | The status bar follows the run of your current commit after a push. |
 | **Release…** | Bumps the version where the platform reads it, writes the changelog from the commits, tags `vX.Y.Z` and pushes; the CI publishes. |
 | **Catalog** | Your host's softwares, releases with an asset checklist, links, pipelines and download statistics; status, category and highlight can be changed in place. |
@@ -27,6 +33,14 @@ the developer's side of it.
 Everything a platform needs — what it publishes, where its metadata and version live, how it
 plays on the web, its builder image and template — comes from the host
 (`GET /build/platforms`). A platform the host adds works here without a new toolbox.
+
+## In the editor
+
+![Play: the locally built C64 demo running in the host's EmulatorJS runtime, inside VS Code](https://wiki.teletypegames.org/wiki-assets/development/warpengine-toolbox-play.png)
+
+![New Game: the platform list comes from the host](https://wiki.teletypegames.org/wiki-assets/development/warpengine-toolbox-new-game.png)
+
+More on the [wiki page](https://wiki.teletypegames.org/development/warpengine-toolbox).
 
 ## Signing in
 
@@ -39,7 +53,7 @@ the pipeline status and releases; templates, metadata checks, builds and play wo
 
 The toolbox knows no host of its own: set `warpengine.url` to the address of the site that runs
 WarpEngine (or run **WarpEngine: Set Host…**, which asks for it). `warpengine.hosts` may list more
-hosts for Set Host to switch between. A host needs WarpEngine 3.7.2 or later.
+hosts for Set Host to switch between. A host needs WarpEngine 3.9 or later.
 
 ## Requirements
 
