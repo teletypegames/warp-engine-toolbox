@@ -78,7 +78,7 @@ hosts for Set Host to switch between. A host needs WarpEngine 4.0 or later (3.9 
 
 ## Development
 
-The code is a domain core with VS Code adapters around it; [STRUCTURE.md](STRUCTURE.md) describes
+The code is a domain core with VS Code adapters around it; [STRUCTURE.md](https://git.teletypegames.org/tools/warp-engine-toolbox/src/branch/master/STRUCTURE.md) describes
 the layers, the naming and the rules ESLint holds them to.
 
 ```sh
