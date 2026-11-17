@@ -3,6 +3,7 @@ import { readFile, stat } from 'node:fs/promises'
 import { basename, dirname, relative } from 'node:path'
 import * as vscode from 'vscode'
 import type { KindDescription, WebBindingDescription } from '../domain/types'
+import { browserPage, runtimePage, TOOLBAR_STYLE, toolbar } from '../domain/playPages'
 import { PreviewServer } from '../infrastructure/previewServer'
 import type { Hosts } from './hosts'
 import type { Project, Projects } from './project'
@@ -62,11 +63,12 @@ export class Player implements vscode.Disposable {
     if (!response.ok) throw new Error(`${host} answered ${String(response.status)} for the play preview`)
     const name: string = basename(payload.fsPath)
     this.server.proxy('/file/', host)
-    this.server.page(BROWSER_PAGE, browserPage(preview, host, `/${encodeURIComponent(name)}`, name))
+    const page: string = await response.text()
+    this.server.page(BROWSER_PAGE, browserPage(page, `/${encodeURIComponent(name)}`, name))
     this.handoff = { name, bytes: new Uint8Array(await readFile(payload.fsPath)) }
     this.external = `${base.replace(/\/$/, '')}${BROWSER_PAGE}`
     this.lastUrl = preview
-    panel.webview.html = runtimePage(await response.text(), base, shown)
+    panel.webview.html = runtimePage(page, base, shown)
   }
 
   public dispose(): void {
@@ -93,40 +95,8 @@ export class Player implements vscode.Disposable {
   }
 }
 
-const START_HINT = '<div id="warpengine-start">Click to start<small>the browser lets the game\u2019s sound start only after a click</small></div>'
-const START_STYLE = '#warpengine-start{position:fixed;inset:0;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;z-index:2147483646;pointer-events:none;color:#e6edf3;font:600 18px var(--vscode-font-family,system-ui);text-shadow:0 1px 3px #000}#warpengine-start small{font-weight:400;font-size:12px;opacity:.7}'
-const TOOLBAR_STYLE = '#warpengine-toolbar{position:fixed;top:8px;right:8px;z-index:2147483647;display:flex;gap:6px;font:12px var(--vscode-font-family,system-ui);opacity:.35;transition:opacity .15s}#warpengine-toolbar:hover{opacity:1}#warpengine-toolbar span{color:#ccc;align-self:center;margin-right:4px}#warpengine-toolbar button{background:var(--vscode-button-secondaryBackground,#333);color:var(--vscode-button-secondaryForeground,#eee);border:0;padding:4px 10px;cursor:pointer;border-radius:3px}'
 
-function toolbar(nonce: string, shown: string, announceReady: boolean): string {
-  return `${announceReady ? START_HINT : ''}<div id="warpengine-toolbar"><span>${escapeHtml(shown)}</span><button id="warpengine-replay">Build and play again</button><button id="warpengine-external">Open in browser</button></div>
-<script nonce="${nonce}">
-const warpengineApi = acquireVsCodeApi()
-document.getElementById('warpengine-external').onclick = () => warpengineApi.postMessage({ type: 'external' })
-document.getElementById('warpengine-replay').onclick = () => warpengineApi.postMessage({ type: 'replay' })
-${announceReady ? "addEventListener('pointerdown', () => document.getElementById('warpengine-start')?.remove(), { once: true, capture: true }); if (typeof navigator.getAutoplayPolicy === 'function' && navigator.getAutoplayPolicy('audiocontext') === 'allowed') document.getElementById('warpengine-start')?.remove()" : ''}
-${announceReady ? "addEventListener('message', (event) => { if (event.source !== window && event.data && event.data.type === 'warpengine.payload') window.postMessage(event.data, '*') }); addEventListener('DOMContentLoaded', () => warpengineApi.postMessage({ type: 'ready' }))" : ''}
-</script>`
-}
 
-export function runtimePage(html: string, base: string, shown: string): string {
-  const nonce: string = randomBytes(16).toString('base64')
-  const local: string = base.replace(/\/$/, '')
-  const csp: string = [
-    "default-src 'none'",
-    `script-src 'nonce-${nonce}' ${local} 'unsafe-eval' 'wasm-unsafe-eval' blob:`,
-    `style-src 'unsafe-inline' ${local}`,
-    `img-src ${local} data: blob:`,
-    `font-src ${local} data:`,
-    `connect-src ${local} blob: data:`,
-    `worker-src ${local} blob:`,
-    `media-src ${local} blob:`
-  ].join('; ')
-  const head = `<meta http-equiv="Content-Security-Policy" content="${csp}"><base href="${escapeHtml(base)}"><style>${TOOLBAR_STYLE}${START_STYLE}</style>`
-  return html
-    .replace(/<head>/i, `<head>${head}`)
-    .replace(/<script(?![^>]*\bnonce=)/gi, `<script nonce="${nonce}"`)
-    .replace(/<\/body>/i, `${toolbar(nonce, shown, true)}</body>`)
-}
 
 async function localPage(webview: vscode.Webview, index: vscode.Uri, shown: string): Promise<string> {
   const nonce: string = randomBytes(16).toString('base64')
@@ -148,21 +118,6 @@ async function localPage(webview: vscode.Webview, index: vscode.Uri, shown: stri
   return /<\/body>/i.test(withHead) ? withHead.replace(/<\/body>/i, `${toolbar(nonce, shown, false)}</body>`) : `${withHead}${toolbar(nonce, shown, false)}`
 }
 
-function browserPage(frame: string, host: string, payloadPath: string, name: string): string {
-  const origin: string = new URL(host).origin
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(name)}</title>
-<style>html,body{margin:0;height:100%;background:#000}iframe{width:100%;height:100%;border:0}</style></head><body>
-<iframe id="game" src="${escapeHtml(frame)}" allow="autoplay; fullscreen; gamepad; screen-wake-lock" allowfullscreen></iframe>
-<script>
-const frame = document.getElementById('game')
-const origin = ${JSON.stringify(origin)}
-window.addEventListener('message', async (event) => {
-  if (event.source !== frame.contentWindow || event.origin !== origin || !event.data || event.data.type !== 'warpengine.ready') return
-  const data = await (await fetch(${JSON.stringify(payloadPath)})).arrayBuffer()
-  frame.contentWindow.postMessage({ type: 'warpengine.payload', name: ${JSON.stringify(name)}, data }, origin, [data])
-})
-</script></body></html>`
-}
 
 async function findPayload(project: Project, kind: string): Promise<vscode.Uri | null> {
   const spec: KindDescription | undefined = project.platform?.kinds.find((candidate: KindDescription) => candidate.name === kind)
@@ -188,6 +143,3 @@ async function newest(uris: readonly vscode.Uri[]): Promise<vscode.Uri | null> {
   return best?.uri ?? null
 }
 
-function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}

@@ -79,7 +79,6 @@ export async function run(): Promise<void> {
     assert.match(url, /\/play-preview\/c64\?payload=message/)
     const page: Response = await fetch(url)
     assert.equal(page.status, 200, `the host answered ${String(page.status)} for ${url}`)
-    assert.equal(page.headers.get('x-frame-options'), null, 'the panel may frame the preview')
     assert.match(await page.text(), /warpengine\.ready/)
   })
 
