@@ -1,0 +1,27 @@
+# The Visual Studio Marketplace takes the WarpEngine Toolbox through Trusted Publishing, which
+# only GitHub Actions can do: this runs on the GitHub mirror (github.com/teletypegames/
+# warp-engine-toolbox), started by the vX.Y.Z tag the mirror pushes from Gitea. No token is
+# stored: vsce exchanges the workflow's OIDC token for a Marketplace session. The policy on
+# the TeletypeGames publisher names this repository and this file (publish.yml).
+name: Publish to the Visual Studio Marketplace
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck && npm run lint && npm test
+      - name: The tag is the package version
+        run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - run: npx vsce publish --oidc --no-dependencies
