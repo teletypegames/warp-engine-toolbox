@@ -9,11 +9,12 @@ export interface PlannedFile {
   readonly target: string
   readonly source: { readonly root: PlanRoot; readonly path: string } | null
   readonly content: string | null
-  readonly transform: 'makefile' | null
+  readonly transform: 'makefile' | 'fill' | null
 }
 
 export interface TemplateManifest {
   readonly files?: Readonly<Record<string, string>>
+  readonly fill?: readonly string[]
 }
 
 export interface PlanInput {
@@ -31,6 +32,7 @@ const DEMO_SKIPPED: readonly RegExp[] = [
 const GENERATED_EXAMPLES: ReadonlySet<string> = new Set(['woodpecker.yaml', 'gitlab-ci.yml', 'metadata.json'])
 const EXAMPLE_TARGETS: Readonly<Record<string, string>> = { 'makefile.make': 'Makefile', 'tasks.json': '.vscode/tasks.json', 'launch.json': '.vscode/launch.json' }
 const EXAMPLE_PREFIX = 'example-'
+export const NAME_PLACEHOLDER = '{name}'
 
 export class ProjectPlan {
   private readonly files: Map<string, PlannedFile> = new Map<string, PlannedFile>()
@@ -57,7 +59,10 @@ export class ProjectPlan {
     const pairs: [string, string | null][] = manifest
       ? Object.entries(manifest)
       : this.input.templateFiles.map((file: string) => [file, ProjectPlan.exampleTarget(file)])
-    for (const [from, to] of pairs) if (to) this.copy('template', from, to)
+    const fill: ReadonlySet<string> = new Set(this.input.manifest?.fill ?? [])
+    for (const [from, to] of pairs) {
+      if (to) this.copy('template', from, to.replaceAll(NAME_PLACEHOLDER, this.input.answers.name), fill.has(from))
+    }
   }
 
   private addDemo(): void {
@@ -86,8 +91,9 @@ export class ProjectPlan {
     return `${this.input.host.replace(/\/$/, '')}/build/config?platform=${this.input.platform.name}`
   }
 
-  private copy(root: 'template' | 'demo', path: string, target: string): void {
-    this.files.set(target, { target, source: { root, path }, content: null, transform: target === 'Makefile' ? 'makefile' : null })
+  private copy(root: 'template' | 'demo', path: string, target: string, fill: boolean = false): void {
+    const transform: PlannedFile['transform'] = target === 'Makefile' ? 'makefile' : fill ? 'fill' : null
+    this.files.set(target, { target, source: { root, path }, content: null, transform })
   }
 
   private write(target: string, content: string): void {

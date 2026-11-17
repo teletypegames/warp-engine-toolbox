@@ -43,6 +43,15 @@ describe('ProjectPlan', () => {
     assert.match(find(plan, 'inc/meta/meta.header.lua')?.content ?? '', /^-- title: Rabbit\n[\s\S]*-- version: 0.1.0\n/)
   })
 
+  it('names manifest targets and marks the files to fill after the game', () => {
+    const manifest = { files: { 'hello/hello.inc': '{name}.inc', 'hello/Cargo.toml': 'Cargo.toml', 'a.mk': 'Makefile' }, fill: ['hello/Cargo.toml'] }
+    const plan: PlannedFile[] = new ProjectPlan({ platform: TIC80, answers: ANSWERS, host: 'https://h', templateFiles: [], manifest, demoFiles: [] }).list()
+    assert.equal(find(plan, `${ANSWERS.name}.inc`)?.source?.path, 'hello/hello.inc')
+    assert.equal(find(plan, 'Cargo.toml')?.transform, 'fill')
+    assert.equal(find(plan, `${ANSWERS.name}.inc`)?.transform, null)
+    assert.equal(find(plan, 'Makefile')?.transform, 'makefile')
+  })
+
   it('names the project in the Makefile and lists its targets', () => {
     assert.equal(new Makefile('PROJECT = example\nall: build\n').withProject('rabbit'), 'PROJECT = rabbit\nall: build\n')
     assert.equal(new Makefile('PROJECT ?= x\n').withProject('rabbit'), 'PROJECT ?= rabbit\n')

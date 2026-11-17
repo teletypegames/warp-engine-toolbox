@@ -3,7 +3,7 @@ import { Makefile } from '../model/makefile.model'
 import { msg, type Message } from '../model/message.model'
 import { FilePath } from '../model/path.model'
 import type { Platform } from '../model/platform.model'
-import { ProjectPlan, type PlannedFile, type TemplateManifest } from '../model/project-plan.model'
+import { NAME_PLACEHOLDER, ProjectPlan, type PlannedFile, type TemplateManifest } from '../model/project-plan.model'
 import type { FileSystemRepository } from '../repository/file-system.repository'
 import type { SourceControl, SourceControlFactory } from '../repository/source-control.repository'
 import type { TemplateRepository, TemplateTree } from '../repository/template.repository'
@@ -112,8 +112,12 @@ export class ScaffoldService {
 
   private async content(input: ScaffoldInput, sources: Sources, file: PlannedFile): Promise<Uint8Array | null> {
     const raw: Uint8Array | null = file.content !== null ? new TextEncoder().encode(file.content) : await this.source(sources, file)
-    if (raw === null || file.transform !== 'makefile') return raw
-    return new TextEncoder().encode(new Makefile(new TextDecoder().decode(raw)).withProject(input.answers.name))
+    if (raw === null || file.transform === null) return raw
+    const text: string = new TextDecoder().decode(raw)
+    const named: string = file.transform === 'makefile'
+      ? new Makefile(text).withProject(input.answers.name)
+      : text.replaceAll(NAME_PLACEHOLDER, input.answers.name)
+    return new TextEncoder().encode(named)
   }
 
   private async source(sources: Sources, file: PlannedFile): Promise<Uint8Array | null> {

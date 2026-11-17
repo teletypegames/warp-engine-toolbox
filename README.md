@@ -32,6 +32,19 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Catalog** | Your host's softwares, releases with an asset checklist, links, pipelines and download statistics; status, category and highlight can be changed in place. |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
+A template repository can say exactly what a new game gets in a `warp-template.json`:
+
+```json
+{
+  "files": { "example-makefile.make": "Makefile", "hello/hello.inc": "{name}.inc", "hello/Cargo.toml": "Cargo.toml" },
+  "fill": ["hello/Cargo.toml"]
+}
+```
+
+`files` maps a template path to its place in the project; `{name}` in a target becomes the
+game's name, and the files under `fill` get `{name}` replaced in their content. Without it the
+template's top-level `example-*` files are taken (`example-makefile.make` → `Makefile`).
+
 Everything a platform needs — what it publishes, where its metadata and version live, how it
 plays on the web, its builder image, template and documentation — comes from the host
 (`GET /build/platforms`). A platform the host adds works here without a new toolbox.
@@ -81,7 +94,8 @@ make uninstall
 (`examples/compose/bin/setup` in the engine, `COMPOSE_PROJECT_NAME=warpkittest`): New Game, Sign In, Connect, the
 first published release, then Release and the second one. The dialogs get scripted answers, VS Code's own
 access prompt is skipped, and the admin's approval is given with `docker exec` on the app container
-(`WALK_APP_CONTAINER`, default `warpkittest-app-1`). `WARPENGINE_TEST_URL` points it at another host.
+(`WALK_APP_CONTAINER`, default `warpkittest-app-1`). `WARPENGINE_TEST_URL` points it at another host, `WALK_PLATFORM` (default `phaser`) picks the platform and
+`WALK_START=template` starts from the template instead of the demo.
 
 The interface speaks English and Hungarian (`l10n/`, `package.nls*.json`). `npm run l10n` rewrites the
 English bundle from the code; `npm run l10n:check` fails while a text has no Hungarian translation.
