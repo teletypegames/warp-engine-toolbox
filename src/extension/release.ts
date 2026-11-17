@@ -50,6 +50,7 @@ export async function release(hosts: Hosts, projects: Projects, onPushed: () => 
   await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `WarpEngine: releasing ${project.name} ${version}` }, async (progress: vscode.Progress<{ message?: string }>) => {
     progress.report({ message: 'writing the version and the changelog…' })
     await writeVersion(project, version)
+    await git.fetchTags()
     const commits: Commit[] = await git.commitsSince(await git.lastTag())
     const entry: string = changelog(version, commits, new Date().toISOString().slice(0, 10))
     const changelogUri: vscode.Uri = vscode.Uri.joinPath(project.folder.uri, 'CHANGELOG.md')

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- **Release…** fetches the tags from the remote before writing the changelog: a tag the
+  pipeline set on the forge (the first release after Connect) no longer goes unseen, so the
+  changelog lists only the commits since the last release.
+
 ## 1.0.0
 
 The first release. Needs a WarpEngine 3.9 or later host (`warpengine.url`).

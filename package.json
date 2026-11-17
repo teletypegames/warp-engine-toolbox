@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "Make a game for a WarpEngine host from nothing to a released, playable catalog entry without leaving the editor. Needs a WarpEngine 3.9+ host.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",

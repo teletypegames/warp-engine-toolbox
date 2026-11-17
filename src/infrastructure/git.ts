@@ -31,6 +31,10 @@ export class Git {
     return result.code === 0 ? result.stdout.trim() : null
   }
 
+  public async fetchTags(): Promise<void> {
+    await run('git', ['fetch', '--tags', '--quiet', 'origin'], this.cwd)
+  }
+
   public async lastTag(): Promise<string | null> {
     const result: RunResult = await run('git', ['describe', '--tags', '--abbrev=0', '--match', 'v[0-9]*'], this.cwd)
     return result.code === 0 ? result.stdout.trim() : null
