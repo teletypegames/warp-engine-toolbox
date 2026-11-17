@@ -65,8 +65,11 @@ hosts for Set Host to switch between. A host needs WarpEngine 4.0 or later (3.9 
 
 ## Development
 
+The code is a domain core with VS Code adapters around it; [STRUCTURE.md](STRUCTURE.md) describes
+the layers, the naming and the rules ESLint holds them to.
+
 ```sh
-make check          # typecheck, lint, unit tests
+make check          # typecheck, lint, l10n check, unit tests
 make package        # dist/warpengine-toolbox.vsix
 make localinstall   # package and install it into your VS Code (code --install-extension --force)
 make uninstall
@@ -79,5 +82,8 @@ make uninstall
 first published release, then Release and the second one. The dialogs get scripted answers, VS Code's own
 access prompt is skipped, and the admin's approval is given with `docker exec` on the app container
 (`WALK_APP_CONTAINER`, default `warpkittest-app-1`). `WARPENGINE_TEST_URL` points it at another host.
+
+The interface speaks English and Hungarian (`l10n/`, `package.nls*.json`). `npm run l10n` rewrites the
+English bundle from the code; `npm run l10n:check` fails while a text has no Hungarian translation.
 
 Press F5 in this folder to run it in an Extension Development Host.

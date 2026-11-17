@@ -5,6 +5,9 @@
 - **Platform Documentation**: a book button on the platform in the project panel (and a
   command) opens the host's page about the platform — the `docs` link of the platform's
   `tooling` in `GET /build/platforms`. Hosts without one show no button.
+- The interface in Hungarian too: VS Code's display language picks it.
+- The code is rebuilt in layers (domain model, ports, services; infrastructure; VS Code
+  adapters), described in STRUCTURE.md. Nothing changes in how the toolbox works.
 
 ## 1.1.0
 
