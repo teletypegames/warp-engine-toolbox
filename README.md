@@ -37,8 +37,9 @@ the pipeline status and releases; templates, metadata checks, builds and play wo
 
 ## Hosts
 
-`warpengine.hosts` lists the hosts you work with (Teletype Games by default); **Select Host**
-switches between them or adds one. A host needs WarpEngine 3.7 or later.
+The toolbox knows no host of its own: set `warpengine.url` to the address of the site that runs
+WarpEngine (or run **WarpEngine: Set Host…**, which asks for it). `warpengine.hosts` may list more
+hosts for Set Host to switch between. A host needs WarpEngine 3.7.2 or later.
 
 ## Requirements
 

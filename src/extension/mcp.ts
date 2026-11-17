@@ -7,9 +7,10 @@ export function registerMcp(hosts: Hosts, auth: WarpEngineAuth): { dispose(): un
   const provider: vscode.McpServerDefinitionProvider<vscode.McpHttpServerDefinition> = {
     onDidChangeMcpServerDefinitions: changed.event,
     async provideMcpServerDefinitions(): Promise<vscode.McpHttpServerDefinition[]> {
+      const host = hosts.current()
+      if (!host) return []
       const token: string | null = await auth.token(false)
       if (!token) return []
-      const host = hosts.current()
       return [new vscode.McpHttpServerDefinition(`WarpEngine (${host.name})`, vscode.Uri.parse(`${host.url}/api/admin/v1/mcp`), { Authorization: `Bearer ${token}` })]
     }
   }

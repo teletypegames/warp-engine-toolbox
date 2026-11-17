@@ -28,7 +28,7 @@ export function projectRoots(hosts: Hosts, projects: Projects, states: RemoteSta
       new Node('Check publish', { icon: 'checklist', command: { title: 'Check', command: 'warpengine.checkPublish' } })
     )
     if (!state?.signedIn) {
-      nodes.push(new Node('Sign in', { description: hosts.current().name, icon: 'sign-in', command: { title: 'Sign in', command: 'warpengine.signIn' } }))
+      nodes.push(new Node('Sign in', { description: hosts.current()?.name ?? 'set a host first', icon: 'sign-in', command: { title: 'Sign in', command: 'warpengine.signIn' } }))
       return nodes
     }
     if (state.error) nodes.push(new Node(state.error, { icon: 'warning' }))
@@ -62,7 +62,7 @@ export function releaseNode(hosts: Hosts, project: Project, release: Release): N
   return new Node(release.version, {
     description: `${String(release.assets.length)} assets${missing > 0 ? ` · ${String(missing)} missing` : ''}${release.commitSha ? ` · ${release.commitSha.slice(0, 7)}` : ''}`,
     icon: missing > 0 ? 'warning' : 'package', context: 'release link', data: { release, project },
-    command: openUrl(hosts.client().playUrl(project.name, release.version)),
+    ...(hosts.current() ? { command: openUrl(hosts.client().playUrl(project.name, release.version)) } : {}),
     load: (): Node[] => [
       ...(project.platform ? checklist(project.platform, release.assets).map((entry) => new Node(`${checklistMark(entry.state)} ${entry.kind}`, { description: entry.note })) : []),
       ...release.assets.map((asset: ReleaseAsset) => new Node(asset.kind, { description: asset.path.split('/').pop() ?? '', icon: 'file-binary' }))

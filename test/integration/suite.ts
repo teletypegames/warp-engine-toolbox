@@ -90,7 +90,7 @@ export async function run(): Promise<void> {
     assert.ok(platform)
     const target: string = mkdtempSync(join(tmpdir(), 'warp-new-'))
     const result = await writeProject({
-      folder: target, platform, host: api.hosts.current().url, withDemo: false, overwrite: true, report: () => undefined,
+      folder: target, platform, host: api.hosts.require().url, withDemo: false, overwrite: true, report: () => undefined,
       answers: { name: 'hopper', title: 'Hopper', author: 'Test', license: 'MIT', category: null, description: 'Hops', version: '0.1.0' }
     })
     assert.ok(result.written.includes('Makefile') && result.written.includes('metadata.json') && result.written.includes('.woodpecker.yaml'), result.written.join(', '))

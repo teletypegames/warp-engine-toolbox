@@ -18,6 +18,7 @@ export class Player implements vscode.Disposable {
 
   public async play(): Promise<void> {
     const project: Project = this.projects.require()
+    this.hosts.require()
     const binding: WebBindingDescription | null = project.platform?.web.find((candidate: WebBindingDescription) => candidate.default) ?? project.platform?.web[0] ?? null
     const payloadKind: string = binding?.payload ?? 'html'
 
@@ -67,7 +68,7 @@ export class Player implements vscode.Disposable {
       })
     }
     this.panel.title = `Play ${project.name}`
-    const host: string = this.hosts.current().url
+    const host: string = this.hosts.require().url
     this.panel.webview.html = `<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; frame-src ${host} http://127.0.0.1:*; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
 <style>html,body{margin:0;height:100%;display:flex;flex-direction:column;background:var(--vscode-editor-background);color:var(--vscode-foreground);font-family:var(--vscode-font-family)}

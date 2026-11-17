@@ -14,7 +14,7 @@ writeFileSync(join(workspace, '.woodpecker.yaml'), 'platform: c64\n')
 writeFileSync(join(workspace, 'metadata.json'), JSON.stringify({ name: 'rabbit', version: '1.0.0', colour: 'red' }, null, 2))
 writeFileSync(join(workspace, 'Makefile'), 'PROJECT = rabbit\n\nbuild:\n\tprintf "\\001\\010" > $(PROJECT).prg\n\nrun: build\n\t@echo run\n')
 mkdirSync(join(workspace, '.vscode'), { recursive: true })
-writeFileSync(join(workspace, '.vscode', 'settings.json'), JSON.stringify({ 'warpengine.checkOnSave': false, 'task.allowAutomaticTasks': 'off' }))
+writeFileSync(join(workspace, '.vscode', 'settings.json'), JSON.stringify({ 'warpengine.url': process.env.WARPENGINE_TEST_URL ?? 'https://teletypegames.org', 'warpengine.checkOnSave': false, 'task.allowAutomaticTasks': 'off' }))
 
 const version = process.env.VSCODE_TEST_VERSION ?? 'stable'
 let executable = await downloadAndUnzipVSCode(version)

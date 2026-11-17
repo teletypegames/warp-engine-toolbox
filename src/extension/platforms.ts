@@ -10,7 +10,7 @@ export class Platforms {
   public constructor(private readonly state: vscode.Memento, private readonly hosts: Hosts) {}
 
   public async all(refresh: boolean = false): Promise<PlatformDescription[]> {
-    const host: string = this.hosts.current().url
+    const host: string = this.hosts.require().url
     if (refresh) this.loaded.delete(host)
     let pending: Promise<PlatformDescription[]> | undefined = this.loaded.get(host)
     if (!pending) {

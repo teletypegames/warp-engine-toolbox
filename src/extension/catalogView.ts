@@ -15,6 +15,8 @@ export interface FieldData {
 
 export function catalogRoots(hosts: Hosts, auth: WarpEngineAuth, platforms: Platforms): () => Promise<Node[]> {
   return async (): Promise<Node[]> => {
+    const host = hosts.current()
+    if (!host) return []
     const client: WarpEngineClient | null = await auth.client(false)
     await vscode.commands.executeCommand('setContext', 'warpengine.signedIn', client !== null)
     if (!client) return []
@@ -24,7 +26,7 @@ export function catalogRoots(hosts: Hosts, auth: WarpEngineAuth, platforms: Plat
     for (const software of all) byPlatform.set(software.platform, [...(byPlatform.get(software.platform) ?? []), software])
     const described: PlatformDescription[] = await platforms.all().catch((): PlatformDescription[] => [])
     return [
-      new Node(hosts.current().name, { description: me?.label ?? '', icon: 'server', tooltip: `${hosts.current().url}\n${(me?.scopes ?? []).join(', ')}`, command: openUrl(hosts.current().url), context: 'link' }),
+      new Node(host.name, { description: me?.label ?? '', icon: 'server', tooltip: `${host.url}\n${(me?.scopes ?? []).join(', ')}`, command: openUrl(host.url), context: 'link' }),
       new Node('Softwares', {
         description: String(all.length), icon: 'library', expanded: true,
         load: (): Node[] => [...byPlatform.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([platform, softwares]) => new Node(

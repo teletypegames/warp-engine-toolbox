@@ -68,7 +68,7 @@
       },
       {
         "command": "warpengine.selectHost",
-        "title": "Select Host",
+        "title": "Set Host…",
         "category": "WarpEngine",
         "icon": "$(server)"
       },
@@ -162,7 +162,7 @@
         },
         {
           "command": "warpengine.signIn",
-          "when": "view == warpengine.catalog && !warpengine.signedIn",
+          "when": "view == warpengine.catalog && warpengine.hasHost && !warpengine.signedIn",
           "group": "navigation@1"
         }
       ],
@@ -255,8 +255,13 @@
       },
       {
         "view": "warpengine.catalog",
+        "contents": "Set the address of your WarpEngine host first.\n[Set Host…](command:warpengine.selectHost)",
+        "when": "!warpengine.hasHost"
+      },
+      {
+        "view": "warpengine.catalog",
         "contents": "Sign in to see the catalog, your pipelines and your releases.\n[Sign In](command:warpengine.signIn)",
-        "when": "!warpengine.signedIn"
+        "when": "warpengine.hasHost && !warpengine.signedIn"
       }
     ],
     "authentication": [
@@ -366,9 +371,15 @@
     "configuration": {
       "title": "WarpEngine",
       "properties": {
+        "warpengine.url": {
+          "type": "string",
+          "default": "",
+          "format": "uri",
+          "markdownDescription": "The address of the WarpEngine host you work with, e.g. `https://games.example.org`. Nothing works against a host until it is set; **WarpEngine: Set Host…** sets it too."
+        },
         "warpengine.hosts": {
           "type": "array",
-          "description": "The WarpEngine hosts you work with.",
+          "description": "More WarpEngine hosts that Set Host offers to switch between.",
           "items": {
             "type": "object",
             "required": [
@@ -385,17 +396,7 @@
               }
             }
           },
-          "default": [
-            {
-              "name": "Teletype Games",
-              "url": "https://teletypegames.org"
-            }
-          ]
-        },
-        "warpengine.host": {
-          "type": "string",
-          "description": "The URL of the host in use; the first of warpengine.hosts when empty.",
-          "default": ""
+          "default": []
         },
         "warpengine.checkOnSave": {
           "type": "boolean",

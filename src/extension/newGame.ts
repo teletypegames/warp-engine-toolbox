@@ -16,6 +16,7 @@ import { exists, writeProject, type WriteResult } from './scaffolding'
 const LICENSES: readonly string[] = ['MIT', 'GPL-3.0-or-later', 'Apache-2.0', 'CC-BY-4.0', 'CC-BY-NC-4.0', 'Proprietary']
 
 export async function newGame(hosts: Hosts, platforms: Platforms): Promise<void> {
+  if (!(await hosts.ensure())) return
   const platform: PlatformDescription | null = await pickPlatform(platforms, 'New game: platform')
   if (!platform) return
   const answers: GameAnswers | null = await askAnswers(hosts, platform, null)
@@ -40,7 +41,7 @@ export async function newGame(hosts: Hosts, platforms: Platforms): Promise<void>
     { location: vscode.ProgressLocation.Notification, title: `WarpEngine: creating ${answers.title}` },
     async (progress: vscode.Progress<{ message?: string }>) => {
       const written: WriteResult = await writeProject({
-        folder, platform, answers, host: hosts.current().url, withDemo, overwrite: true,
+        folder, platform, answers, host: hosts.require().url, withDemo, overwrite: true,
         report: (message: string) => { progress.report({ message }) }
       })
       progress.report({ message: 'Making it a git repository…' })
@@ -61,6 +62,7 @@ export async function newGame(hosts: Hosts, platforms: Platforms): Promise<void>
 }
 
 export async function addToProject(hosts: Hosts, platforms: Platforms, projects: Projects, auth: WarpEngineAuth): Promise<void> {
+  if (!(await hosts.ensure())) return
   const folder: vscode.WorkspaceFolder | undefined = vscode.workspace.workspaceFolders?.length === 1
     ? vscode.workspace.workspaceFolders[0]
     : await vscode.window.showWorkspaceFolderPick({ placeHolder: 'The project to add WarpEngine to' })
@@ -72,7 +74,7 @@ export async function addToProject(hosts: Hosts, platforms: Platforms, projects:
   const result: WriteResult = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: `WarpEngine: adding ${platform.label} to ${folder.name}` },
     async (progress: vscode.Progress<{ message?: string }>) => writeProject({
-      folder: folder.uri.fsPath, platform, answers, host: hosts.current().url, withDemo: false, overwrite: false,
+      folder: folder.uri.fsPath, platform, answers, host: hosts.require().url, withDemo: false, overwrite: false,
       report: (message: string) => { progress.report({ message }) }
     })
   )

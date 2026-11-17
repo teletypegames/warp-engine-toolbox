@@ -27,7 +27,9 @@ export class SchemaProvider implements vscode.TextDocumentContentProvider, vscod
   }
 
   public async schema(platform: string): Promise<string> {
-    const key = `${this.hosts.current().url}#${platform}`
+    const host = this.hosts.current()
+    if (!host) return EMPTY
+    const key = `${host.url}#${platform}`
     const cached: string | undefined = this.cache.get(key)
     if (cached) return cached
     try {

@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { readLuaHeader, type HeaderLine } from '../domain/luaHeader'
 import type { PublishCheck, PublishProblem } from '../domain/types'
 import type { WarpEngineAuth } from './auth'
-import type { Hosts } from './hosts'
+import { NoHostError, type Hosts } from './hosts'
 import type { Project, Projects } from './project'
 
 export class PublishDiagnostics implements vscode.Disposable {
@@ -22,6 +22,10 @@ export class PublishDiagnostics implements vscode.Disposable {
 
   public async check(project: Project, report: boolean): Promise<PublishCheck | null> {
     if (!project.metadataUri || !project.platform) return null
+    if (!this.hosts.current()) {
+      if (report) throw new NoHostError()
+      return null
+    }
     const document: vscode.TextDocument = await vscode.workspace.openTextDocument(project.metadataUri)
     const metadata: Record<string, unknown> = project.metadataFormat === 'json' ? parseJson(document.getText()) : headerObject(document.getText())
     const version: string | null = await this.projects.version(project)

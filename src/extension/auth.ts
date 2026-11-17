@@ -25,12 +25,14 @@ export class WarpEngineAuth implements vscode.AuthenticationProvider, vscode.Dis
   }
 
   public async getSessions(): Promise<vscode.AuthenticationSession[]> {
-    const host: string = this.hosts.current().url
+    const host: string | undefined = this.hosts.current()?.url
+    if (!host) return []
     return (await this.stored()).filter((session: StoredSession) => session.host === host).map(toSession)
   }
 
   public async createSession(scopes: readonly string[]): Promise<vscode.AuthenticationSession> {
-    const host: string = this.hosts.current().url
+    const host: string | undefined = (await this.hosts.ensure())?.url
+    if (!host) throw new vscode.CancellationError()
     const client: WarpEngineClient = new WarpEngineClient(host)
     const wanted: readonly string[] = scopes.length > 0 ? scopes : TOOL_SCOPES
     const grant: DeviceGrant = await client.startDeviceGrant(`WarpEngine Toolbox (${vscode.env.appName})`, wanted)
@@ -60,6 +62,7 @@ export class WarpEngineAuth implements vscode.AuthenticationProvider, vscode.Dis
   }
 
   public async token(createIfNone: boolean): Promise<string | null> {
+    if (!this.hosts.current() && !createIfNone) return null
     const session: vscode.AuthenticationSession | undefined = await vscode.authentication.getSession(PROVIDER_ID, [...TOOL_SCOPES], createIfNone ? { createIfNone: true } : { silent: true })
     return session?.accessToken ?? null
   }
