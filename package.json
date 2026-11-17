@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "Make a game for a WarpEngine host from nothing to a released, playable catalog entry without leaving the editor. Needs a WarpEngine 3.9+ host.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",
@@ -149,6 +149,12 @@
         "title": "Download Statistics",
         "category": "WarpEngine",
         "icon": "$(graph)"
+      },
+      {
+        "command": "warpengine.copyLink",
+        "title": "Copy Link",
+        "category": "WarpEngine",
+        "icon": "$(copy)"
       }
     ],
     "menus": {
@@ -177,6 +183,11 @@
       "view/item/context": [
         {
           "command": "warpengine.openUrl",
+          "when": "viewItem =~ /link/",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.copyLink",
           "when": "viewItem =~ /link/",
           "group": "inline"
         },
@@ -224,6 +235,10 @@
         },
         {
           "command": "warpengine.refresh",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.copyLink",
           "when": "false"
         }
       ],

@@ -5,7 +5,7 @@ import { checklist, checklistMark } from '../src/domain/checklist'
 import { luaFileFromCommand, luaHeaderValues, setLuaHeaderValue } from '../src/domain/luaHeader'
 import { isMarker, parseMarker, renderMarker } from '../src/domain/marker'
 import { applyMakefile, exampleTarget, planProject, type GameAnswers } from '../src/domain/template'
-import { bumpVersion, compareVersions } from '../src/domain/version'
+import { betaCandidates, bumpVersion, channelOf, compareVersions, devBuildBranch, stableCandidates } from '../src/domain/version'
 import { C64, TIC80 } from './fixtures'
 
 const ANSWERS: GameAnswers = { name: 'rabbit', title: 'Rabbit', author: 'Teletype', license: 'MIT', category: 'game', description: 'Hops', version: '0.1.0' }
@@ -116,5 +116,26 @@ describe('changelog', () => {
     const entry: string = changelog('1.1.0', [{ sha: 'abcdef123', subject: 'Faster rabbit' }, { sha: '1234567aa', subject: 'Merge branch x' }], '2026-11-17')
     assert.equal(entry, '## 1.1.0 — 2026-11-17\n\n- Faster rabbit (abcdef1)\n')
     assert.equal(prependChangelog('# Changelog\n\n## 1.0.0\n', entry), `# Changelog\n\n${entry}\n## 1.0.0\n`)
+  })
+})
+
+describe('channels', () => {
+  it('reads the channel of a version', () => {
+    assert.deepEqual(['1.2.0', '1.3.0-beta.1', '1.0-alpha', 'dev-1.2.0-x'].map(channelOf), ['stable', 'beta', 'beta', 'dev'])
+  })
+
+  it('offers the next stable versions, finishing a pre-release first', () => {
+    assert.deepEqual(stableCandidates('1.2.3'), ['1.2.4', '1.3.0', '2.0.0'])
+    assert.deepEqual(stableCandidates('1.3.0-beta.2'), ['1.3.0', '1.3.1', '1.4.0', '2.0.0'])
+  })
+
+  it('offers the next beta: the next number of a running beta, or a first beta of the next versions', () => {
+    assert.deepEqual(betaCandidates('1.3.0-beta.2'), ['1.3.0-beta.3'])
+    assert.deepEqual(betaCandidates('1.2.3'), ['1.2.4-beta.1', '1.3.0-beta.1', '2.0.0-beta.1'])
+  })
+
+  it('reads the branch of a development build', () => {
+    assert.equal(devBuildBranch('dev-1.2.0-feature-x'), 'feature-x')
+    assert.equal(devBuildBranch('dev-3fb3ed8'), null)
   })
 })

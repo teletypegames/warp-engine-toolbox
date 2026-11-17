@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+Release channels (needs WarpEngine 4.0 on the host).
+
+- **Release…** asks for the channel first: **stable** (finishing a running beta, or the next
+  patch, minor, major) or **beta** (`1.3.0-beta.1`, then the next beta number).
+- **This branch** in the project panel: the development build of the branch you are on, with
+  its play link; a notification when a push has built it; **Copy Link** on every link.
+- Releases show their channel; development builds stay out of the release list.
+
 ## 1.0.1
 
 - **Release…** fetches the tags from the remote before writing the changelog: a tag the

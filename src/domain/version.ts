@@ -33,3 +33,35 @@ export function compareVersions(left: string, right: string): number {
 export function isDevVersion(version: string): boolean {
   return version.startsWith('dev-')
 }
+
+export type Channel = 'stable' | 'beta' | 'dev'
+
+const PRE_RELEASE = /^(\d+\.\d+\.\d+)-(?:alpha|beta|rc)\.?(\d+)$/i
+
+export function channelOf(version: string): Channel {
+  if (version.startsWith('dev-')) return 'dev'
+  return /^\d+(\.\d+)*-/.test(version.replace(/^v/, '')) ? 'beta' : 'stable'
+}
+
+export function baseVersion(version: string): string {
+  return version.replace(/^v/, '').replace(/-.*$/, '')
+}
+
+export function stableCandidates(current: string): string[] {
+  const clean: string = current.replace(/^v/, '')
+  const base: string = isDevVersion(clean) ? '0.0.0' : baseVersion(clean)
+  const bumps: string[] = (['patch', 'minor', 'major'] as const).map((bump: Bump) => bumpVersion(base, bump))
+  return channelOf(clean) === 'beta' ? [base, ...bumps.filter((version: string) => version !== base)] : bumps
+}
+
+export function betaCandidates(current: string): string[] {
+  const clean: string = current.replace(/^v/, '')
+  const match: RegExpExecArray | null = PRE_RELEASE.exec(clean)
+  if (match?.[1] && match[2]) return [`${match[1]}-beta.${String(Number(match[2]) + 1)}`]
+  const base: string = isDevVersion(clean) ? '0.0.0' : baseVersion(clean)
+  return (['patch', 'minor', 'major'] as const).map((bump: Bump) => `${bumpVersion(base, bump)}-beta.1`)
+}
+
+export function devBuildBranch(version: string): string | null {
+  return /^dev-\d+(?:\.\d+)*-(.+)$/.exec(version)?.[1] ?? null
+}

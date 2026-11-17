@@ -22,6 +22,11 @@ export class Git {
     return result.code === 0 ? result.stdout.trim() : null
   }
 
+  public async defaultBranch(): Promise<string | null> {
+    const result: RunResult = await run('git', ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'], this.cwd)
+    return result.code === 0 ? result.stdout.trim().replace(/^origin\//, '') : null
+  }
+
   public async isClean(): Promise<boolean> {
     return (await runOrThrow('git', ['status', '--porcelain'], this.cwd)).trim() === ''
   }

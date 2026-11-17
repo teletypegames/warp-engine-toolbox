@@ -49,9 +49,17 @@ export function projectRoots(hosts: Hosts, projects: Projects, states: RemoteSta
         }))
       }))
     }
+    if (state.branch && state.defaultBranch && state.branch !== state.defaultBranch) {
+      const build: Release | null = state.branchBuild
+      nodes.push(new Node('This branch', {
+        description: build ? `${state.branch} · ${build.version}` : `${state.branch} · no build yet (push it)`,
+        icon: 'git-branch', tooltip: 'The development build of this branch: not listed in the catalog, playable by its link',
+        ...(build ? { command: openUrl(hosts.client().playUrl(project.name, build.version)), context: 'link branchbuild' } : {})
+      }))
+    }
     nodes.push(new Node('Releases', {
-      description: String(state.releases.length), icon: 'versions', expanded: true,
-      load: (): Node[] => state.releases.slice(0, 15).map((item: Release) => releaseNode(hosts, project, item))
+      description: String(state.releases.filter((item: Release) => !item.version.startsWith('dev-')).length), icon: 'versions', expanded: true,
+      load: (): Node[] => state.releases.filter((item: Release) => !item.version.startsWith('dev-')).slice(0, 15).map((item: Release) => releaseNode(hosts, project, item))
     }))
     return nodes
   }
@@ -59,8 +67,9 @@ export function projectRoots(hosts: Hosts, projects: Projects, states: RemoteSta
 
 export function releaseNode(hosts: Hosts, project: Project, release: Release): Node {
   const missing: number = project.platform ? checklist(project.platform, release.assets).filter((entry) => entry.state === 'missing').length : 0
+  const channel: string = release.channel && release.channel !== 'stable' ? `${release.channel} · ` : ''
   return new Node(release.version, {
-    description: `${String(release.assets.length)} assets${missing > 0 ? ` · ${String(missing)} missing` : ''}${release.commitSha ? ` · ${release.commitSha.slice(0, 7)}` : ''}`,
+    description: `${channel}${String(release.assets.length)} assets${missing > 0 ? ` · ${String(missing)} missing` : ''}${release.commitSha ? ` · ${release.commitSha.slice(0, 7)}` : ''}`,
     icon: missing > 0 ? 'warning' : 'package', context: 'release link', data: { release, project },
     ...(hosts.current() ? { command: openUrl(hosts.client().playUrl(project.name, release.version)) } : {}),
     load: (): Node[] => [

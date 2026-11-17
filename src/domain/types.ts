@@ -61,9 +61,11 @@ export interface Release {
   readonly id: number
   readonly softwareId: number
   readonly version: string
+  readonly channel?: 'stable' | 'beta' | 'dev'
   readonly commitSha: string | null
   readonly assets: readonly ReleaseAsset[]
   readonly createdAt: string | null
+  readonly updatedAt?: string | null
 }
 
 export interface ExternalLink {

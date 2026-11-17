@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import type { Pipeline, PipelineRun, Release, Software } from '../domain/types'
+import { devBuildBranch } from '../domain/version'
 import { Git } from '../infrastructure/git'
 import type { WarpEngineClient } from '../infrastructure/warpEngineClient'
 import type { WarpEngineAuth } from './auth'
@@ -15,6 +16,8 @@ export interface RemoteState {
   readonly releases: readonly Release[]
   readonly head: string | null
   readonly branch: string | null
+  readonly defaultBranch: string | null
+  readonly branchBuild: Release | null
   readonly error: string | null
 }
 
@@ -29,6 +32,9 @@ export class RemoteStates implements vscode.Disposable {
   private timer: NodeJS.Timeout | undefined
   private pollingSince = 0
   private loading: Promise<void> | null = null
+  private readonly announced = new Set<string>()
+  private readonly built: vscode.EventEmitter<RemoteState> = new vscode.EventEmitter<RemoteState>()
+  public readonly onDidBuildBranch: vscode.Event<RemoteState> = this.built.event
 
   public constructor(private readonly auth: WarpEngineAuth, private readonly projects: Projects) {}
 
@@ -54,6 +60,7 @@ export class RemoteStates implements vscode.Disposable {
   public dispose(): void {
     if (this.timer) clearTimeout(this.timer)
     this.changed.dispose()
+    this.built.dispose()
   }
 
   private async load(): Promise<void> {
@@ -66,8 +73,9 @@ export class RemoteStates implements vscode.Disposable {
     const git: Git = new Git(project.folder.uri.fsPath)
     const head: string | null = await git.head()
     const branch: string | null = await git.branch()
+    const defaultBranch: string | null = await git.defaultBranch()
     const client: WarpEngineClient | null = await this.auth.client(false)
-    const empty: RemoteState = { project, signedIn: client !== null, software: null, pipeline: null, runs: [], headRun: null, releases: [], head, branch, error: null }
+    const empty: RemoteState = { project, signedIn: client !== null, software: null, pipeline: null, runs: [], headRun: null, releases: [], head, branch, defaultBranch, branchBuild: null, error: null }
     if (!client) {
       this.publish(empty)
       return
@@ -80,7 +88,17 @@ export class RemoteStates implements vscode.Disposable {
       const runs: PipelineRun[] = pipeline ? await client.runs(pipeline.id).catch((): PipelineRun[] => []) : []
       const headRun: PipelineRun | null = runs.find((run: PipelineRun) => run.commit !== null && run.commit === head) ?? null
       const releases: Release[] = software ? await client.releases(software.id).catch((): Release[] => []) : []
-      this.publish({ ...empty, software, pipeline, runs, headRun, releases })
+      const devBranch: string | null = branch && branch !== (defaultBranch ?? 'master') && branch !== 'HEAD' ? branch.replace(/\//g, '-') : null
+      const branchBuild: Release | null = devBranch
+        ? releases.find((release: Release) => release.version.startsWith('dev-') && devBuildBranch(release.version) === devBranch) ?? null
+        : null
+      const state: RemoteState = { ...empty, software, pipeline, runs, headRun, releases, branchBuild }
+      this.publish(state)
+      if (branchBuild) {
+        const key = `${String(branchBuild.id)}@${branchBuild.updatedAt ?? branchBuild.createdAt ?? ''}`
+        if (this.pollingSince > 0 && !this.announced.has(key)) this.built.fire(state)
+        this.announced.add(key)
+      }
       const polling: boolean = Date.now() - this.pollingSince < POLL_LIMIT_MS
       if (polling && (headRun === null ? this.pollingSince > 0 : this.isRunning(headRun))) {
         this.timer = setTimeout(() => { void this.refresh() }, POLL_MS)

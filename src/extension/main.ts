@@ -67,6 +67,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
     hosts.onDidChange(() => { void refreshAll() }),
     vscode.window.onDidChangeWindowState((state: vscode.WindowState) => { if (state.focused) void states.refresh() }),
     watchGit(() => { states.watch() }),
+    states.onDidBuildBranch((state) => {
+      const build = state.branchBuild
+      if (!build) return
+      const url: string = hosts.client().playUrl(state.project.name, build.version)
+      void vscode.window.showInformationMessage(`The build of ${state.branch ?? 'this branch'} is ready: ${build.version}`, 'Play', 'Copy link')
+        .then(async (answer: string | undefined) => {
+          if (answer === 'Play') await vscode.env.openExternal(vscode.Uri.parse(url))
+          if (answer === 'Copy link') await vscode.env.clipboard.writeText(url)
+        })
+    }),
 
     command('warpengine.newGame', async () => { await newGame(hosts, platforms) }),
     command('warpengine.addToProject', async () => { await addToProject(hosts, platforms, projects, auth) }),
@@ -106,6 +116,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
     command('warpengine.openUrl', async (target?: string | Node) => {
       const url: string | undefined = typeof target === 'string' ? target : linkOf(target)
       if (url) await vscode.env.openExternal(vscode.Uri.parse(url))
+    }),
+    command('warpengine.copyLink', async (target?: string | Node) => {
+      const url: string | undefined = typeof target === 'string' ? target : linkOf(target)
+      if (!url) return
+      await vscode.env.clipboard.writeText(url)
+      void vscode.window.setStatusBarMessage(`Copied ${url}`, 4000)
     }),
     command('warpengine.triggerPipeline', async (node?: Node) => {
       const client = await auth.client(true)
