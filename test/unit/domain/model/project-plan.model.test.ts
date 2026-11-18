@@ -67,6 +67,15 @@ describe('ProjectPlan', () => {
     assert.equal(find(plan, 'src/about.txt')?.transform, 'fill')
   })
 
+  it('leaves the template-only files out when a demo comes along', () => {
+    const manifest = { files: { 'hello/main.js': 'main.js', 'example-tasks.json': '.vscode/tasks.json' }, templateOnly: ['hello/main.js'] }
+    const alone: string[] = new ProjectPlan({ platform: C64, answers: ANSWERS, host: 'https://h', templateFiles: [], manifest, demoFiles: [] }).list().map((file: PlannedFile) => file.target)
+    const withDemo: string[] = new ProjectPlan({ platform: C64, answers: ANSWERS, host: 'https://h', templateFiles: [], manifest, demoFiles: ['src/app.ts'] }).list().map((file: PlannedFile) => file.target)
+    assert.ok(alone.includes('main.js'))
+    assert.ok(!withDemo.includes('main.js'))
+    assert.ok(withDemo.includes('.vscode/tasks.json'))
+  })
+
   it('names the project in the Makefile and lists its targets', () => {
     assert.equal(new Makefile('PROJECT = example\nall: build\n').withProject('rabbit'), 'PROJECT = rabbit\nall: build\n')
     assert.equal(new Makefile('PROJECT ?= x\n').withProject('rabbit'), 'PROJECT ?= rabbit\n')

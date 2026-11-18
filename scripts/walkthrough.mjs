@@ -49,9 +49,11 @@ async function waitForRelease(version) {
   console.log(`  ok  the CI published ${name} ${version}`)
 }
 
+const [firstVersion, nextVersion] = (process.env.WALK_VERSIONS ?? '0.1.0,0.1.1').split(',')
+
 await phase('new', parent)
 await phase('connect', join(parent, name))
-await waitForRelease('0.1.0')
+await waitForRelease(firstVersion)
 await phase('release', join(parent, name))
-await waitForRelease('0.1.1')
+await waitForRelease(nextVersion)
 console.log(`walkthrough: ${name} went from New Game to two published releases`)

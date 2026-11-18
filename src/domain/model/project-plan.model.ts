@@ -19,6 +19,7 @@ export interface TemplateManifest {
   readonly fill?: readonly string[]
   readonly json?: Readonly<Record<string, JsonEdits>>
   readonly keep?: readonly string[]
+  readonly templateOnly?: readonly string[]
 }
 
 export interface PlanInput {
@@ -66,8 +67,9 @@ export class ProjectPlan {
       ? Object.entries(manifest)
       : this.input.templateFiles.map((file: string) => [file, ProjectPlan.exampleTarget(file)])
     const rules: ManifestRules = new ManifestRules(this.input.manifest)
+    const withDemo: boolean = this.input.demoFiles.length > 0
     for (const [from, to] of pairs) {
-      if (to) this.copy('template', from, to.replaceAll(NAME_PLACEHOLDER, this.input.answers.name), rules)
+      if (to && !(withDemo && rules.isTemplateOnly(from))) this.copy('template', from, to.replaceAll(NAME_PLACEHOLDER, this.input.answers.name), rules)
     }
   }
 
@@ -113,16 +115,23 @@ class ManifestRules {
   private readonly keep: ReadonlySet<string>
   private readonly fill: ReadonlySet<string>
   private readonly json: Readonly<Record<string, JsonEdits>>
+  private readonly templateOnly: ReadonlySet<string>
 
   public constructor(manifest: TemplateManifest | null) {
-    this.keep = new Set(manifest?.keep ?? [])
-    this.fill = new Set(manifest?.fill ?? [])
-    this.json = manifest?.json ?? {}
+    const rules: TemplateManifest = manifest ?? {}
+    this.templateOnly = new Set(rules.templateOnly ?? [])
+    this.keep = new Set(rules.keep ?? [])
+    this.fill = new Set(rules.fill ?? [])
+    this.json = rules.json ?? {}
   }
 
   public takesDemoFile(file: string): boolean {
     if (file === TEMPLATE_MANIFEST) return false
     return this.keep.has(file) || !DEMO_SKIPPED.some((pattern: RegExp) => pattern.test(file))
+  }
+
+  public isTemplateOnly(path: string): boolean {
+    return this.templateOnly.has(path)
   }
 
   public fills(path: string): boolean {

@@ -45,7 +45,8 @@ A template repository can say exactly what a new game gets in a `warp-template.j
 game's name. The files under `fill` get the placeholders replaced in their content: `{name}`,
 `{title}`, `{author}`, `{description}` and `{catalogUrl}` (the address of the host the toolbox is
 connected to). `json` sets fields of a JSON file by dotted path, with the placeholders filled in
-the values. Without a manifest the template's top-level `example-*` files are taken
+the values. `templateOnly` lists the template files a project gets only when it starts without
+the demo (the Hello World the demo replaces). Without a manifest the template's top-level `example-*` files are taken
 (`example-makefile.make` → `Makefile`).
 
 A demo repository may carry a `warp-template.json` too, for the demo's own files: `fill`, `json`,

@@ -11,6 +11,9 @@
   `json` and `keep` (files a demo copy otherwise leaves out, such as its `LICENSE`). This is how
   *New Game* on the `electron` platform (WarpEngine 4.3) starts a studio's own store client from
   the WarpEngine Client, pointing at the connected catalog.
+- **Template-only files**: `templateOnly` in a template's `warp-template.json` lists the files a
+  new project gets only without the demo, so a demo with a different layout is not mixed with
+  the template's Hello World.
 - **Release… writes the version where the platform keeps it**: a platform whose description names
   a version file (`version.file`, WarpEngine 4.3.1; `package.json` for `electron`) gets the new
   version there, so the tag matches what the CI reads.
