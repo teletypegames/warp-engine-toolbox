@@ -26,5 +26,15 @@ export const TIC80_DESCRIPTION: PlatformDescription = {
   tooling: {}
 }
 
+export const ELECTRON_DESCRIPTION: PlatformDescription = {
+  ...C64_DESCRIPTION,
+  name: 'electron',
+  label: 'Electron',
+  version: { source: 'command', command: "sed -n 's/version//p' package.json", file: 'package.json' },
+  web: [],
+  tooling: {}
+}
+
 export const C64: Platform = new Platform(C64_DESCRIPTION)
+export const ELECTRON: Platform = new Platform(ELECTRON_DESCRIPTION)
 export const TIC80: Platform = new Platform(TIC80_DESCRIPTION)

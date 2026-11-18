@@ -15,6 +15,7 @@ export class Platform {
   public get metadataFile(): string { return this.description.metadata.file ?? DEFAULT_METADATA }
   public get versionCommand(): string | null { return this.description.version.command }
   public get versionFromCommand(): boolean { return this.description.version.source === 'command' }
+  public get versionFile(): string | null { return this.description.version.file ?? null }
   public get builder(): string | null { return this.description.ci.builder }
   public get markerFile(): string { return this.description.ci.marker?.file ?? DEFAULT_MARKER }
   public get releaseRule(): string | null { return this.description.releaseRule }

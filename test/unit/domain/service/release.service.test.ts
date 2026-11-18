@@ -7,7 +7,7 @@ import type { ConnectionService } from '../../../../src/domain/service/connectio
 import type { ProjectService } from '../../../../src/domain/service/project.service'
 import { ReleaseService } from '../../../../src/domain/service/release.service'
 import { FakeGitFactory, MemoryFiles } from '../../fakes'
-import { C64 } from '../../fixtures'
+import { C64, ELECTRON } from '../../fixtures'
 
 const METADATA = '/games/rabbit/metadata.json'
 
@@ -46,5 +46,17 @@ describe('ReleaseService', () => {
     assert.match(files.files.get(METADATA) ?? '', /"version": "0.2.0"/)
     assert.match(files.files.get('/games/rabbit/CHANGELOG.md') ?? '', /^# Changelog\n\n## 0\.2\.0 — \d{4}-\d{2}-\d{2}\n\n- Faster rabbit \(abcdef1\)\n/)
     assert.deepEqual(git.git.calls, ['fetch', 'add', 'commit Release 0.2.0', 'tag v0.2.0', 'push origin HEAD v0.2.0'])
+  })
+
+  it('writes the version where the platform reads it, keeping the other fields in place', async () => {
+    const pkg = '/apps/store/package.json'
+    const files: MemoryFiles = new MemoryFiles({ [pkg]: '{\n  "name": "store",\n  "version": "3.4.0",\n  "main": "main.js"\n}\n' })
+    const electron: Project = new Project({
+      folder: '/apps/store', folderName: 'store', markerPath: '/apps/store/.woodpecker.yaml', marker: Marker.parse('platform: electron\n'),
+      platform: ELECTRON, metadataPath: '/apps/store/metadata.json', metadataFormat: 'json', metadata: Metadata.parse('{"name":"store"}', 'json')
+    })
+    await service(files, new FakeGitFactory()).release({ project: electron, version: '3.5.0', report: () => undefined })
+    assert.equal(files.files.get(pkg), '{\n  "name": "store",\n  "version": "3.5.0",\n  "main": "main.js"\n}\n')
+    assert.equal(files.files.get('/apps/store/metadata.json'), undefined)
   })
 })

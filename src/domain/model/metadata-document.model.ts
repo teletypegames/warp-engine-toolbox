@@ -13,6 +13,13 @@ export class MetadataDocument {
     return Metadata.stringify(values)
   }
 
+  public static jsonWithVersion(text: string, version: string): string {
+    const values: MetadataValues | null = MetadataDocument.parseObject(text)
+    if (!values) throw new DomainError(msg('The version file is not valid JSON; fix it in the text editor first.'))
+    values['version'] = version
+    return `${JSON.stringify(values, null, 2)}\n`
+  }
+
   public withRepository(url: string): string | null {
     if (this.format === 'lua') return LuaHeader.parse(this.text).with('site', url)
     if (this.format !== 'json') return null

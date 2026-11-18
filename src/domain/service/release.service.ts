@@ -72,6 +72,12 @@ export class ReleaseService {
   }
 
   private async writeVersion(project: Project, version: string): Promise<void> {
+    const versionFile: string | null = project.platform?.versionFile ?? null
+    if (versionFile) {
+      const path: string = FilePath.join(project.folder, versionFile)
+      await this.files.writeText(path, MetadataDocument.jsonWithVersion((await this.files.readText(path)) ?? '{}', version))
+      return
+    }
     if (!project.metadataPath) return
     const text: string = (await this.files.readText(project.metadataPath)) ?? ''
     await this.files.writeText(project.metadataPath, new MetadataDocument(text, project.metadataFormat).withVersion(version))

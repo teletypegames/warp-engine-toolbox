@@ -28,7 +28,7 @@ export interface PlatformDescription {
   readonly label: string
   readonly kinds: readonly KindDescription[]
   readonly metadata: { readonly format: MetadataFormat; readonly file: string | null; readonly keys: readonly string[] }
-  readonly version: { readonly source: 'metadata' | 'command'; readonly command: string | null }
+  readonly version: { readonly source: 'metadata' | 'command'; readonly command: string | null; readonly file?: string | null }
   readonly releaseRule: string | null
   readonly web: readonly WebBindingDescription[]
   readonly ci: {

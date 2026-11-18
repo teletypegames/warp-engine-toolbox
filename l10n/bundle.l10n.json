@@ -135,6 +135,7 @@
   "The sign-in was denied.": "The sign-in was denied.",
   "The software and repository name: lower-case letters, digits and dashes": "The software and repository name: lower-case letters, digits and dashes",
   "The software name when it differs from the repository name": "The software name when it differs from the repository name",
+  "The version file is not valid JSON; fix it in the text editor first.": "The version file is not valid JSON; fix it in the text editor first.",
   "The WarpEngine platform that builds this repository": "The WarpEngine platform that builds this repository",
   "the web build": "the web build",
   "The working copy has changes.": "The working copy has changes.",

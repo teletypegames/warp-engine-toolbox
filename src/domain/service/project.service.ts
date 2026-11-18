@@ -39,10 +39,19 @@ export class ProjectService {
 
   public async version(project: Project): Promise<string | null> {
     if (!project.platform?.versionFromCommand) return project.metadata.text('version')
+    const versionFile: string | null = project.platform.versionFile
+    if (versionFile) return this.fileVersion(FilePath.join(project.folder, versionFile))
     const command: string | null = project.platform.versionCommand
     if (!command) return null
     const result: ShellResult = await this.shell.run(command, project.folder)
     return result.code === 0 && result.stdout.trim() ? result.stdout.trim() : null
+  }
+
+  private async fileVersion(path: string): Promise<string | null> {
+    const text: string | null = await this.files.readText(path)
+    if (text === null) return null
+    const version: unknown = Metadata.parseJson(text)?.['version']
+    return typeof version === 'string' && version.trim() ? version.trim() : null
   }
 
   private async project(folder: ProjectFolder, markerPath: string, marker: Marker): Promise<Project> {

@@ -167,5 +167,6 @@
   "Where should the {0} folder go?": "Hová kerüljön a(z) {0} mappa?",
   "Writing the project…": "A projekt kiírása…",
   "writing the version and the changelog…": "a verzió és a changelog kiírása…",
-  "yes": "igen"
+  "yes": "igen",
+  "The version file is not valid JSON; fix it in the text editor first.": "A verziófájl nem érvényes JSON; előbb javítsd a szövegszerkesztőben."
 }
