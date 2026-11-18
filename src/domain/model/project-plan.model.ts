@@ -1,5 +1,6 @@
 import type { GameAnswers } from './game-answers.model'
 import { Marker } from './marker.model'
+import type { JsonEdits } from './placeholders.model'
 import type { Platform } from './platform.model'
 import { ProjectFiles } from './project-files.model'
 
@@ -9,12 +10,15 @@ export interface PlannedFile {
   readonly target: string
   readonly source: { readonly root: PlanRoot; readonly path: string } | null
   readonly content: string | null
-  readonly transform: 'makefile' | 'fill' | null
+  readonly transform: 'makefile' | 'fill' | 'json' | null
+  readonly edits?: JsonEdits
 }
 
 export interface TemplateManifest {
   readonly files?: Readonly<Record<string, string>>
   readonly fill?: readonly string[]
+  readonly json?: Readonly<Record<string, JsonEdits>>
+  readonly keep?: readonly string[]
 }
 
 export interface PlanInput {
@@ -23,6 +27,7 @@ export interface PlanInput {
   readonly templateFiles: readonly string[]
   readonly manifest: TemplateManifest | null
   readonly demoFiles: readonly string[]
+  readonly demoManifest?: TemplateManifest | null
   readonly host: string
 }
 
@@ -33,6 +38,7 @@ const GENERATED_EXAMPLES: ReadonlySet<string> = new Set(['woodpecker.yaml', 'git
 const EXAMPLE_TARGETS: Readonly<Record<string, string>> = { 'makefile.make': 'Makefile', 'tasks.json': '.vscode/tasks.json', 'launch.json': '.vscode/launch.json' }
 const EXAMPLE_PREFIX = 'example-'
 export const NAME_PLACEHOLDER = '{name}'
+export const TEMPLATE_MANIFEST = 'warp-template.json'
 
 export class ProjectPlan {
   private readonly files: Map<string, PlannedFile> = new Map<string, PlannedFile>()
@@ -59,15 +65,16 @@ export class ProjectPlan {
     const pairs: [string, string | null][] = manifest
       ? Object.entries(manifest)
       : this.input.templateFiles.map((file: string) => [file, ProjectPlan.exampleTarget(file)])
-    const fill: ReadonlySet<string> = new Set(this.input.manifest?.fill ?? [])
+    const rules: ManifestRules = new ManifestRules(this.input.manifest)
     for (const [from, to] of pairs) {
-      if (to) this.copy('template', from, to.replaceAll(NAME_PLACEHOLDER, this.input.answers.name), fill.has(from))
+      if (to) this.copy('template', from, to.replaceAll(NAME_PLACEHOLDER, this.input.answers.name), rules)
     }
   }
 
   private addDemo(): void {
+    const rules: ManifestRules = new ManifestRules(this.input.demoManifest ?? null)
     for (const file of this.input.demoFiles) {
-      if (!DEMO_SKIPPED.some((pattern: RegExp) => pattern.test(file))) this.copy('demo', file, file)
+      if (rules.takesDemoFile(file)) this.copy('demo', file, file, rules)
     }
   }
 
@@ -91,12 +98,38 @@ export class ProjectPlan {
     return `${this.input.host.replace(/\/$/, '')}/build/config?platform=${this.input.platform.name}`
   }
 
-  private copy(root: 'template' | 'demo', path: string, target: string, fill: boolean = false): void {
-    const transform: PlannedFile['transform'] = target === 'Makefile' ? 'makefile' : fill ? 'fill' : null
-    this.files.set(target, { target, source: { root, path }, content: null, transform })
+  private copy(root: PlanRoot, path: string, target: string, rules: ManifestRules): void {
+    const edits: JsonEdits | undefined = rules.edits(path)
+    const transform: PlannedFile['transform'] = edits ? 'json' : target === 'Makefile' ? 'makefile' : rules.fills(path) ? 'fill' : null
+    this.files.set(target, { target, source: { root, path }, content: null, transform, ...(edits ? { edits } : {}) })
   }
 
   private write(target: string, content: string): void {
     this.files.set(target, { target, source: null, content, transform: null })
+  }
+}
+
+class ManifestRules {
+  private readonly keep: ReadonlySet<string>
+  private readonly fill: ReadonlySet<string>
+  private readonly json: Readonly<Record<string, JsonEdits>>
+
+  public constructor(manifest: TemplateManifest | null) {
+    this.keep = new Set(manifest?.keep ?? [])
+    this.fill = new Set(manifest?.fill ?? [])
+    this.json = manifest?.json ?? {}
+  }
+
+  public takesDemoFile(file: string): boolean {
+    if (file === TEMPLATE_MANIFEST) return false
+    return this.keep.has(file) || !DEMO_SKIPPED.some((pattern: RegExp) => pattern.test(file))
+  }
+
+  public fills(path: string): boolean {
+    return this.fill.has(path)
+  }
+
+  public edits(path: string): JsonEdits | undefined {
+    return this.json[path]
   }
 }

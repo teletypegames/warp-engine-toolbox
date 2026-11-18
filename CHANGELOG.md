@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0
+
+- **More placeholders**: `{title}`, `{author}`, `{description}` and `{catalogUrl}` (the connected
+  host's address) beside `{name}`, in the files a `warp-template.json` lists under `fill`.
+- **JSON fields set by path**: `json` in a `warp-template.json` sets fields of a JSON file
+  (`"warpEngine.brand.name": "{title}"`), so a project keeps working values in its own repository
+  and a new one gets them rewritten.
+- **Demos can have a manifest too**: a demo repository's own `warp-template.json` takes `fill`,
+  `json` and `keep` (files a demo copy otherwise leaves out, such as its `LICENSE`). This is how
+  *New Game* on the `electron` platform (WarpEngine 4.3) starts a studio's own store client from
+  the WarpEngine Client, pointing at the connected catalog.
+
 ## 1.2.0
 
 - **Platform Documentation**: a book button on the platform in the project panel (and a

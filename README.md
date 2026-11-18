@@ -42,8 +42,29 @@ A template repository can say exactly what a new game gets in a `warp-template.j
 ```
 
 `files` maps a template path to its place in the project; `{name}` in a target becomes the
-game's name, and the files under `fill` get `{name}` replaced in their content. Without it the
-template's top-level `example-*` files are taken (`example-makefile.make` → `Makefile`).
+game's name. The files under `fill` get the placeholders replaced in their content: `{name}`,
+`{title}`, `{author}`, `{description}` and `{catalogUrl}` (the address of the host the toolbox is
+connected to). `json` sets fields of a JSON file by dotted path, with the placeholders filled in
+the values. Without a manifest the template's top-level `example-*` files are taken
+(`example-makefile.make` → `Makefile`).
+
+A demo repository may carry a `warp-template.json` too, for the demo's own files: `fill`, `json`,
+and `keep` for files a demo copy otherwise leaves out (its `LICENSE`, `README`, CI and
+`metadata.json`). The demo keeps working values in its own repository; the new project gets them
+rewritten. The WarpEngine Client is the `electron` platform's demo this way:
+
+```json
+{
+  "keep": ["LICENSE"],
+  "json": {
+    "package.json": {
+      "name": "{name}",
+      "warpEngine.brand": { "name": "{title}", "catalogUrl": "{catalogUrl}" },
+      "warpEngine.registryUrl": "{catalogUrl}/api/stores"
+    }
+  }
+}
+```
 
 Everything a platform needs — what it publishes, where its metadata and version live, how it
 plays on the web, its builder image, template and documentation — comes from the host

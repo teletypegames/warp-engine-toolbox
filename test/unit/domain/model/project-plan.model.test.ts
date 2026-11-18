@@ -52,6 +52,21 @@ describe('ProjectPlan', () => {
     assert.equal(find(plan, 'Makefile')?.transform, 'makefile')
   })
 
+  it('follows a demo manifest: keeps what it names, edits JSON, fills, and leaves itself out', () => {
+    const demoManifest = { keep: ['LICENSE'], fill: ['src/about.txt'], json: { 'package.json': { 'warpEngine.brand.name': '{title}' } } }
+    const plan: PlannedFile[] = new ProjectPlan({
+      platform: C64, answers: ANSWERS, host: 'https://h', templateFiles: [], manifest: null,
+      demoFiles: ['LICENSE', 'README.md', 'package.json', 'src/about.txt', 'warp-template.json'], demoManifest
+    }).list()
+    const targets: string[] = plan.map((file: PlannedFile) => file.target)
+    assert.ok(targets.includes('LICENSE'))
+    assert.ok(!targets.includes('warp-template.json'))
+    assert.equal(find(plan, 'README.md')?.source, null)
+    assert.equal(find(plan, 'package.json')?.transform, 'json')
+    assert.deepEqual(find(plan, 'package.json')?.edits, { 'warpEngine.brand.name': '{title}' })
+    assert.equal(find(plan, 'src/about.txt')?.transform, 'fill')
+  })
+
   it('names the project in the Makefile and lists its targets', () => {
     assert.equal(new Makefile('PROJECT = example\nall: build\n').withProject('rabbit'), 'PROJECT = rabbit\nall: build\n')
     assert.equal(new Makefile('PROJECT ?= x\n').withProject('rabbit'), 'PROJECT ?= rabbit\n')
