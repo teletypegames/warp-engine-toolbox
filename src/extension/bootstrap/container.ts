@@ -100,19 +100,18 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const remote: Pick<Services, 'remoteState' | 'play' | 'signIn' | 'catalog' | 'pipelines' | 'preview'> = remoteServices(context, infrastructure, connection)
   const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new DiscoveryHttpRepository(), hosts, local: localEngine, signIn: remote.signIn })
   const localCi: LocalCiService = new LocalCiService({ gateway: new WarpEngineHttpGateway(), local: localEngine, sourceControl: infrastructure.git })
-  const localHost = (): boolean => localEngine.isLocal(hosts.current()?.url ?? '')
   return {
-    hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects, localHost), ...remote,
+    hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remote,
     images: new ImageService(connection), sync, localCi
   }
 }
 
-function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService, localHost: () => boolean): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {
+function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {
   const { files, git } = infrastructure
   return {
     scaffold: new ScaffoldService(new TarTemplateRepository(), files, git),
     connect: new ConnectService(connection, git, files),
-    release: new ReleaseService({ sourceControl: git, files, connection, projects, localHost }),
+    release: new ReleaseService({ sourceControl: git, files, connection, projects }),
     publishCheck: new PublishCheckService(connection, projects),
     make: new MakeService(files)
   }

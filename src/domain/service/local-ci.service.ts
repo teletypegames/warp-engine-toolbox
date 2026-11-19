@@ -1,5 +1,5 @@
 import type { ScaffoldResult, Software } from '../model/catalog.model'
-import { LocalCi, type LocalCiSetup, type LocalComponent, type LocalCredentials, type LocalOperation, type OperationStep } from '../model/local-ci.model'
+import { LocalCi, type LocalCiSetup, type LocalComponent, type LocalOperation, type OperationStep } from '../model/local-ci.model'
 import type { LocalEngine } from '../model/local-engine.model'
 import { DomainError, msg, type Message } from '../model/message.model'
 import type { Project } from '../model/project.model'
@@ -37,17 +37,6 @@ export class LocalCiService {
     return (await this.repository()).components()
   }
 
-  public async run(action: 'enable' | 'disable' | 'remove' | 'purge', key: string, report: Report): Promise<LocalOperation> {
-    const repository: LocalComponentRepository = await this.repository()
-    const started: LocalOperation = action === 'enable' ? await repository.enable(key)
-      : action === 'disable' ? await repository.disable(key) : await repository.remove(key, action === 'purge')
-    return this.follow(started, report)
-  }
-
-  public async credentials(key: string): Promise<LocalCredentials> {
-    return (await this.repository()).credentials(key)
-  }
-
   public async follow(started: LocalOperation, report: Report): Promise<LocalOperation> {
     const repository: LocalComponentRepository = await this.repository()
     const deadline: number = Date.now() + LIMIT_MS
@@ -67,9 +56,12 @@ export class LocalCiService {
 
   public async setUp(project: Project, report: Report): Promise<LocalCiSetup> {
     const admin: AdminRepositories = await this.admin()
+    if (!LocalCi.ready(await admin.local.components())) {
+      throw new DomainError(msg('The local CI is not running: run the local engine\'s installer again and answer yes to "Local CI" (or --ci on).'))
+    }
     report(msg('finding {0} in the local catalog…', project.name))
     const software: Software = (await admin.catalog.softwareByName(project.name)) ?? (await this.scaffold(admin, project)).software
-    report(msg('starting the git server and the CI, and connecting {0}…', project.name))
+    report(msg('connecting {0} to the local git server and CI…', project.name))
     const done: LocalOperation = await this.follow(await admin.local.setUpCi(software.id), report)
     const setup: LocalCiSetup | null = LocalCi.setupOf(done)
     if (!setup) throw new DomainError(msg('The local engine sent no push address.'))

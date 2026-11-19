@@ -1,7 +1,8 @@
 import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
 import type { ScaffoldRequest, ScaffoldResult, Software } from '../../../../src/domain/model/catalog.model'
-import { LocalCi, type LocalComponent, type LocalCredentials, type LocalOperation } from '../../../../src/domain/model/local-ci.model'
+import { GitRemotes } from '../../../../src/domain/model/git-remote.model'
+import type { LocalComponent, LocalOperation } from '../../../../src/domain/model/local-ci.model'
 import type { WellKnown } from '../../../../src/domain/model/local-engine.model'
 import { Marker } from '../../../../src/domain/model/marker.model'
 import { DomainError, type Message } from '../../../../src/domain/model/message.model'
@@ -21,6 +22,10 @@ import { C64 } from '../../fixtures'
 const LOCAL = 'http://127.0.0.1:7470'
 const PUSH = 'http://warp:tok@localhost:7471/games/rabbit.git'
 
+function component(key: string, state: LocalComponent['state']): LocalComponent {
+  return { key, label: key, role: key === 'gitea' ? 'forge' : 'ci', requires: [], description: '', state, message: null }
+}
+
 function operation(state: LocalOperation['state'], steps: string[], result: Record<string, unknown> | null = null, error: string | null = null): LocalOperation {
   return { id: 3, kind: 'local_ci', target: '1', state, steps: steps.map((text: string) => ({ at: '', text })), result, error }
 }
@@ -28,11 +33,8 @@ function operation(state: LocalOperation['state'], steps: string[], result: Reco
 class Components implements LocalComponentRepository {
   public polls: LocalOperation[] = []
   public setUpFor: number[] = []
-  public async components(): Promise<LocalComponent[]> { return Promise.resolve([]) }
-  public async enable(): Promise<LocalOperation> { return Promise.resolve(operation('queued', [])) }
-  public async disable(): Promise<LocalOperation> { return Promise.resolve(operation('queued', [])) }
-  public async remove(): Promise<LocalOperation> { return Promise.resolve(operation('queued', [])) }
-  public async credentials(): Promise<LocalCredentials> { return Promise.resolve({ url: '', user: '', password: '' }) }
+  public states: LocalComponent[] = [component('gitea', 'ready'), component('woodpecker', 'ready')]
+  public async components(): Promise<LocalComponent[]> { return Promise.resolve(this.states) }
   public async operation(): Promise<LocalOperation> {
     const next: LocalOperation | undefined = this.polls.shift()
     return next ? Promise.resolve(next) : Promise.reject(new Error('no more polls'))
@@ -69,10 +71,10 @@ async function world(known: Software | null): Promise<{ service: LocalCiService,
 }
 
 describe('LocalCiService', () => {
-  it('follows the operation, reports its steps once, and pushes to the warp remote', async () => {
+  it('follows the operation, reports its steps once, and pushes to the wplocal remote', async () => {
     const { service, components, git, scaffolded } = await world({ id: 4, name: 'rabbit' } as Software)
     components.polls = [operation('running', ['queued', 'start warp-local-gitea']),
-                        operation('succeeded', ['queued', 'start warp-local-gitea', 'let warp push'], { pushUrl: PUSH, remoteName: 'warp', warnings: [] })]
+                        operation('succeeded', ['queued', 'start warp-local-gitea', 'let warp push'], { pushUrl: PUSH, remoteName: 'wplocal', warnings: [] })]
     const reported: string[] = []
 
     const setup = await service.setUp(project(), (message: Message) => { reported.push(String(message.args[0] ?? message.text)) })
@@ -81,8 +83,8 @@ describe('LocalCiService', () => {
     assert.deepEqual(scaffolded, [])
     assert.equal(setup.pushUrl, PUSH)
     assert.deepEqual(reported.filter((text: string) => ['queued', 'start warp-local-gitea', 'let warp push'].includes(text)), ['queued', 'start warp-local-gitea', 'let warp push'])
-    assert.equal(git.git.remotes.get('warp'), PUSH)
-    assert.ok(git.git.calls.includes('push -u warp master'), git.git.calls.join(', '))
+    assert.equal(git.git.named.get('wplocal'), PUSH)
+    assert.ok(git.git.calls.includes('push -u wplocal master'), git.git.calls.join(', '))
   })
 
   it('puts a project the local catalog does not know there first', async () => {
@@ -102,26 +104,26 @@ describe('LocalCiService', () => {
     await assert.rejects(service.setUp(project(), () => undefined), (error: unknown) => error instanceof DomainError && error.message.includes('no Docker socket'))
   })
 
-  it('offers what fits a component\'s state', () => {
-    const component = (state: LocalComponent['state']): LocalComponent => ({ key: 'gitea', label: 'Git', role: 'forge', requires: [], description: '', state, message: null })
-    assert.deepEqual(LocalCi.actions(component('off')), ['enable'])
-    assert.deepEqual(LocalCi.actions(component('ready')), ['disable', 'remove'])
-    assert.deepEqual(LocalCi.actions(component('unavailable')), [])
+  it('asks for the installer when the local CI is not running', async () => {
+    const { service, components } = await world({ id: 4, name: 'rabbit' } as Software)
+    components.states = [component('gitea', 'ready'), component('woodpecker', 'off')]
+
+    await assert.rejects(service.setUp(project(), () => undefined), (error: unknown) => error instanceof DomainError && error.message.includes('--ci on'))
+    assert.deepEqual(components.setUpFor, [])
   })
 })
 
-describe('ReleaseService on a local engine', () => {
-  it('pushes the tag to the warp remote when the local engine is the host', async () => {
+describe('ReleaseService remotes', () => {
+  it('lists the remotes a release can go to, and is unconnected without one', async () => {
     const git: FakeGitFactory = new FakeGitFactory()
-    git.git.remotes.set('warp', PUSH)
-    let local = true
+    git.git.named.set('wplocal', PUSH)
     const releases: ReleaseService = new ReleaseService({ sourceControl: git, files: new MemoryFiles(), connection: Object.create(null) as ConnectionService,
-                                                          projects: Object.create(null) as ProjectService, localHost: () => local })
+                                                          projects: Object.create(null) as ProjectService })
 
-    assert.equal(await releases.pushRemote(git.git), 'warp')
-    local = false
-    assert.equal(await releases.pushRemote(git.git), 'origin')
+    assert.deepEqual((await releases.remotes(project())).map((remote) => remote.name), ['origin', 'wplocal'])
+    assert.equal(GitRemotes.display(PUSH), 'http://localhost:7471/games/rabbit.git')
     git.git.origin = null
-    assert.equal(await releases.pushRemote(git.git), null)
+    git.git.named.clear()
+    assert.equal(await releases.readiness(project()), 'unconnected')
   })
 })

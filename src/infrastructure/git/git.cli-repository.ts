@@ -1,5 +1,6 @@
 import { homedir } from 'node:os'
 import type { Commit } from '../../domain/model/commit.model'
+import type { GitRemote } from '../../domain/model/git-remote.model'
 import type { ShellResult } from '../../domain/repository/shell.repository'
 import type { SourceControl, SourceControlFactory } from '../../domain/repository/source-control.repository'
 import { ProcessRunner } from '../process/process.runner'
@@ -48,6 +49,13 @@ export class GitCliRepository implements SourceControl {
   }
 
   public async remoteUrl(name: string): Promise<string | null> { return this.answer(['remote', 'get-url', name]) }
+
+  public async remotes(): Promise<GitRemote[]> {
+    const names: string[] = ((await this.answer(['remote'])) ?? '').split('\n').map((name: string) => name.trim()).filter(Boolean)
+    const remotes: GitRemote[] = []
+    for (const name of names) remotes.push({ name, url: (await this.remoteUrl(name)) ?? '' })
+    return remotes
+  }
 
   public async setRemoteUrl(name: string, url: string): Promise<void> {
     await this.must((await this.remoteUrl(name)) ? ['remote', 'set-url', name, url] : ['remote', 'add', name, url])

@@ -1,4 +1,5 @@
 import type { Commit } from '../model/commit.model'
+import type { GitRemote } from '../model/git-remote.model'
 
 export interface SourceControl {
   isRepository(): Promise<boolean>
@@ -8,6 +9,7 @@ export interface SourceControl {
   isClean(): Promise<boolean>
   remote(): Promise<string | null>
   remoteUrl(name: string): Promise<string | null>
+  remotes(): Promise<GitRemote[]>
   setRemoteUrl(name: string, url: string): Promise<void>
   hasCommits(): Promise<boolean>
   fetchTags(): Promise<void>

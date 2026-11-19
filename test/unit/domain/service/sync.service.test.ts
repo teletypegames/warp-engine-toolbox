@@ -16,7 +16,7 @@ import { SignInService } from '../../../../src/domain/service/sign-in.service'
 import { SyncService } from '../../../../src/domain/service/sync.service'
 
 const LOCAL = 'http://127.0.0.1:7470'
-const REMOTE = 'https://orbit.example'
+const REMOTE = 'https://games.example.org'
 const SANDBOX = 'http://localhost:8081'
 
 function wellKnown(profile: 'local' | 'server', inbound: boolean, features: string[] = ['pairing']): WellKnown {
@@ -71,7 +71,7 @@ interface World {
 
 async function world(sessions: Session[] = [{ id: 's', host: REMOTE, token: 'remote-session', label: 'me', scopes: ['admin:write'] }]): Promise<World> {
   const repository: MemoryHosts = new MemoryHosts()
-  repository.hosts = [{ name: 'orbit.example', url: REMOTE }, { name: 'old.example', url: 'https://old.example' }, { name: 'sandbox', url: SANDBOX }]
+  repository.hosts = [{ name: 'games.example.org', url: REMOTE }, { name: 'old.example', url: 'https://old.example' }, { name: 'sandbox', url: SANDBOX }]
   const hosts: HostService = new HostService(repository)
   const answers: Record<string, WellKnown> = { [LOCAL]: wellKnown('local', false), [REMOTE]: wellKnown('server', true), [SANDBOX]: wellKnown('server', true),
                                                'https://old.example': wellKnown('server', true, []) }
@@ -107,7 +107,7 @@ describe('SyncService', () => {
   it('pairs on the remote engine, then adds the outbound peer here with its token, the channels and the way back', async () => {
     const { service, peers, pairings, tokens } = await world()
 
-    const paired = await service.pair({ name: 'Orbit', url: REMOTE }, ['stable'], 'laptop local')
+    const paired = await service.pair({ name: 'Studio', url: REMOTE }, ['stable'], 'laptop local')
 
     assert.deepEqual(pairings.paired, ['laptop local'])
     assert.equal(tokens[REMOTE], 'remote-session')
@@ -124,14 +124,14 @@ describe('SyncService', () => {
   it('reaches an engine on this machine from the container through host.docker.internal', () => {
     assert.equal(SyncLink.fromContainer('http://localhost:8081/'), 'http://host.docker.internal:8081')
     assert.equal(SyncLink.fromContainer('http://127.0.0.1:8081'), 'http://host.docker.internal:8081')
-    assert.equal(SyncLink.fromContainer('https://orbit.example'), 'https://orbit.example')
+    assert.equal(SyncLink.fromContainer('https://games.example.org'), 'https://games.example.org')
   })
 
   it('undoes the remote pairing when the local engine refuses the peer', async () => {
     const { service, peers, pairings } = await world()
     peers.failCreate = true
 
-    await assert.rejects(service.pair({ name: 'Orbit', url: REMOTE }, ['stable'], 'laptop'), /local refused/)
+    await assert.rejects(service.pair({ name: 'Studio', url: REMOTE }, ['stable'], 'laptop'), /local refused/)
     assert.deepEqual(pairings.unpaired, [7])
   })
 
@@ -139,14 +139,14 @@ describe('SyncService', () => {
     const { service } = await world()
 
     await assert.rejects(service.pair({ name: 'sandbox', url: SANDBOX }, ['stable'], 'x'), DomainError)
-    await assert.rejects(service.pair({ name: 'Orbit', url: REMOTE }, [], 'x'), DomainError)
-    await service.pair({ name: 'Orbit', url: REMOTE }, ['stable'], 'x')
-    await assert.rejects(service.pair({ name: 'Orbit', url: REMOTE }, ['stable'], 'x'), DomainError)
+    await assert.rejects(service.pair({ name: 'Studio', url: REMOTE }, [], 'x'), DomainError)
+    await service.pair({ name: 'Studio', url: REMOTE }, ['stable'], 'x')
+    await assert.rejects(service.pair({ name: 'Studio', url: REMOTE }, ['stable'], 'x'), DomainError)
   })
 
   it('disconnects here and removes the pairing there', async () => {
     const { service, peers, pairings } = await world()
-    const paired = await service.pair({ name: 'Orbit', url: REMOTE }, ['stable', 'beta'], 'x')
+    const paired = await service.pair({ name: 'Studio', url: REMOTE }, ['stable', 'beta'], 'x')
 
     assert.equal(await service.disconnect(paired.link), true)
     assert.deepEqual(peers.list, [])

@@ -26,12 +26,6 @@ export interface LocalOperation {
   readonly error: string | null
 }
 
-export interface LocalCredentials {
-  readonly url: string
-  readonly user: string
-  readonly password: string
-}
-
 export interface LocalCiSetup {
   readonly pushUrl: string
   readonly remoteName: string
@@ -40,15 +34,10 @@ export interface LocalCiSetup {
 }
 
 export class LocalCi {
-  public static readonly REMOTE: string = 'warp'
+  public static readonly REMOTE: string = 'wplocal'
 
   public static finished(operation: LocalOperation): boolean {
     return operation.state === 'succeeded' || operation.state === 'failed'
-  }
-
-  private static readonly ACTIONS: Readonly<Record<ComponentState, readonly ('enable' | 'disable' | 'remove')[]>> = {
-    unavailable: [], off: ['enable'], ready: ['disable', 'remove'], starting: ['disable', 'remove'],
-    stopped: ['enable', 'remove'], failed: ['enable', 'remove']
   }
 
   public static setupOf(operation: LocalOperation): LocalCiSetup | null {
@@ -61,8 +50,8 @@ export class LocalCi {
     }
   }
 
-  public static actions(component: LocalComponent): readonly ('enable' | 'disable' | 'remove')[] {
-    return LocalCi.ACTIONS[component.state]
+  public static ready(components: readonly LocalComponent[]): boolean {
+    return components.length > 0 && components.every((component: LocalComponent) => component.state === 'ready')
   }
 
   private static text(value: unknown): string | null {

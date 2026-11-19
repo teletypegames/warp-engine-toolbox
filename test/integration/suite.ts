@@ -53,11 +53,11 @@ async function runLocalCi(api: ToolboxApi): Promise<void> {
     assert.deepEqual(keys, ['gitea', 'woodpecker'])
   })
 
-  await step('sets the project up on the local CI and pushes it to the warp remote', async () => {
+  await step('sets the project up on the local CI and pushes it to the wplocal remote', async () => {
     const steps: string[] = []
     const setup = await api.localCi.setUp(api.projects.require(), (message) => { steps.push(String(message.args[0] ?? message.text)) })
     assert.match(setup.pushUrl, /^http:\/\/warp:[^@]+@localhost:\d+\/games\/rabbit\.git$/)
-    assert.equal(setup.remoteName, 'warp')
+    assert.equal(setup.remoteName, 'wplocal')
     assert.ok(steps.some((text) => text.includes('let warp push')), steps.join(' | '))
   })
 }

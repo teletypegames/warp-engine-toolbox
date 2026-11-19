@@ -42,7 +42,7 @@ describe('ReleaseService', () => {
   it('writes the version and the changelog, then commits, tags and pushes', async () => {
     const files: MemoryFiles = new MemoryFiles({ [METADATA]: '{"name":"rabbit","version":"0.1.0"}' })
     const git: FakeGitFactory = new FakeGitFactory()
-    await service(files, git).release({ project: project(), version: '0.2.0', report: () => undefined })
+    await service(files, git).release({ project: project(), version: '0.2.0', remote: 'origin', report: () => undefined })
     assert.match(files.files.get(METADATA) ?? '', /"version": "0.2.0"/)
     assert.match(files.files.get('/games/rabbit/CHANGELOG.md') ?? '', /^# Changelog\n\n## 0\.2\.0 — \d{4}-\d{2}-\d{2}\n\n- Faster rabbit \(abcdef1\)\n/)
     assert.deepEqual(git.git.calls, ['fetch', 'add', 'commit Release 0.2.0', 'tag v0.2.0', 'push origin HEAD v0.2.0'])
@@ -55,7 +55,7 @@ describe('ReleaseService', () => {
       folder: '/apps/store', folderName: 'store', markerPath: '/apps/store/.woodpecker.yaml', marker: Marker.parse('platform: electron\n'),
       platform: ELECTRON, metadataPath: '/apps/store/metadata.json', metadataFormat: 'json', metadata: Metadata.parse('{"name":"store"}', 'json')
     })
-    await service(files, new FakeGitFactory()).release({ project: electron, version: '3.5.0', report: () => undefined })
+    await service(files, new FakeGitFactory()).release({ project: electron, version: '3.5.0', remote: 'origin', report: () => undefined })
     assert.equal(files.files.get(pkg), '{\n  "name": "store",\n  "version": "3.5.0",\n  "main": "main.js"\n}\n')
     assert.equal(files.files.get('/apps/store/metadata.json'), undefined)
   })

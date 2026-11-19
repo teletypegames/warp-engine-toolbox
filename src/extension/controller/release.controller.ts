@@ -1,3 +1,4 @@
+import { GitRemotes, type GitRemote } from '../../domain/model/git-remote.model'
 import { Version } from '../../domain/model/version.model'
 import type { Project } from '../../domain/model/project.model'
 import type { PublishProblem } from '../../domain/model/publish-check.model'
@@ -17,7 +18,9 @@ export class ReleaseController {
     if (!(await this.ready(project))) return
     const version: string | null = await this.askVersion(project)
     if (!version || !(await this.verified(project, version))) return
-    await Dialogs.progress(t('WarpEngine: releasing {0} {1}', project.name, version), async (report) => { await this.service.release({ project, version, report }) })
+    const remote: string | undefined = await this.askRemote(project, version)
+    if (!remote) return
+    await Dialogs.progress(t('WarpEngine: releasing {0} {1}', project.name, version), async (report) => { await this.service.release({ project, version, remote, report }) })
     this.states.watch()
     Dialogs.info(t('v{0} is pushed; the pipeline builds and publishes it. Its state shows in the status bar.', version))
   }
@@ -45,6 +48,13 @@ export class ReleaseController {
     if (picked === undefined) return null
     const version: string | undefined = picked ?? await this.askCustom(candidates[0] ?? '1.0.0')
     return version ? version.replace(/^v/, '') : null
+  }
+
+  private async askRemote(project: Project, version: string): Promise<string | undefined> {
+    const remotes: GitRemote[] = await this.service.remotes(project)
+    if (remotes.length === 1) return remotes[0]?.name
+    return Dialogs.pick(remotes.map((remote: GitRemote) => ({ label: remote.name, description: GitRemotes.display(remote.url), value: remote.name })),
+                        { title: t('Release {0} {1} to', project.name, version), placeHolder: t('The git remote whose CI builds and publishes the tag') })
   }
 
   private async askKind(project: Project, current: string): Promise<ReleaseKind | undefined> {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.7.0
+
+- **The local CI is the installer's business**: the *Local CI* view and its Start / Stop /
+  Remove are gone. The local engine's installer asks whether the git server and the CI run
+  (`--ci on|off`); **Set Up Local CI** uses them and says so when they are off.
+- **`wplocal`**: Set Up Local CI adds the `wplocal` remote to the repository open in VS Code
+  (WarpEngine 5.5.1).
+- **Release to**: *Release…* asks which git remote the tag goes to when there are several, the
+  push token hidden in the list.
+- The Sync texts name no catalog: another WarpEngine instance, e.g. `https://games.example.org`.
+
 ## 1.6.0
 
 - **Set Up Local CI**: on a local engine (WarpEngine 5.4, warp-engine-local 1.2) one button gives

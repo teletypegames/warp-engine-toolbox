@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "%description%",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",
@@ -235,30 +235,6 @@
         "title": "%command.setupLocalCi%",
         "category": "WarpEngine",
         "icon": "$(server-environment)"
-      },
-      {
-        "command": "warpengine.localCiEnable",
-        "title": "%command.localCiEnable%",
-        "category": "WarpEngine",
-        "icon": "$(play)"
-      },
-      {
-        "command": "warpengine.localCiDisable",
-        "title": "%command.localCiDisable%",
-        "category": "WarpEngine",
-        "icon": "$(debug-stop)"
-      },
-      {
-        "command": "warpengine.localCiRemove",
-        "title": "%command.localCiRemove%",
-        "category": "WarpEngine",
-        "icon": "$(trash)"
-      },
-      {
-        "command": "warpengine.localCiOpen",
-        "title": "%command.localCiOpen%",
-        "category": "WarpEngine",
-        "icon": "$(link-external)"
       }
     ],
     "menus": {
@@ -270,7 +246,7 @@
         },
         {
           "command": "warpengine.refresh",
-          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync || view == warpengine.localCi",
+          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync",
           "group": "navigation@9"
         },
         {
@@ -369,26 +345,6 @@
           "command": "warpengine.imageRemove",
           "when": "viewItem =~ /image\\b/",
           "group": "2_danger@1"
-        },
-        {
-          "command": "warpengine.localCiEnable",
-          "when": "viewItem =~ /^component\\b.*\\benable\\b/",
-          "group": "inline"
-        },
-        {
-          "command": "warpengine.localCiDisable",
-          "when": "viewItem =~ /^component\\b.*\\bdisable\\b/",
-          "group": "inline"
-        },
-        {
-          "command": "warpengine.localCiOpen",
-          "when": "viewItem =~ /^component\\b.*\\bopen\\b/",
-          "group": "inline"
-        },
-        {
-          "command": "warpengine.localCiRemove",
-          "when": "viewItem =~ /^component\\b.*\\bremove\\b/",
-          "group": "2_danger@1"
         }
       ],
       "commandPalette": [
@@ -461,22 +417,6 @@
           "when": "warpengine.localEngine"
         },
         {
-          "command": "warpengine.localCiEnable",
-          "when": "false"
-        },
-        {
-          "command": "warpengine.localCiDisable",
-          "when": "false"
-        },
-        {
-          "command": "warpengine.localCiRemove",
-          "when": "false"
-        },
-        {
-          "command": "warpengine.localCiOpen",
-          "when": "false"
-        },
-        {
           "command": "warpengine.setupLocalCi",
           "when": "warpengine.localEngine"
         }
@@ -511,10 +451,6 @@
         {
           "id": "warpengine.sync",
           "name": "%view.sync%"
-        },
-        {
-          "id": "warpengine.localCi",
-          "name": "%view.localCi%"
         }
       ]
     },
@@ -542,11 +478,6 @@
         "view": "warpengine.sync",
         "contents": "%welcome.sync.pair%",
         "when": "warpengine.localEngine && !warpengine.syncing"
-      },
-      {
-        "view": "warpengine.localCi",
-        "contents": "%welcome.localCi%",
-        "when": "!warpengine.localEngine"
       }
     ],
     "authentication": [

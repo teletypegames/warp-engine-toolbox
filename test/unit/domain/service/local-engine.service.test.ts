@@ -11,7 +11,7 @@ import { LocalEngineService } from '../../../../src/domain/service/local-engine.
 
 function wellKnown(profile: 'local' | 'server'): WellKnown {
   return { engine: 'warp-engine', version: '5.2.0', api: 2, name: 'Local', profile, signIn: ['token-file'], adminApi: '/api/admin/v1',
-           admin: false, sync: { inbound: false, target: 'https://orbit.example' } }
+           admin: false, sync: { inbound: false, target: 'https://games.example.org' } }
 }
 
 class MemoryHosts implements HostRepository {
@@ -49,7 +49,7 @@ describe('LocalEngineService', () => {
 
     assert.ok(found)
     assert.deepEqual(probe.probed, ['http://127.0.0.1:7470'])
-    assert.equal(found.syncTarget, 'https://orbit.example')
+    assert.equal(found.syncTarget, 'https://games.example.org')
     assert.equal(repository.url, 'http://127.0.0.1:7470')
     assert.deepEqual(hosts.choices().map((host: Host) => host.name), ['Local (5.2.0)'])
     assert.ok(service.isLocal('http://127.0.0.1:7470'))
