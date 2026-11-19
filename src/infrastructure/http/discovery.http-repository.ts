@@ -4,7 +4,7 @@ import type { DiscoveryRepository } from '../../domain/repository/discovery.repo
 const PROBE_TIMEOUT_MS = 1500
 const PATH = '/.well-known/warp-engine'
 
-export class DiscoveryHttpRepository implements DiscoveryRepository {
+export class HttpDiscoveryRepository implements DiscoveryRepository {
   public async probe(url: string): Promise<WellKnown | null> {
     try {
       const response: Response = await fetch(`${url.replace(/\/+$/, '')}${PATH}`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) })

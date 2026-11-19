@@ -1,6 +1,4 @@
 import * as vscode from 'vscode'
-import { WarpEngineAuthProvider } from '../auth/warp-engine.auth-provider'
-import { HostController } from '../controller/host.controller'
 import { MakeTaskProvider } from '../language/make.task-provider'
 import { McpProvider } from '../language/mcp.provider'
 import { MetadataSchemaProvider } from '../language/metadata-schema.provider'
@@ -13,16 +11,8 @@ import { ProjectTreeView } from '../view/tree/project.tree-view'
 import { ServersTreeView } from '../view/tree/servers.tree-view'
 import { SyncTreeView } from '../view/tree/sync.tree-view'
 import { TreeProvider } from '../view/tree/tree.provider'
-import { ProjectRegistry } from '../workspace/project.registry'
-import { RemoteStateStore } from '../workspace/remote-state.store'
 import type { Services } from './container'
-
-export interface Workspace {
-  readonly projects: ProjectRegistry
-  readonly states: RemoteStateStore
-  readonly hostController: HostController
-  readonly auth: WarpEngineAuthProvider
-}
+import type { Workspace } from './workspace.factory'
 
 export interface Views {
   readonly projectTree: TreeProvider
@@ -35,16 +25,6 @@ export interface Views {
   readonly player: PlayPanel
   readonly reports: ReportView
   readonly mcp: McpProvider
-}
-
-export function createWorkspace(services: Services): Workspace {
-  const projects: ProjectRegistry = new ProjectRegistry(services.projects)
-  const hostController: HostController = new HostController(services.hosts)
-  return {
-    projects, hostController,
-    states: new RemoteStateStore(services.remoteState, projects),
-    auth: new WarpEngineAuthProvider(services.hosts, hostController, services.signIn, services.localEngine)
-  }
 }
 
 export function createViews(context: vscode.ExtensionContext, services: Services, workspace: Workspace): Views {

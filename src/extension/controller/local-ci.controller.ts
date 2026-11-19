@@ -2,7 +2,6 @@ import type * as vscode from 'vscode'
 import type { LocalCiSetup } from '../../domain/model/local-ci.model'
 import type { Project } from '../../domain/model/project.model'
 import type { RemoteState } from '../../domain/model/remote-state.model'
-import type { HostService } from '../../domain/service/host.service'
 import type { LocalCiService } from '../../domain/service/local-ci.service'
 import { Dialogs } from '../ui/dialogs'
 import { errorText, t } from '../ui/l10n'
@@ -12,7 +11,6 @@ import type { RemoteStateStore } from '../workspace/remote-state.store'
 
 export interface LocalCiDependencies {
   readonly localCi: LocalCiService
-  readonly hosts: HostService
   readonly memory: vscode.Memento
   readonly projects: ProjectRegistry
   readonly states: RemoteStateStore
@@ -27,7 +25,7 @@ export class LocalCiController {
   public constructor(private readonly deps: LocalCiDependencies) {}
 
   public async offer(state: RemoteState | null): Promise<void> {
-    if (!state || !(await this.shouldAsk(state))) return
+    if (!state || !(await this.deps.localCi.offerable(state, [...this.offered, ...this.declined()]))) return
     const name: string = state.project.name
     this.offered.add(name)
     const setUp: string = t('Set up')
@@ -46,13 +44,6 @@ export class LocalCiController {
     this.deps.states.watch()
     const warnings: string = setup.warnings.length > 0 ? ` ${setup.warnings.join('; ')}` : ''
     Dialogs.info(t('{0} builds on the local CI now: pushed to the "{1}" remote. Release… can tag it there.{2}', project.title, setup.remoteName, warnings))
-  }
-
-  private async shouldAsk(state: RemoteState): Promise<boolean> {
-    if (!this.deps.localCi.needsSetUp(state, this.deps.hosts.current()?.url ?? null)) return false
-    const name: string = state.project.name
-    if (this.offered.has(name) || this.declined().includes(name)) return false
-    return this.deps.localCi.ready()
   }
 
   private declined(): string[] {

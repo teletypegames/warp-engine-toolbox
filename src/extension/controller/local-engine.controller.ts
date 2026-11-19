@@ -40,7 +40,7 @@ export class LocalEngineController {
   }
 
   private async connect(found: LocalEngine): Promise<void> {
-    if (this.announced === found.url || this.deps.hosts.current()?.url !== found.url) return
+    if (this.announced === found.url || !this.deps.local.isCurrentHost()) return
     if ((await this.deps.connection.token(false)) !== null) return
     this.announced = found.url
     const connect: string = t('Connect')

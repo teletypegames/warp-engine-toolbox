@@ -44,6 +44,14 @@ export class SyncService {
     }))
   }
 
+  public async pairableTargets(): Promise<SyncTarget[]> {
+    return (await this.targets()).filter((target: SyncTarget) => target.pairable)
+  }
+
+  public async isSignedInTo(host: Host): Promise<boolean> {
+    return (await this.targets()).some((target: SyncTarget) => target.host.url === host.url && target.signedIn)
+  }
+
   public async links(): Promise<SyncLink[]> {
     if (!this.deps.local.current()) return []
     return (await (await this.localPeers()).peers())

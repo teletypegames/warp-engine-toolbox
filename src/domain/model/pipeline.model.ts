@@ -21,10 +21,12 @@ export interface PipelineRun {
 
 const RUNNING: ReadonlySet<string> = new Set(['pending', 'running', 'created', 'blocked', 'started'])
 
-export function isRunning(run: PipelineRun | null): boolean {
-  return run !== null && RUNNING.has(run.status)
-}
+export class PipelineRuns {
+  public static isRunning(run: PipelineRun | null): boolean {
+    return run !== null && RUNNING.has(run.status)
+  }
 
-export function isSuccess(run: PipelineRun): boolean {
-  return run.status === 'success'
+  public static isSuccess(run: PipelineRun): boolean {
+    return run.status === 'success'
+  }
 }

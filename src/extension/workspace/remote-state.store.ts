@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import type { Release } from '../../domain/model/catalog.model'
-import { isRunning } from '../../domain/model/pipeline.model'
+import { PipelineRuns } from '../../domain/model/pipeline.model'
 import type { Project } from '../../domain/model/project.model'
 import type { RemoteState } from '../../domain/model/remote-state.model'
 import type { RemoteStateService } from '../../domain/service/remote-state.service'
@@ -62,7 +62,7 @@ export class RemoteStateStore implements vscode.Disposable {
 
   private schedule(state: RemoteState): void {
     const polling: boolean = Date.now() - this.pollingSince < POLL_LIMIT_MS
-    const waiting: boolean = state.headRun === null ? this.pollingSince > 0 : isRunning(state.headRun)
+    const waiting: boolean = state.headRun === null ? this.pollingSince > 0 : PipelineRuns.isRunning(state.headRun)
     if (polling && waiting) this.timer = setTimeout(() => { void this.refresh() }, POLL_MS)
     else this.pollingSince = 0
   }

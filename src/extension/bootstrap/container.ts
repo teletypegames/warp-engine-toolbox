@@ -23,15 +23,15 @@ import { ServerService } from '../../domain/service/server.service'
 import { SignInService } from '../../domain/service/sign-in.service'
 import { SyncService } from '../../domain/service/sync.service'
 import { GitCliFactory } from '../../infrastructure/git/git.cli-repository'
-import { DiscoveryHttpRepository } from '../../infrastructure/http/discovery.http-repository'
+import { HttpDiscoveryRepository } from '../../infrastructure/http/discovery.http-repository'
 import { WarpEngineHttpGateway } from '../../infrastructure/http/warp-engine.http-gateway'
 import { PreviewServer } from '../../infrastructure/preview/preview.server'
-import { DockerContainerRuntime } from '../../infrastructure/process/container.docker-repository'
+import { DockerContainerRuntime } from '../../infrastructure/process/container-runtime.docker-repository'
 import { ProcessShellRepository } from '../../infrastructure/process/shell.process-repository'
 import { TarTemplateRepository } from '../../infrastructure/template/template.tar-repository'
 import { VsCodeFileSystemRepository } from '../../infrastructure/vscode/file-system.vscode-repository'
 import { ConfigHostRepository } from '../../infrastructure/vscode/host.config-repository'
-import { LocalEngineVsCodeRepository } from '../../infrastructure/vscode/local-engine.vscode-repository'
+import { VsCodeLocalEngineRepository } from '../../infrastructure/vscode/local-engine.vscode-repository'
 import { MementoPlatformCacheRepository } from '../../infrastructure/vscode/platform-cache.memento-repository'
 import { SecretSessionRepository } from '../../infrastructure/vscode/session.secret-repository'
 import { AuthenticationTokenRepository } from '../../infrastructure/vscode/token.authentication-repository'
@@ -100,17 +100,17 @@ interface Infrastructure {
 export function createServices(context: vscode.ExtensionContext): Services {
   const infrastructure: Infrastructure = { files: new VsCodeFileSystemRepository(), git: new GitCliFactory() }
   const hosts: HostService = new HostService(new ConfigHostRepository())
-  const localEngine: LocalEngineService = new LocalEngineService(new DiscoveryHttpRepository(), new LocalEngineVsCodeRepository(), hosts)
+  const localEngine: LocalEngineService = new LocalEngineService(new HttpDiscoveryRepository(), new VsCodeLocalEngineRepository(), hosts)
   const connection: ConnectionService = new ConnectionService(hosts, new AuthenticationTokenRepository(AUTH_PROVIDER_ID), new WarpEngineHttpGateway())
   const platforms: PlatformService = new PlatformService(hosts, connection, new MementoPlatformCacheRepository(context.globalState))
   const projects: ProjectService = new ProjectService(infrastructure.files, platforms, new ProcessShellRepository())
   const remote: Pick<Services, 'remoteState' | 'play' | 'signIn' | 'catalog' | 'pipelines' | 'preview'> = remoteServices(context, infrastructure, connection)
-  const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new DiscoveryHttpRepository(), hosts, local: localEngine, signIn: remote.signIn })
+  const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new HttpDiscoveryRepository(), hosts, local: localEngine, signIn: remote.signIn })
   const localCi: LocalCiService = new LocalCiService({ gateway: new WarpEngineHttpGateway(), local: localEngine, sourceControl: infrastructure.git })
   return {
     hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remote,
     images: new ImageService(connection), sync, localCi,
-    servers: new ServerService(new DockerContainerRuntime(dockerBinary)), hostInfo: new HostInfoService(new DiscoveryHttpRepository(), hosts)
+    servers: new ServerService(new DockerContainerRuntime(dockerBinary)), hostInfo: new HostInfoService(new HttpDiscoveryRepository(), hosts)
   }
 }
 

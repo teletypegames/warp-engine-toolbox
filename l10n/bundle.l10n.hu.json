@@ -48,7 +48,6 @@
   "Disconnect": "Leválasztás",
   "Disconnected from {0}.": "Leválasztva: {0}.",
   "Disconnected here; sign in to {0} to remove the pairing there too, or leave it: its token no longer has a sender.": "Itt leválasztva; jelentkezz be ide: {0}, hogy ott is megszűnjön a párosítás, vagy hagyd: a tokenjét már senki sem használja.",
-  "does not take syncs": "nem fogad szinkront",
   "downloads": "letöltések",
   "engine": "motor",
   "error": "hiba",

@@ -7,10 +7,10 @@ import type { Project } from '../../domain/model/project.model'
 import type { HostService } from '../../domain/service/host.service'
 import type { ScaffoldService, WriteResult } from '../../domain/service/scaffold.service'
 import { Dialogs } from '../ui/dialogs'
+import type { GameAnswersDialog } from '../ui/game-answers.dialog'
 import { t } from '../ui/l10n'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { ConnectController } from './connect.controller'
-import type { GameAnswersDialog } from './game-answers.dialog'
 import type { HostController } from './host.controller'
 
 interface NewGame {

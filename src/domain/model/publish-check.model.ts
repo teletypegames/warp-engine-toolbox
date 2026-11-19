@@ -11,6 +11,8 @@ export interface PublishCheck {
   readonly problems: readonly PublishProblem[]
 }
 
-export function publishErrors(check: PublishCheck | null): PublishProblem[] {
-  return check?.problems.filter((problem: PublishProblem) => problem.level === 'error') ?? []
+export class PublishChecks {
+  public static errors(check: PublishCheck | null): PublishProblem[] {
+    return check?.problems.filter((problem: PublishProblem) => problem.level === 'error') ?? []
+  }
 }

@@ -65,12 +65,10 @@ export class SyncController {
   }
 
   private async chooseTarget(): Promise<Host | undefined> {
-    const targets: SyncTarget[] = await Dialogs.progress(t('Looking at the engines you know…'), async () => this.deps.sync.targets())
+    const targets: SyncTarget[] = await Dialogs.progress(t('Looking at the engines you know…'), async () => this.deps.sync.pairableTargets())
     const items: PickItem<string>[] = targets.map((target: SyncTarget) => ({
-      label: target.host.name, value: target.host.url,
-      description: target.pairable ? (target.signedIn ? t('signed in') : t('needs a sign-in')) : t('does not take syncs'),
-      detail: target.host.url
-    })).filter((item: PickItem<string>) => targets.find((target: SyncTarget) => target.host.url === item.value)?.pairable)
+      label: target.host.name, value: target.host.url, description: target.signedIn ? t('signed in') : t('needs a sign-in'), detail: target.host.url
+    }))
     items.push({ label: `$(add) ${t('Another engine…')}`, value: ADD_ENGINE })
     const picked: string | undefined = await Dialogs.pick(items, { placeHolder: t('Where should this engine\'s releases go?') })
     if (picked !== ADD_ENGINE) return targets.find((target: SyncTarget) => target.host.url === picked)?.host
@@ -80,7 +78,7 @@ export class SyncController {
   }
 
   private async ensureSignedIn(target: Host): Promise<boolean> {
-    if ((await this.deps.sync.targets()).some((item: SyncTarget) => item.host.url === target.url && item.signedIn)) return true
+    if (await this.deps.sync.isSignedInTo(target)) return true
     const signIn: string = t('Sign in')
     if ((await Dialogs.ask(t('Pairing needs a sign-in to {0}. Sign in now? The Toolbox switches to it and back.', target.name), signIn)) !== signIn) return false
     const back: Host | null = this.deps.hosts.current()
@@ -90,7 +88,7 @@ export class SyncController {
     } finally {
       if (back) await this.deps.hosts.select(back.url)
     }
-    return (await this.deps.sync.targets()).some((item: SyncTarget) => item.host.url === target.url && item.signedIn)
+    return this.deps.sync.isSignedInTo(target)
   }
 
   private async reportPaired(target: Host, paired: Paired): Promise<void> {

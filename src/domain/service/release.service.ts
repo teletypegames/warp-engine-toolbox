@@ -5,7 +5,7 @@ import { msg, type Message } from '../model/message.model'
 import { MetadataDocument } from '../model/metadata-document.model'
 import { FilePath } from '../model/path.model'
 import type { Project } from '../model/project.model'
-import { publishErrors, type PublishCheck, type PublishProblem } from '../model/publish-check.model'
+import { PublishChecks, type PublishCheck, type PublishProblem } from '../model/publish-check.model'
 import { Version } from '../model/version.model'
 import type { FileSystemRepository } from '../repository/file-system.repository'
 import type { SourceControl, SourceControlFactory } from '../repository/source-control.repository'
@@ -70,7 +70,7 @@ export class ReleaseService {
     const metadata = { ...project.metadata.values, version }
     const check: PublishCheck | null = await this.connection.build()
       .check({ platform: project.platformName, metadata, version }).catch(() => null)
-    return publishErrors(check)
+    return PublishChecks.errors(check)
   }
 
   public async release(input: ReleaseInput): Promise<void> {

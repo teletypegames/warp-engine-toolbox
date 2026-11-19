@@ -21,14 +21,16 @@ export interface RemoteState extends GitPosition {
   readonly unauthorized: boolean
 }
 
-export function emptyRemoteState(project: Project, position: GitPosition, signedIn: boolean): RemoteState {
-  return { project, ...position, signedIn, software: null, pipeline: null, runs: [], headRun: null, releases: [], branchBuild: null, error: null, unauthorized: false }
-}
+export class RemoteStates {
+  public static empty(project: Project, position: GitPosition, signedIn: boolean): RemoteState {
+    return { project, ...position, signedIn, software: null, pipeline: null, runs: [], headRun: null, releases: [], branchBuild: null, error: null, unauthorized: false }
+  }
 
-export function latestRun(state: RemoteState): PipelineRun | null {
-  return state.headRun ?? state.runs[0] ?? null
-}
+  public static latestRun(state: RemoteState): PipelineRun | null {
+    return state.headRun ?? state.runs[0] ?? null
+  }
 
-export function isOnSideBranch(state: RemoteState): boolean {
-  return state.branch !== null && state.defaultBranch !== null && state.branch !== state.defaultBranch
+  public static isOnSideBranch(state: RemoteState): boolean {
+    return state.branch !== null && state.defaultBranch !== null && state.branch !== state.defaultBranch
+  }
 }

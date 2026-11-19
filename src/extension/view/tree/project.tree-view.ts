@@ -1,8 +1,8 @@
 import * as vscode from 'vscode'
-import { listedReleases, type Release } from '../../../domain/model/catalog.model'
-import { isRunning, isSuccess, type PipelineRun } from '../../../domain/model/pipeline.model'
+import { Releases, type Release } from '../../../domain/model/catalog.model'
+import { PipelineRuns, type PipelineRun } from '../../../domain/model/pipeline.model'
 import type { Project } from '../../../domain/model/project.model'
-import { isOnSideBranch, latestRun, type RemoteState } from '../../../domain/model/remote-state.model'
+import { RemoteStates, type RemoteState } from '../../../domain/model/remote-state.model'
 import type { HostInfoService } from '../../../domain/service/host-info.service'
 import type { HostService } from '../../../domain/service/host.service'
 import type { LocalEngineService } from '../../../domain/service/local-engine.service'
@@ -94,18 +94,18 @@ export class ProjectTreeView implements TreeView {
     if (!state.software) return [...nodes, ...this.connectNodes(state)]
     nodes.push(new TreeNode(t('Release…'), { description: t('bump, tag, push'), icon: 'rocket', command: { title: t('Release'), command: 'warpengine.release' } }))
     if (state.pipeline) nodes.push(this.pipelineNode(state))
-    if (isOnSideBranch(state)) nodes.push(this.branchNode(project, state))
+    if (RemoteStates.isOnSideBranch(state)) nodes.push(this.branchNode(project, state))
     nodes.push(this.releasesNode(project, state))
     return nodes
   }
 
   private connectNodes(state: RemoteState): TreeNode[] {
-    if (state.error !== null || this.local.isLocal(this.hosts.current()?.url ?? '')) return []
+    if (state.error !== null || this.local.isCurrentHost()) return []
     return [new TreeNode(t('Connect'), { description: t('repository, CI and catalog entry'), icon: 'plug', command: { title: t('Connect'), command: 'warpengine.connect' } })]
   }
 
   private pipelineNode(state: RemoteState): TreeNode {
-    const run: PipelineRun | null = latestRun(state)
+    const run: PipelineRun | null = RemoteStates.latestRun(state)
     const description: string = run ? `#${String(run.number)} ${run.status}${state.headRun ? '' : ` ${t('(not HEAD)')}`}` : t('no runs')
     return new TreeNode(t('Pipeline'), {
       description, icon: 'server-process', context: 'pipeline', data: state.pipeline, expanded: false,
@@ -122,8 +122,8 @@ export class ProjectTreeView implements TreeView {
   }
 
   private static runIcon(run: PipelineRun): string {
-    if (isSuccess(run)) return 'pass'
-    return isRunning(run) ? 'sync' : 'error'
+    if (PipelineRuns.isSuccess(run)) return 'pass'
+    return PipelineRuns.isRunning(run) ? 'sync' : 'error'
   }
 
   private branchNode(project: Project, state: RemoteState): TreeNode {
@@ -137,7 +137,7 @@ export class ProjectTreeView implements TreeView {
   }
 
   private releasesNode(project: Project, state: RemoteState): TreeNode {
-    const releases: Release[] = listedReleases(state.releases)
+    const releases: Release[] = Releases.listed(state.releases)
     return new TreeNode(t('Releases'), {
       description: String(releases.length), icon: 'versions', expanded: true,
       load: (): TreeNode[] => releases.slice(0, RELEASE_LIMIT).map((release: Release) =>

@@ -1,7 +1,6 @@
 import type * as vscode from 'vscode'
 import { CatalogController } from '../controller/catalog.controller'
 import { ConnectController } from '../controller/connect.controller'
-import { GameAnswersDialog } from '../controller/game-answers.dialog'
 import { ImageController } from '../controller/image.controller'
 import { LinkController } from '../controller/link.controller'
 import { LocalCiController } from '../controller/local-ci.controller'
@@ -13,8 +12,10 @@ import { ReleaseController } from '../controller/release.controller'
 import { ServersController } from '../controller/servers.controller'
 import { SignInController } from '../controller/sign-in.controller'
 import { SyncController } from '../controller/sync.controller'
+import { GameAnswersDialog } from '../ui/game-answers.dialog'
 import type { Controllers, Services } from './container'
-import type { Views, Workspace } from './views.factory'
+import type { Views } from './views.factory'
+import type { Workspace } from './workspace.factory'
 
 export function createControllers(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Controllers {
   const { projects, states, hostController, auth } = workspace
@@ -26,12 +27,12 @@ export function createControllers(context: vscode.ExtensionContext, services: Se
     refresh, connect, localEngine, host: hostController, link: new LinkController(),
     sync: new SyncController({ sync: services.sync, hosts: services.hosts, tree: views.syncTree }),
     images: new ImageController(services.images, views.catalogTree),
-    localCi: new LocalCiController({ localCi: services.localCi, hosts: services.hosts, memory: context.workspaceState, projects, states, tree: views.projectTree }),
-    servers: new ServersController({ servers: services.servers, hosts: services.hosts, local: services.localEngine, auth, localEngine, refresh }),
+    localCi: new LocalCiController({ localCi: services.localCi, memory: context.workspaceState, projects, states, tree: views.projectTree }),
+    servers: new ServersController({ servers: services.servers, local: services.localEngine, auth, localEngine, refresh }),
     signIn: new SignInController(services.connection, auth, refresh),
     release: new ReleaseController(services.release, projects, states),
     newGame: new NewGameController({ hosts: services.hosts, hostController, dialog, scaffold: services.scaffold, projects, connect }),
-    project: new ProjectController({ projects, pipelines: services.pipelines, tasks: views.tasks, diagnostics: views.diagnostics, player: views.player, reports: views.reports }),
+    project: new ProjectController({ projects, pipelines: services.pipelines, play: services.play, tasks: views.tasks, diagnostics: views.diagnostics, player: views.player, reports: views.reports }),
     catalog: new CatalogController({ catalog: services.catalog, pipelines: services.pipelines, projects, states, reports: views.reports, tree: views.catalogTree })
   }
 }

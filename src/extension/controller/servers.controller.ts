@@ -1,6 +1,5 @@
 import type { PurgePlan } from '../../domain/model/server.model'
 import { Servers } from '../../domain/model/server.model'
-import type { HostService } from '../../domain/service/host.service'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { ServerService } from '../../domain/service/server.service'
 import type { WarpEngineAuthProvider } from '../auth/warp-engine.auth-provider'
@@ -11,7 +10,6 @@ import type { RefreshController } from './refresh.controller'
 
 export interface ServersDependencies {
   readonly servers: ServerService
-  readonly hosts: HostService
   readonly local: LocalEngineService
   readonly auth: WarpEngineAuthProvider
   readonly localEngine: LocalEngineController
@@ -28,7 +26,7 @@ export class ServersController {
       return
     }
     if (!(await Dialogs.confirm(ServersController.question(plan), t('Purge')))) return
-    const wasCurrent: boolean = this.deps.local.isLocal(this.deps.hosts.current()?.url ?? '')
+    const wasCurrent: boolean = this.deps.local.isCurrentHost()
     await Dialogs.progress(t('Purging the local WarpEngine'), async (report) => this.deps.servers.purge(plan, report))
     if (wasCurrent) await this.deps.auth.signOut()
     await this.deps.localEngine.discover()

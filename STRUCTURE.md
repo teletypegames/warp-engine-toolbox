@@ -42,7 +42,7 @@ Nothing in the domain imports `vscode`, `node:*`, `fetch`, `infrastructure/` or
 
 | Sub-layer | Holds | May import |
 |---|---|---|
-| `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). | `model/` |
+| `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). The rules on plain data live in a class of static methods named for it in the plural (`Releases`, `PipelineRuns`, `RemoteStates`, `PublishChecks`, `Servers`), not in loose functions; `msg()`, the `Message` factory, is the one exception. | `model/` |
 | `repository/` | Ports: interfaces only, for everything outside the process — the host API, git, the project's files, the template archives, the shell, the stored sessions, the settings, the preview server. | `model/` |
 | `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
 
@@ -67,10 +67,10 @@ Infrastructure imports `domain/model` and `domain/repository`, never `domain/ser
 
 | Folder | Holds |
 |---|---|
-| `bootstrap/` | `main.ts` (`activate`/`deactivate`), `container.ts` (the composition root: the only file that creates infrastructure objects) and `toolbox.api.ts` (what `activate` returns to the tests). |
-| `command/` | The command table: command id → controller method, with one error handler. |
+| `bootstrap/` | `main.ts` (`activate`/`deactivate`, the registrations), `container.ts` (the composition root of the services: the only file that creates infrastructure objects), `workspace.factory.ts`, `views.factory.ts` and `controllers.factory.ts` (the extension objects, in that order), `events.wiring.ts` (which store event redraws which view or starts which controller flow), `disposer.ts` and `toolbox.api.ts` (what `activate` returns to the tests). |
+| `command/` | `command.table.ts`: command id → controller method; `command.registry.ts` registers the rows with one error handler. |
 | `controller/` | One class per user flow, thin: asks the user, calls services, reports. No decisions of its own — when a controller grows an `if` about the business, it moves into a service. |
-| `ui/` | Small helpers the controllers share: quick picks with values, progress, notifications with actions, the translation of a `Message`. |
+| `ui/` | Small helpers the controllers share: quick picks with values, progress, notifications with actions, the translation of a `Message`; and the multi-step questions a flow asks (`game-answers.dialog.ts`: the New Game answers). |
 | `auth/` | The VS Code authentication provider on `SignInService`. |
 | `workspace/` | Living state of the window: `ProjectRegistry` (the projects of the workspace folders, the current one), `RemoteStateStore` (polling and events), `GitWatcher`. |
 | `view/` | What is drawn: the tree views and their nodes, the status bar, the Play panel, the metadata form, the diagnostics, the report documents, the platform description. |
@@ -87,7 +87,9 @@ except `bootstrap/container.ts`.
   `release.controller.ts`, `project.tree-view.ts`, `pipeline.status-bar.ts`,
   `marker.completion-provider.ts`.
 - Classes carry their role as a suffix: `ReleaseService`, `ReleaseController`,
-  `CatalogRepository` (interface), `HttpCatalogRepository`, `ProjectTreeView`.
+  `CatalogRepository` (interface), `HttpCatalogRepository`, `ProjectTreeView`. An
+  implementation is named `<Technology><Port>`: `HttpDiscoveryRepository`,
+  `VsCodeLocalEngineRepository`, `DockerContainerRuntime`.
 - Tests mirror the source: `test/unit/domain/model/version.model.test.ts`.
 - Webview assets are real files in `media/webview/` (`metadata-form.js`,
   `metadata-form.css`, `play-toolbar.js`, `play.css`), never strings in TypeScript.
@@ -99,7 +101,7 @@ complexity 8, 4 parameters (more travel as one input object).
 
 ## A request, end to end: Release…
 
-1. `command/command.registry.ts` maps `warpengine.release` to `ReleaseController.run()`.
+1. `command/command.table.ts` maps `warpengine.release` to `ReleaseController.run()`.
 2. `ReleaseController` takes the current project from `ProjectRegistry` and asks
    `ReleaseService.readiness()`: a repository with a remote, a clean working copy, a
    version the toolbox can write. It shows what is missing, or offers to commit first.
@@ -113,7 +115,7 @@ complexity 8, 4 parameters (more travel as one input object).
 ## Adding things
 
 - **A command**: a controller method (or a new `<flow>.controller.ts`), a row in
-  `command.registry.ts`, the contribution in `package.json` with `%key%` titles, the texts
+  `command.table.ts`, the contribution in `package.json` with `%key%` titles, the texts
   in `package.nls*.json`.
 - **A host endpoint**: the method on the port in `domain/repository/`, its HTTP
   implementation in `infrastructure/http/`, then use it from a service.

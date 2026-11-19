@@ -8,7 +8,7 @@ import { Marker } from '../../../../src/domain/model/marker.model'
 import { DomainError, type Message } from '../../../../src/domain/model/message.model'
 import { Metadata } from '../../../../src/domain/model/metadata.model'
 import { Project } from '../../../../src/domain/model/project.model'
-import { emptyRemoteState, type RemoteState } from '../../../../src/domain/model/remote-state.model'
+import { RemoteStates, type RemoteState } from '../../../../src/domain/model/remote-state.model'
 import type { LocalComponentRepository } from '../../../../src/domain/repository/local-component.repository'
 import type { AdminRepositories, WarpEngineGateway } from '../../../../src/domain/repository/warp-engine.gateway'
 import type { ConnectionService } from '../../../../src/domain/service/connection.service'
@@ -50,10 +50,11 @@ function project(): Project {
   })
 }
 
-async function world(known: Software | null): Promise<{ service: LocalCiService, components: Components, git: FakeGitFactory, scaffolded: string[] }> {
+async function world(known: Software | null): Promise<{ service: LocalCiService, components: Components, git: FakeGitFactory, scaffolded: string[], host: { url: string } }> {
   const wellKnown: WellKnown = { engine: 'warp-engine', version: '5.4.0', api: 2, name: 'Local', profile: 'local', signIn: [], adminApi: '/api/admin/v1',
                                  admin: false, sync: { inbound: false, target: null } }
-  const hosts: HostService = new HostService({ configuredUrl: () => '', configuredHosts: () => [], saveUrl: async () => Promise.resolve(), saveHosts: async () => Promise.resolve() })
+  const host: { url: string } = { url: LOCAL }
+  const hosts: HostService = new HostService({ configuredUrl: () => host.url, configuredHosts: () => [], saveUrl: async () => Promise.resolve(), saveHosts: async () => Promise.resolve() })
   const local: LocalEngineService = new LocalEngineService({ probe: async (url: string) => Promise.resolve(url === LOCAL ? wellKnown : null) },
                                                            { port: async () => Promise.resolve(null), tokenFile: async () => Promise.resolve('tok'), tokenFromContainer: async () => Promise.resolve(null) }, hosts)
   await local.discover()
@@ -68,20 +69,24 @@ async function world(known: Software | null): Promise<{ service: LocalCiService,
   }
   const gateway = { admin: (): AdminRepositories => ({ catalog, local: components } as unknown as AdminRepositories) } as unknown as WarpEngineGateway
   const git: FakeGitFactory = new FakeGitFactory()
-  return { service: new LocalCiService({ gateway, local, sourceControl: git, wait: async () => Promise.resolve() }), components, git, scaffolded }
+  return { service: new LocalCiService({ gateway, local, sourceControl: git, wait: async () => Promise.resolve() }), components, git, scaffolded, host }
 }
 
 describe('LocalCiService', () => {
   it('offers the local CI only on the local host, signed in, to a project without a pipeline', async () => {
-    const { service } = await world(null)
-    const state: RemoteState = emptyRemoteState(project(), { head: null, branch: 'master', defaultBranch: 'master' }, true)
+    const { service, host } = await world(null)
+    const state: RemoteState = RemoteStates.empty(project(), { head: null, branch: 'master', defaultBranch: 'master' }, true)
 
-    assert.equal(service.needsSetUp(state, LOCAL), true)
-    assert.equal(service.needsSetUp(state, 'https://games.example.org'), false)
-    assert.equal(service.needsSetUp({ ...state, signedIn: false }, LOCAL), false)
-    assert.equal(service.needsSetUp({ ...state, error: 'Unauthorized', unauthorized: true }, LOCAL), false)
-    assert.equal(service.needsSetUp({ ...state, pipeline: { id: 1 } as RemoteState['pipeline'] }, LOCAL), false)
+    assert.equal(service.needsSetUp(state), true)
+    assert.equal(service.needsSetUp({ ...state, signedIn: false }), false)
+    assert.equal(service.needsSetUp({ ...state, error: 'Unauthorized', unauthorized: true }), false)
+    assert.equal(service.needsSetUp({ ...state, pipeline: { id: 1 } as RemoteState['pipeline'] }), false)
     assert.equal(await service.ready(), true)
+    assert.equal(await service.offerable(state, []), true)
+    assert.equal(await service.offerable(state, ['rabbit']), false)
+    host.url = 'https://games.example.org'
+    assert.equal(service.needsSetUp(state), false)
+    assert.equal(await service.offerable(state, []), false)
   })
 
   it('follows the operation, reports its steps once, and pushes to the wplocal remote', async () => {

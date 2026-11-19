@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
-import { isRunning, isSuccess, type PipelineRun } from '../../../domain/model/pipeline.model'
-import { latestRun, type RemoteState } from '../../../domain/model/remote-state.model'
+import { PipelineRuns, type PipelineRun } from '../../../domain/model/pipeline.model'
+import { RemoteStates, type RemoteState } from '../../../domain/model/remote-state.model'
 import { t } from '../../ui/l10n'
 import type { RemoteStateStore } from '../../workspace/remote-state.store'
 import { TreeNode } from '../tree/tree.node'
@@ -29,7 +29,7 @@ export class PipelineStatusBar implements vscode.Disposable {
     const label = `${state.project.platformLabel} · ${state.project.name}`
     if (!state.signedIn) this.renderSignedOut(label)
     else if (!state.pipeline) this.renderUnlinked(label, state)
-    else this.renderRun(label, state, latestRun(state))
+    else this.renderRun(label, state, RemoteStates.latestRun(state))
     this.item.show()
   }
 
@@ -53,8 +53,8 @@ export class PipelineStatusBar implements vscode.Disposable {
 
   private static icon(run: PipelineRun | null): string {
     if (run === null) return '$(circle-outline)'
-    if (isRunning(run)) return '$(sync~spin)'
-    return isSuccess(run) ? '$(pass-filled)' : '$(error)'
+    if (PipelineRuns.isRunning(run)) return '$(sync~spin)'
+    return PipelineRuns.isSuccess(run) ? '$(pass-filled)' : '$(error)'
   }
 
   private static tooltip(run: PipelineRun, ofHead: boolean): string {

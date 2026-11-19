@@ -67,7 +67,6 @@
   "Disconnect": "Disconnect",
   "Disconnected from {0}.": "Disconnected from {0}.",
   "Disconnected here; sign in to {0} to remove the pairing there too, or leave it: its token no longer has a sender.": "Disconnected here; sign in to {0} to remove the pairing there too, or leave it: its token no longer has a sender.",
-  "does not take syncs": "does not take syncs",
   "downloads": "downloads",
   "engine": "engine",
   "error": "error",

@@ -15,7 +15,8 @@ import { createControllers } from './controllers.factory'
 import type { Disposer } from './disposer'
 import { wireEvents } from './events.wiring'
 import type { ToolboxApi } from './toolbox.api'
-import { createViews, createWorkspace, type Views, type Workspace } from './views.factory'
+import { createViews, type Views } from './views.factory'
+import { createWorkspace, type Workspace } from './workspace.factory'
 
 export async function activate(context: vscode.ExtensionContext): Promise<ToolboxApi> {
   const services: Services = createServices(context)
@@ -25,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   const hostWatcher: HostWatcher = new HostWatcher(services.hosts)
   context.subscriptions.push(
     hostWatcher, workspace.projects, workspace.states, workspace.auth, ...disposables(views), ...registrations(context, services, workspace, views),
-    ...wireEvents({ workspace, views, controllers, hostWatcher, play: services.play, hostInfo: services.hostInfo }),
+    ...wireEvents({ workspace, views, controllers, hostWatcher, hostInfo: services.hostInfo }),
     ...CommandRegistry.register(commandTable(controllers))
   )
   await workspace.projects.refresh()

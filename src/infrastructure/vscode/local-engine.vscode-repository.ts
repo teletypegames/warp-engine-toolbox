@@ -10,11 +10,11 @@ const SECTION = 'warpengine'
 const CONTAINER = 'warp-engine-local'
 const DATA_FOLDER = '.warpengine'
 
-export class LocalEngineVsCodeRepository implements LocalEngineRepository {
+export class VsCodeLocalEngineRepository implements LocalEngineRepository {
   public async port(): Promise<number | null> {
     const configured: number = this.settings().get<number>('localPort') ?? 0
     if (configured > 0) return configured
-    const config: string | null = await LocalEngineVsCodeRepository.read(this.path('config.json'))
+    const config: string | null = await VsCodeLocalEngineRepository.read(this.path('config.json'))
     if (config === null) return null
     try {
       const port: unknown = (JSON.parse(config) as Record<string, unknown>)['port']
@@ -25,7 +25,7 @@ export class LocalEngineVsCodeRepository implements LocalEngineRepository {
   }
 
   public async tokenFile(): Promise<string | null> {
-    const token: string = (await LocalEngineVsCodeRepository.read(this.path('local-token')))?.trim() ?? ''
+    const token: string = (await VsCodeLocalEngineRepository.read(this.path('local-token')))?.trim() ?? ''
     return token.length > 0 ? token : null
   }
 

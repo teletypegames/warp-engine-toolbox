@@ -102,6 +102,9 @@ describe('SyncService', () => {
 
     assert.deepEqual(targets.map((target) => [target.host.url, target.pairable, target.signedIn]),
                      [[REMOTE, true, true], ['https://old.example', false, false], [SANDBOX, true, false]])
+    assert.deepEqual((await service.pairableTargets()).map((target) => target.host.url), [REMOTE, SANDBOX])
+    assert.equal(await service.isSignedInTo({ name: 'Studio', url: REMOTE }), true)
+    assert.equal(await service.isSignedInTo({ name: 'Sandbox', url: SANDBOX }), false)
   })
 
   it('pairs on the remote engine, then adds the outbound peer here with its token, the channels and the way back', async () => {

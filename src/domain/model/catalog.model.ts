@@ -73,10 +73,12 @@ export interface ScaffoldRequest {
 
 export const DEFAULT_STATUSES: readonly string[] = ['released', 'demo', 'development', 'archived']
 
-export function isDevRelease(release: Release): boolean {
-  return release.version.startsWith('dev-')
-}
+export class Releases {
+  public static isDev(release: Release): boolean {
+    return release.version.startsWith('dev-')
+  }
 
-export function listedReleases(releases: readonly Release[]): Release[] {
-  return releases.filter((release: Release) => !isDevRelease(release))
+  public static listed(releases: readonly Release[]): Release[] {
+    return releases.filter((release: Release) => !Releases.isDev(release))
+  }
 }

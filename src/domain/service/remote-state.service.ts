@@ -1,9 +1,8 @@
-import type { Release, Software } from '../model/catalog.model'
-import { isDevRelease } from '../model/catalog.model'
+import { Releases, type Release, type Software } from '../model/catalog.model'
 import type { Pipeline, PipelineRun } from '../model/pipeline.model'
 import type { Project } from '../model/project.model'
 import { HostError } from '../model/host-error.model'
-import { emptyRemoteState, type GitPosition, type RemoteState } from '../model/remote-state.model'
+import { RemoteStates, type GitPosition, type RemoteState } from '../model/remote-state.model'
 import { Version } from '../model/version.model'
 import type { AdminRepositories } from '../repository/warp-engine.gateway'
 import type { SourceControl, SourceControlFactory } from '../repository/source-control.repository'
@@ -17,7 +16,7 @@ export class RemoteStateService {
   public async load(project: Project): Promise<RemoteState> {
     const position: GitPosition = await this.position(this.sourceControl.at(project.folder))
     const admin: AdminRepositories | null = await this.connection.admin(false)
-    const empty: RemoteState = emptyRemoteState(project, position, admin !== null)
+    const empty: RemoteState = RemoteStates.empty(project, position, admin !== null)
     if (!admin) return empty
     try {
       return await this.fill(empty, admin)
@@ -49,6 +48,6 @@ export class RemoteStateService {
     const { branch, defaultBranch } = position
     if (!branch || branch === (defaultBranch ?? DEFAULT_BRANCH) || branch === 'HEAD') return null
     const devBranch: string = branch.replace(/\//g, '-')
-    return releases.find((release: Release) => isDevRelease(release) && Version.devBuildBranch(release.version) === devBranch) ?? null
+    return releases.find((release: Release) => Releases.isDev(release) && Version.devBuildBranch(release.version) === devBranch) ?? null
   }
 }

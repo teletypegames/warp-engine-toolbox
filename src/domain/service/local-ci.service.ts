@@ -38,9 +38,14 @@ export class LocalCiService {
     return LocalCi.ready(await this.components().catch((): LocalComponent[] => []))
   }
 
-  public needsSetUp(state: RemoteState | null, hostUrl: string | null): boolean {
-    if (!state?.signedIn || state.error !== null || hostUrl === null || !this.deps.local.isLocal(hostUrl)) return false
+  public needsSetUp(state: RemoteState | null): boolean {
+    if (!state?.signedIn || state.error !== null || !this.deps.local.isCurrentHost()) return false
     return state.pipeline === null
+  }
+
+  public async offerable(state: RemoteState, skipped: readonly string[]): Promise<boolean> {
+    if (!this.needsSetUp(state) || skipped.includes(state.project.name)) return false
+    return this.ready()
   }
 
   public async components(): Promise<LocalComponent[]> {

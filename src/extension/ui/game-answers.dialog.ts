@@ -5,9 +5,9 @@ import type { Platform } from '../../domain/model/platform.model'
 import type { CatalogService } from '../../domain/service/catalog.service'
 import type { PlatformService } from '../../domain/service/platform.service'
 import type { ScaffoldService } from '../../domain/service/scaffold.service'
-import { Dialogs, type PickItem } from '../ui/dialogs'
-import { t } from '../ui/l10n'
 import { PlatformFormatter } from '../view/platform/platform.formatter'
+import { Dialogs, type PickItem } from './dialogs'
+import { t } from './l10n'
 
 interface Texts {
   readonly name: string

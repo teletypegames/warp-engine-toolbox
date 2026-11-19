@@ -21,6 +21,10 @@ export class LocalEngineService {
     return this.found !== null && this.found.url === url
   }
 
+  public isCurrentHost(): boolean {
+    return this.isLocal(this.hosts.current()?.url ?? '')
+  }
+
   public async discover(): Promise<LocalEngine | null> {
     const url: string = LocalEngine.urlFor((await this.local.port()) ?? LocalEngine.DEFAULT_PORT)
     const info: WellKnown | null = await this.discovery.probe(url)

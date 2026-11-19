@@ -53,6 +53,7 @@ describe('LocalEngineService', () => {
     assert.equal(repository.url, 'http://127.0.0.1:7470')
     assert.deepEqual(hosts.choices().map((host: Host) => host.name), ['Local (5.2.0)'])
     assert.ok(service.isLocal('http://127.0.0.1:7470'))
+    assert.ok(service.isCurrentHost())
     assert.equal(await service.token(), 'tok')
   })
 

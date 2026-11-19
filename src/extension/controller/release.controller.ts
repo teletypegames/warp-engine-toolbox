@@ -47,7 +47,7 @@ export class ReleaseController {
     const picked: string | null | undefined = await Dialogs.pick(items, { title: t('Release {0}: {1} version', project.name, label) })
     if (picked === undefined) return null
     const version: string | undefined = picked ?? await this.askCustom(candidates[0] ?? '1.0.0')
-    return version ? version.replace(/^v/, '') : null
+    return version ? new Version(version).text : null
   }
 
   private async askRemote(project: Project, version: string): Promise<string | undefined> {
