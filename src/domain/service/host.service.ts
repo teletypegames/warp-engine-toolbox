@@ -3,7 +3,13 @@ import { DomainError, msg } from '../model/message.model'
 import type { HostRepository } from '../repository/host.repository'
 
 export class HostService {
+  private discovered: Host[] = []
+
   public constructor(private readonly repository: HostRepository) {}
+
+  public setDiscovered(hosts: readonly Host[]): void {
+    this.discovered = hosts.map((host: Host) => HostUrl.host(host.url, host.name))
+  }
 
   public known(): Host[] {
     return this.repository.configuredHosts()
@@ -14,7 +20,7 @@ export class HostService {
   public current(): Host | null {
     const url: string = HostUrl.normalize(this.repository.configuredUrl())
     if (!url) return null
-    return this.known().find((host: Host) => host.url === url) ?? HostUrl.host(url)
+    return [...this.discovered, ...this.known()].find((host: Host) => host.url === url) ?? HostUrl.host(url)
   }
 
   public require(): Host {
@@ -25,8 +31,8 @@ export class HostService {
 
   public choices(): Host[] {
     const current: Host | null = this.current()
-    const known: Host[] = this.known()
-    return current && !known.some((host: Host) => host.url === current.url) ? [current, ...known] : known
+    const listed: Host[] = [...this.discovered, ...this.known().filter((host: Host) => !this.discovered.some((found: Host) => found.url === host.url))]
+    return current && !listed.some((host: Host) => host.url === current.url) ? [current, ...listed] : listed
   }
 
   public async choose(url: string): Promise<Host | null> {

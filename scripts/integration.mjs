@@ -14,7 +14,9 @@ writeFileSync(join(workspace, '.woodpecker.yaml'), 'platform: c64\n')
 writeFileSync(join(workspace, 'metadata.json'), JSON.stringify({ name: 'rabbit', version: '1.0.0', colour: 'red' }, null, 2))
 writeFileSync(join(workspace, 'Makefile'), 'PROJECT = rabbit\n\nbuild:\n\tprintf "\\001\\010" > $(PROJECT).prg\n\nrun: build\n\t@echo run\n')
 mkdirSync(join(workspace, '.vscode'), { recursive: true })
-writeFileSync(join(workspace, '.vscode', 'settings.json'), JSON.stringify({ 'warpengine.url': process.env.WARPENGINE_TEST_URL ?? 'https://teletypegames.org', 'warpengine.checkOnSave': false, 'task.allowAutomaticTasks': 'off' }))
+const localData = process.env.WARPENGINE_TEST_LOCAL_DATA
+const hostSettings = localData ? { 'warpengine.localData': localData } : { 'warpengine.url': process.env.WARPENGINE_TEST_URL ?? 'https://teletypegames.org' }
+writeFileSync(join(workspace, '.vscode', 'settings.json'), JSON.stringify({ ...hostSettings, 'warpengine.checkOnSave': false, 'task.allowAutomaticTasks': 'off' }))
 
 const version = process.env.VSCODE_TEST_VERSION ?? 'stable'
 let executable = await downloadAndUnzipVSCode(version)
@@ -25,5 +27,6 @@ await runTests({
   vscodeExecutablePath: executable,
   extensionDevelopmentPath: resolve('.'),
   extensionTestsPath: resolve('scripts/integration-entry.cjs'),
+  extensionTestsEnv: localData ? { WARPENGINE_TEST_LOCAL: '1' } : {},
   launchArgs: [workspace, '--disable-extensions', '--skip-welcome', '--skip-release-notes'],
 })

@@ -39,7 +39,7 @@ export function createWorkspace(services: Services): Workspace {
   return {
     projects, hostController,
     states: new RemoteStateStore(services.remoteState, projects),
-    auth: new WarpEngineAuthProvider(services.hosts, hostController, services.signIn)
+    auth: new WarpEngineAuthProvider(services.hosts, hostController, services.signIn, services.localEngine)
   }
 }
 

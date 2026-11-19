@@ -13,7 +13,7 @@ export interface ToolboxApi {
   readonly schemas: MetadataSchemaProvider
   readonly diagnostics: PublishDiagnostics
   readonly player: PlayPanel
-  readonly hosts: { require(): Host }
+  readonly hosts: { require(): Host; current(): Host | null }
   readonly auth: WarpEngineAuthProvider
   readonly scaffold: ScaffoldService
 }

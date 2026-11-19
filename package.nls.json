@@ -24,7 +24,7 @@
   "view.project": "This Project",
   "view.catalog": "Catalog",
   "welcome.project": "This folder is no WarpEngine project yet.\n[New Game…](command:warpengine.newGame)\n[Add WarpEngine to This Project](command:warpengine.addToProject)",
-  "welcome.catalog.host": "Set the address of your WarpEngine host first.\n[Set Host…](command:warpengine.selectHost)",
+  "welcome.catalog.host": "Set the address of your WarpEngine host first, or run one on this machine.\n[Set Host…](command:warpengine.selectHost)\n[Install Local Engine](command:warpengine.installLocalEngine)",
   "welcome.catalog.signIn": "Sign in to see the catalog, your pipelines and your releases.\n[Sign In](command:warpengine.signIn)",
   "customEditor.metadata": "WarpEngine Metadata",
   "task.target": "The Makefile target to run",
@@ -34,5 +34,8 @@
   "config.checkOnSave": "Ask the host what a publish would refuse whenever the metadata is saved.",
   "config.docker": "The docker command Build Like CI runs.",
   "config.defaultLocation": "The folder New Game offers for new projects.",
-  "mcp.label": "WarpEngine Admin API"
+  "mcp.label": "WarpEngine Admin API",
+  "command.installLocalEngine": "Install Local Engine",
+  "config.localPort": "The port of the local WarpEngine on `127.0.0.1`. `0` (default) takes it from `~/.warpengine/config.json`, or 7470.",
+  "config.localData": "The local WarpEngine's data folder, where its token file is. Empty (default): `~/.warpengine`."
 }

@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "%description%",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",
@@ -43,7 +43,8 @@
   "activationEvents": [
     "workspaceContains:metadata.json",
     "workspaceContains:.woodpecker.yaml",
-    "workspaceContains:.gitlab-ci.yml"
+    "workspaceContains:.gitlab-ci.yml",
+    "onStartupFinished"
   ],
   "contributes": {
     "commands": [
@@ -80,6 +81,12 @@
         "title": "%command.selectHost%",
         "category": "WarpEngine",
         "icon": "$(server)"
+      },
+      {
+        "command": "warpengine.installLocalEngine",
+        "title": "%command.installLocalEngine%",
+        "category": "WarpEngine",
+        "icon": "$(server-process)"
       },
       {
         "command": "warpengine.previewPipeline",
@@ -432,6 +439,18 @@
             }
           },
           "default": []
+        },
+        "warpengine.localPort": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 65535,
+          "markdownDescription": "%config.localPort%"
+        },
+        "warpengine.localData": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "%config.localData%"
         },
         "warpengine.checkOnSave": {
           "type": "boolean",

@@ -92,6 +92,18 @@ The toolbox knows no host of its own: set `warpengine.url` to the address of the
 WarpEngine (or run **WarpEngine: Set Host…**, which asks for it). `warpengine.hosts` may list more
 hosts for Set Host to switch between. A host needs WarpEngine 4.0 or later (3.9 works without the release channels).
 
+## A local engine
+
+[WarpEngine Local](https://git.teletypegames.org/engines/warp-engine-local) is a WarpEngine on
+your own machine: one container, one port, installed by one command (**WarpEngine: Install
+Local Engine** runs the installer in a terminal). The toolbox looks for it on every start and
+refresh: it asks `http://127.0.0.1:<port>/.well-known/warp-engine` (the port from
+`~/.warpengine/config.json`, or 7470; `warpengine.localPort` sets another), lists it as
+**Local** among the hosts, makes it the host when none is set, and offers to connect.
+Connecting signs in with the engine's token file (`~/.warpengine/local-token`;
+`warpengine.localData` names another folder) — no device code, no approval. A local engine
+needs WarpEngine 5.2 or later.
+
 ## Requirements
 
 - VS Code 1.101 or later, git, `make`, and the platform's own tools for local builds

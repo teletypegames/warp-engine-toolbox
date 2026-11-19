@@ -24,7 +24,7 @@
   "view.project": "Ez a projekt",
   "view.catalog": "Katalógus",
   "welcome.project": "Ez a mappa még nem WarpEngine-projekt.\n[Új játék…](command:warpengine.newGame)\n[WarpEngine hozzáadása ehhez a projekthez](command:warpengine.addToProject)",
-  "welcome.catalog.host": "Előbb add meg a WarpEngine-hostod címét.\n[Host beállítása…](command:warpengine.selectHost)",
+  "welcome.catalog.host": "Előbb add meg a WarpEngine-hostod címét, vagy futtass egyet ezen a gépen.\n[Host beállítása…](command:warpengine.selectHost)\n[Helyi motor telepítése](command:warpengine.installLocalEngine)",
   "welcome.catalog.signIn": "Jelentkezz be, hogy lásd a katalógust, a pipeline-jaidat és a kiadásaidat.\n[Bejelentkezés](command:warpengine.signIn)",
   "customEditor.metadata": "WarpEngine-metaadatok",
   "task.target": "A futtatandó Makefile-target",
@@ -34,5 +34,8 @@
   "config.checkOnSave": "A metaadatok minden mentésekor megkérdezi a hostot, mit utasítana el a publikálás.",
   "config.docker": "A docker parancs, amelyet a Build Like CI futtat.",
   "config.defaultLocation": "A mappa, amelyet a New Game az új projekteknek felkínál.",
-  "mcp.label": "WarpEngine Admin API"
+  "mcp.label": "WarpEngine Admin API",
+  "command.installLocalEngine": "Helyi motor telepítése",
+  "config.localPort": "A helyi WarpEngine portja a `127.0.0.1`-en. `0` (alap): a `~/.warpengine/config.json`-ból, vagy 7470.",
+  "config.localData": "A helyi WarpEngine adatmappája, ahol a tokenfájlja van. Üres (alap): `~/.warpengine`."
 }

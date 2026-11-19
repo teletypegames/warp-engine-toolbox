@@ -21,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   const services: Services = createServices(context)
   const workspace: Workspace = createWorkspace(services)
   const views: Views = createViews(context, services, workspace)
-  const controllers: Controllers = createControllers(services, workspace, views)
+  const controllers: Controllers = createControllers(context, services, workspace, views)
   const hostWatcher: HostWatcher = new HostWatcher(services.hosts)
   context.subscriptions.push(
     hostWatcher, workspace.projects, workspace.states, workspace.auth, ...disposables(views), ...registrations(context, services, workspace, views),
@@ -29,6 +29,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
     ...CommandRegistry.register(commandTable(controllers))
   )
   await workspace.projects.refresh()
+  await controllers.localEngine.discover().catch(() => null)
   await Dialogs.setContext('warpengine.signedIn', (await services.connection.token(false)) !== null)
   return { ...workspace, ...views, platforms: services.platforms, hosts: services.hosts, scaffold: services.scaffold }
 }

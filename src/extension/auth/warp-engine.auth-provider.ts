@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import type { Host } from '../../domain/model/host.model'
 import type { DeviceGrant, Session } from '../../domain/model/sign-in.model'
 import type { HostService } from '../../domain/service/host.service'
+import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { SignInService } from '../../domain/service/sign-in.service'
 import type { HostController } from '../controller/host.controller'
 import { Dialogs } from '../ui/dialogs'
@@ -16,7 +17,12 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
   public readonly onDidChangeSessions: vscode.Event<SessionsChange> = this.changed.event
   private readonly registration: vscode.Disposable
 
-  public constructor(private readonly hosts: HostService, private readonly hostController: HostController, private readonly signIn: SignInService) {
+  public constructor(
+    private readonly hosts: HostService,
+    private readonly hostController: HostController,
+    private readonly signIn: SignInService,
+    private readonly local: LocalEngineService
+  ) {
     this.registration = vscode.authentication.registerAuthenticationProvider(AUTH_PROVIDER_ID, 'WarpEngine', this, { supportsMultipleAccounts: false })
   }
 
@@ -29,6 +35,7 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
     const host: Host | null = await this.hostController.ensure()
     if (!host) throw new vscode.CancellationError()
     const wanted: readonly string[] = this.signIn.scopes(scopes)
+    if (this.local.isLocal(host.url)) return this.adopt(await this.signIn.createSession(host.url, await this.local.token(), wanted))
     const grant: DeviceGrant = await this.signIn.start(host.url, `WarpEngine Toolbox (${vscode.env.appName})`, wanted)
     await WarpEngineAuthProvider.showApproval(host.url, grant)
     const token: string = await this.waitForApproval(host.url, grant)
@@ -49,6 +56,12 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
   public dispose(): void {
     this.registration.dispose()
     this.changed.dispose()
+  }
+
+  private adopt(session: Session): vscode.AuthenticationSession {
+    const created: vscode.AuthenticationSession = WarpEngineAuthProvider.toSession(session)
+    this.changed.fire({ added: [created], removed: [], changed: [] })
+    return created
   }
 
   private async waitForApproval(host: string, grant: DeviceGrant): Promise<string> {

@@ -24,8 +24,9 @@ function projectCommands({ newGame, connect, project, release }: Controllers): C
   ]
 }
 
-function accountCommands({ signIn, host, refresh, link }: Controllers): CommandRow[] {
+function accountCommands({ signIn, host, refresh, link, localEngine }: Controllers): CommandRow[] {
   return [
+    ['warpengine.installLocalEngine', async (): Promise<void> => { localEngine.install(); return Promise.resolve() }],
     ['warpengine.signIn', async (): Promise<void> => { await signIn.signIn() }],
     ['warpengine.signOut', async (): Promise<void> => { await signIn.signOut() }],
     ['warpengine.selectHost', async (): Promise<void> => { await host.select() }],

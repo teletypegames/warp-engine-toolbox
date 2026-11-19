@@ -23,10 +23,33 @@ async function step(name: string, body: () => Promise<void>): Promise<void> {
   console.log(`  ok  ${name} (${String(Date.now() - started)} ms)`)
 }
 
+async function runLocal(api: ToolboxApi): Promise<void> {
+  await step('finds the local engine and makes it the host', async () => {
+    const url: string = await until('the local host', () => api.hosts.current()?.url, 30_000)
+    assert.match(url, /^http:\/\/127\.0\.0\.1:\d+$/)
+    assert.match(api.hosts.current()?.name ?? '', /^Local \(/)
+  })
+
+  await step('signs in with the token file, without a device code', async () => {
+    const session: vscode.AuthenticationSession = await api.auth.createSession([])
+    assert.ok(session.accessToken.length > 20)
+    assert.equal((await api.auth.getSessions()).length, 1)
+  })
+
+  await step('learns the project\'s platform from the local engine', async () => {
+    const project: Project = await until('the project', () => api.projects.current())
+    assert.equal(project.platform?.label, 'C64')
+  })
+}
+
 export async function run(): Promise<void> {
   const extension = vscode.extensions.getExtension<ToolboxApi>('TeletypeGames.warpengine-toolbox')
   assert.ok(extension, 'the extension is installed')
   const api: ToolboxApi = await extension.activate()
+  if (process.env['WARPENGINE_TEST_LOCAL'] === '1') {
+    await runLocal(api)
+    return
+  }
   const folder: vscode.Uri = vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file('/')
 
   await step('detects the project and learns its platform from the host', async () => {

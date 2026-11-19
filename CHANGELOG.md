@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0
+
+- **A local engine, found by itself**: on start and refresh the toolbox probes
+  `/.well-known/warp-engine` on `127.0.0.1` (WarpEngine 5.2): a
+  [WarpEngine Local](https://git.teletypegames.org/engines/warp-engine-local) there shows up as
+  **Local** among the hosts, becomes the host when none is set, and the toolbox offers to connect.
+- **Signing in with a token file**: a local engine signs in with its `local-token`, without a
+  device code; the token is read from the container when the file is not there.
+- **Install Local Engine**: runs the BBS-style installer in a terminal (Docker needed) and looks
+  for the engine again when the terminal closes; with no host at all the toolbox offers it once.
+- Settings: `warpengine.localPort`, `warpengine.localData`.
+
 ## 1.3.0
 
 - **More placeholders**: `{title}`, `{author}`, `{description}` and `{catalogUrl}` (the connected
