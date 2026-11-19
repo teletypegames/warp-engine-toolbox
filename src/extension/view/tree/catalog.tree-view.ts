@@ -1,9 +1,11 @@
 import type { ExternalLink, Release, Software, SoftwareField } from '../../../domain/model/catalog.model'
 import type { Host } from '../../../domain/model/host.model'
+import type { SoftwareImage } from '../../../domain/model/image.model'
 import type { Pipeline } from '../../../domain/model/pipeline.model'
 import type { Platform } from '../../../domain/model/platform.model'
 import type { CatalogOverview, CatalogService } from '../../../domain/service/catalog.service'
 import type { HostService } from '../../../domain/service/host.service'
+import type { ImageService } from '../../../domain/service/image.service'
 import type { PlatformService } from '../../../domain/service/platform.service'
 import type { PlayService } from '../../../domain/service/play.service'
 import { Dialogs } from '../../ui/dialogs'
@@ -17,13 +19,33 @@ export interface FieldData {
   readonly field: SoftwareField
 }
 
+export interface ImageData {
+  readonly software: Software
+  readonly image: SoftwareImage
+}
+
+export interface CatalogTreeDependencies {
+  readonly hosts: HostService
+  readonly catalog: CatalogService
+  readonly platforms: PlatformService
+  readonly play: PlayService
+  readonly images: ImageService
+}
+
 export class CatalogTreeView implements TreeView {
-  public constructor(
-    private readonly hosts: HostService,
-    private readonly catalog: CatalogService,
-    private readonly platforms: PlatformService,
-    private readonly play: PlayService
-  ) {}
+  private readonly hosts: HostService
+  private readonly catalog: CatalogService
+  private readonly platforms: PlatformService
+  private readonly play: PlayService
+  private readonly images: ImageService
+
+  public constructor(deps: CatalogTreeDependencies) {
+    this.hosts = deps.hosts
+    this.catalog = deps.catalog
+    this.platforms = deps.platforms
+    this.play = deps.play
+    this.images = deps.images
+  }
 
   public async roots(): Promise<TreeNode[]> {
     const host: Host | null = this.hosts.current()
@@ -67,7 +89,7 @@ export class CatalogTreeView implements TreeView {
   private softwareNode(software: Software, platform: Platform | null): TreeNode {
     return new TreeNode(software.title, {
       description: `${software.name} · ${software.status ?? t('no status')}`, icon: 'game', context: 'software', data: software,
-      load: (): TreeNode[] => [...CatalogTreeView.fields(software), this.releasesNode(software, platform), this.linksNode(software)]
+      load: (): TreeNode[] => [...CatalogTreeView.fields(software), this.releasesNode(software, platform), this.imagesNode(software), this.linksNode(software)]
     })
   }
 
@@ -76,6 +98,20 @@ export class CatalogTreeView implements TreeView {
       icon: 'versions',
       load: async (): Promise<TreeNode[]> => (await this.catalog.releases(software)).map((release: Release) =>
         ReleaseNode.create({ release, name: software.name, platform }, this.play.playUrl(software.name, release.version)))
+    })
+  }
+
+  private imagesNode(software: Software): TreeNode {
+    return new TreeNode(t('Images'), {
+      icon: 'file-media', context: 'images', data: software,
+      load: async (): Promise<TreeNode[]> => {
+        const base: string = this.hosts.current()?.url ?? ''
+        return (await this.images.images(software)).map((image: SoftwareImage, index: number) => new TreeNode(`#${String(index + 1)}`, {
+          description: [image.isDefault ? t('default') : '', image.origin === 'sync' ? t('by sync') : ''].filter(Boolean).join(' · '),
+          icon: image.isDefault ? 'star-full' : 'file-media', context: 'image link', data: { software, image } satisfies ImageData,
+          command: image.url ? TreeNode.openUrl(`${base}${image.url}`) : undefined
+        }))
+      }
     })
   }
 

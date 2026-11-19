@@ -27,6 +27,11 @@ export class WarpEngineHttpClient {
     return (await this.json<{ data: T }>(method, `${ADMIN}${path}`, body)).data
   }
 
+  public async adminForm<T>(path: string, form: FormData): Promise<T> {
+    const response: Response = await this.request('POST', `${ADMIN}${path}`, form)
+    return (JSON.parse(await response.text()) as { data: T }).data
+  }
+
   public async adminList<T>(path: string, query: Record<string, string>): Promise<T[]> {
     const search: string = new URLSearchParams(query).toString()
     return (await this.json<{ data: T[] }>('GET', `${ADMIN}${path}${search ? `?${search}` : ''}`)).data
@@ -51,6 +56,7 @@ export class WarpEngineHttpClient {
     if (this.token) headers['Authorization'] = `Bearer ${this.token}`
     const init: RequestInit = { method, headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     if (body === undefined) return init
+    if (body instanceof FormData) return { ...init, body }
     headers['Content-Type'] = 'application/json'
     return { ...init, body: JSON.stringify(body) }
   }

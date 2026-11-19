@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5.0
+
+- **Sync to…**: pairs the local engine with another WarpEngine (5.3, `sync_pairings`) in one
+  flow — pick the engine, sign in if needed, choose the channels (stable + beta by default) —
+  and checks the connection; an engine on this machine is reached through
+  `host.docker.internal`. Rolled back on the other side when the local engine refuses.
+- **The Sync view**: the partners of the local engine with their channels, last sync and the
+  newest pushes; *Push Now*, *Edit Channels…*, *Check Connection*, *Disconnect* (both sides).
+- **Images**: a software's gallery in the catalog — *Add Image…* (PNG, JPEG, GIF, WebP), make one
+  the default, move up and down, remove. Works on every host.
+
 ## 1.4.0
 
 - **A local engine, found by itself**: on start and refresh the toolbox probes

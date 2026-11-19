@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "%description%",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",
@@ -169,6 +169,66 @@
         "title": "%command.openPlatformDocs%",
         "category": "WarpEngine",
         "icon": "$(book)"
+      },
+      {
+        "command": "warpengine.syncTo",
+        "title": "%command.syncTo%",
+        "category": "WarpEngine",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "warpengine.syncPushNow",
+        "title": "%command.syncPushNow%",
+        "category": "WarpEngine",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "warpengine.syncEditChannels",
+        "title": "%command.syncEditChannels%",
+        "category": "WarpEngine",
+        "icon": "$(list-filter)"
+      },
+      {
+        "command": "warpengine.syncCheck",
+        "title": "%command.syncCheck%",
+        "category": "WarpEngine",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "warpengine.syncDisconnect",
+        "title": "%command.syncDisconnect%",
+        "category": "WarpEngine",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "warpengine.addImage",
+        "title": "%command.addImage%",
+        "category": "WarpEngine",
+        "icon": "$(add)"
+      },
+      {
+        "command": "warpengine.imageMakeDefault",
+        "title": "%command.imageMakeDefault%",
+        "category": "WarpEngine",
+        "icon": "$(star-empty)"
+      },
+      {
+        "command": "warpengine.imageMoveUp",
+        "title": "%command.imageMoveUp%",
+        "category": "WarpEngine",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "warpengine.imageMoveDown",
+        "title": "%command.imageMoveDown%",
+        "category": "WarpEngine",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "warpengine.imageRemove",
+        "title": "%command.imageRemove%",
+        "category": "WarpEngine",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -180,7 +240,7 @@
         },
         {
           "command": "warpengine.refresh",
-          "when": "view == warpengine.project || view == warpengine.catalog",
+          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync",
           "group": "navigation@9"
         },
         {
@@ -191,6 +251,11 @@
         {
           "command": "warpengine.signIn",
           "when": "view == warpengine.catalog && warpengine.hasHost && !warpengine.signedIn",
+          "group": "navigation@1"
+        },
+        {
+          "command": "warpengine.syncTo",
+          "when": "view == warpengine.sync && warpengine.localEngine",
           "group": "navigation@1"
         }
       ],
@@ -229,6 +294,51 @@
           "command": "warpengine.showStatistics",
           "when": "viewItem =~ /software/",
           "group": "inline"
+        },
+        {
+          "command": "warpengine.syncPushNow",
+          "when": "viewItem == syncPeer",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.syncEditChannels",
+          "when": "viewItem == syncPeer",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.syncCheck",
+          "when": "viewItem == syncPeer",
+          "group": "1_sync@1"
+        },
+        {
+          "command": "warpengine.syncDisconnect",
+          "when": "viewItem == syncPeer",
+          "group": "2_danger@1"
+        },
+        {
+          "command": "warpengine.addImage",
+          "when": "viewItem == images",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.imageMakeDefault",
+          "when": "viewItem =~ /image\\b/",
+          "group": "inline"
+        },
+        {
+          "command": "warpengine.imageMoveUp",
+          "when": "viewItem =~ /image\\b/",
+          "group": "1_order@1"
+        },
+        {
+          "command": "warpengine.imageMoveDown",
+          "when": "viewItem =~ /image\\b/",
+          "group": "1_order@2"
+        },
+        {
+          "command": "warpengine.imageRemove",
+          "when": "viewItem =~ /image\\b/",
+          "group": "2_danger@1"
         }
       ],
       "commandPalette": [
@@ -259,6 +369,46 @@
         {
           "command": "warpengine.copyLink",
           "when": "false"
+        },
+        {
+          "command": "warpengine.syncPushNow",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.syncEditChannels",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.syncCheck",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.syncDisconnect",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.addImage",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.imageMakeDefault",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.imageMoveUp",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.imageMoveDown",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.imageRemove",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.syncTo",
+          "when": "warpengine.localEngine"
         }
       ],
       "editor/title": [
@@ -287,6 +437,10 @@
         {
           "id": "warpengine.catalog",
           "name": "%view.catalog%"
+        },
+        {
+          "id": "warpengine.sync",
+          "name": "%view.sync%"
         }
       ]
     },
@@ -304,6 +458,16 @@
         "view": "warpengine.catalog",
         "contents": "%welcome.catalog.signIn%",
         "when": "warpengine.hasHost && !warpengine.signedIn"
+      },
+      {
+        "view": "warpengine.sync",
+        "contents": "%welcome.sync.local%",
+        "when": "!warpengine.localEngine"
+      },
+      {
+        "view": "warpengine.sync",
+        "contents": "%welcome.sync.pair%",
+        "when": "warpengine.localEngine && !warpengine.syncing"
       }
     ],
     "authentication": [

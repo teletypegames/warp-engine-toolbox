@@ -42,6 +42,12 @@ export class HostService {
     return this.current()
   }
 
+  public async remember(url: string): Promise<Host> {
+    const host: Host = HostUrl.host(url)
+    if (!this.choices().some((known: Host) => known.url === host.url)) await this.repository.saveHosts([...this.known(), host])
+    return host
+  }
+
   public async select(url: string): Promise<Host | null> {
     await this.repository.saveUrl(url)
     return this.current()

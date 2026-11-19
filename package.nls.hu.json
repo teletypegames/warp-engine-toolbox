@@ -37,5 +37,18 @@
   "mcp.label": "WarpEngine Admin API",
   "command.installLocalEngine": "Helyi motor telepítése",
   "config.localPort": "A helyi WarpEngine portja a `127.0.0.1`-en. `0` (alap): a `~/.warpengine/config.json`-ból, vagy 7470.",
-  "config.localData": "A helyi WarpEngine adatmappája, ahol a tokenfájlja van. Üres (alap): `~/.warpengine`."
+  "config.localData": "A helyi WarpEngine adatmappája, ahol a tokenfájlja van. Üres (alap): `~/.warpengine`.",
+  "command.syncTo": "Szinkron ide…",
+  "command.syncPushNow": "Küldés most",
+  "command.syncEditChannels": "Csatornák…",
+  "command.syncCheck": "Kapcsolat ellenőrzése",
+  "command.syncDisconnect": "Leválasztás",
+  "command.addImage": "Kép hozzáadása…",
+  "command.imageMakeDefault": "Legyen ez az alapkép",
+  "command.imageMoveUp": "Feljebb",
+  "command.imageMoveDown": "Lejjebb",
+  "command.imageRemove": "Kép eltávolítása",
+  "view.sync": "Szinkron",
+  "welcome.sync.local": "A szinkron a helyi motorod kiadásait továbbküldi egy másik WarpEngine-re. Ehhez helyi motor kell.\n[Helyi motor telepítése](command:warpengine.installLocalEngine)",
+  "welcome.sync.pair": "A helyi motorod egyelőre megtartja a kiadásait. Párosítsd egy másik WarpEngine-nel — a Teletype Orbittal vagy a stúdiódéval —, és onnantól maguktól mennek tovább.\n[Szinkron ide…](command:warpengine.syncTo)"
 }

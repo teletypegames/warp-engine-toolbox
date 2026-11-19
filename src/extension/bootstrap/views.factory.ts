@@ -10,6 +10,7 @@ import { PlayPanel } from '../view/play/play.panel'
 import { ReportView } from '../view/report/report.view'
 import { CatalogTreeView } from '../view/tree/catalog.tree-view'
 import { ProjectTreeView } from '../view/tree/project.tree-view'
+import { SyncTreeView } from '../view/tree/sync.tree-view'
 import { TreeProvider } from '../view/tree/tree.provider'
 import { ProjectRegistry } from '../workspace/project.registry'
 import { RemoteStateStore } from '../workspace/remote-state.store'
@@ -25,6 +26,7 @@ export interface Workspace {
 export interface Views {
   readonly projectTree: TreeProvider
   readonly catalogTree: TreeProvider
+  readonly syncTree: TreeProvider
   readonly schemas: MetadataSchemaProvider
   readonly diagnostics: PublishDiagnostics
   readonly tasks: MakeTaskProvider
@@ -49,7 +51,8 @@ export function createViews(context: vscode.ExtensionContext, services: Services
   return {
     tasks,
     projectTree: new TreeProvider(new ProjectTreeView(services.hosts, projects, states, services.play)),
-    catalogTree: new TreeProvider(new CatalogTreeView(services.hosts, services.catalog, services.platforms, services.play)),
+    catalogTree: new TreeProvider(new CatalogTreeView({ hosts: services.hosts, catalog: services.catalog, platforms: services.platforms, play: services.play, images: services.images })),
+    syncTree: new TreeProvider(new SyncTreeView(services.localEngine, services.sync)),
     schemas: new MetadataSchemaProvider(services.hosts, services.connection, projects),
     diagnostics: new PublishDiagnostics(services.hosts, projects, services.publishCheck),
     reports: new ReportView(),

@@ -40,6 +40,32 @@ async function runLocal(api: ToolboxApi): Promise<void> {
     const project: Project = await until('the project', () => api.projects.current())
     assert.equal(project.platform?.label, 'C64')
   })
+
+  const remote: string = process.env['WARPENGINE_TEST_REMOTE'] ?? ''
+  const token: string = process.env['WARPENGINE_TEST_REMOTE_TOKEN'] ?? ''
+  if (remote && token) await runSync(api, remote, token)
+}
+
+async function runSync(api: ToolboxApi, remote: string, token: string): Promise<void> {
+  await step('offers a signed-in engine that takes pairing as a sync target', async () => {
+    await api.hosts.remember(remote)
+    await api.signIn.createSession(remote, token, ['sync:pair'])
+    const targets = await api.sync.targets()
+    assert.ok(targets.some((target) => target.host.url === remote && target.pairable && target.signedIn), JSON.stringify(targets))
+  })
+
+  await step('pairs the local engine with it, and the remote engine takes the local one\'s pushes', async () => {
+    const paired = await api.sync.pair({ name: 'Remote', url: remote }, ['stable', 'beta'], 'integration local')
+    assert.ok(paired.check.ok, paired.check.message)
+    assert.ok((await api.sync.links()).some((link) => link.remoteUrl === remote))
+  })
+
+  await step('disconnects on both sides', async () => {
+    const link = (await api.sync.links()).find((item) => item.remoteUrl === remote)
+    assert.ok(link)
+    assert.equal(await api.sync.disconnect(link), true)
+    assert.ok(!(await api.sync.links()).some((item) => item.remoteUrl === remote))
+  })
 }
 
 export async function run(): Promise<void> {

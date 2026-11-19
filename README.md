@@ -29,7 +29,9 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Pipeline** | The status bar follows the run of your current commit after a push. |
 | **Release…** | Asks for the channel (stable, or a beta: `1.3.0-beta.1`), bumps the version where the platform reads it, writes the changelog from the commits, tags and pushes; the CI publishes. |
 | **This branch** | On a branch other than the default one: its development build (not listed in the catalog), with a play link to share with testers; a notification when a push has built it. |
-| **Catalog** | Your host's softwares, releases with an asset checklist, links, pipelines and download statistics; status, category and highlight can be changed in place. |
+| **Catalog** | Your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; status, category and highlight can be changed in place. |
+| **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
+| **Sync** | A local engine's releases go on to another WarpEngine — Teletype Orbit, or your studio's: **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
 A template repository can say exactly what a new game gets in a `warp-template.json`:
@@ -103,6 +105,27 @@ refresh: it asks `http://127.0.0.1:<port>/.well-known/warp-engine` (the port fro
 Connecting signs in with the engine's token file (`~/.warpengine/local-token`;
 `warpengine.localData` names another folder) — no device code, no approval. A local engine
 needs WarpEngine 5.2 or later.
+
+## Sync
+
+**WarpEngine: Sync to…** (the *Sync* view's cloud button) pairs your local engine with another
+WarpEngine, so its releases go on there by themselves:
+
+1. pick the engine — the known hosts whose `/.well-known/warp-engine` says they take pairing
+   (WarpEngine 5.3 with `sync { inbound { enabled true } }`), or another address;
+2. sign in to it if you have not (the toolbox switches to it for the sign-in and back);
+3. choose the channels that go (stable and beta by default) and the name it calls your engine.
+
+The toolbox pairs on the other engine (`POST /sync_pairings`: an inbound peer of your own and
+its token), adds the outbound peer on your local engine with that token, and checks that the
+other side takes it. An engine on this machine (`localhost`) is reached from the container
+through `host.docker.internal`. From then on every release published on the local engine — and
+the software's images — goes over by itself; **Push Now** sends what is there already.
+
+The *Sync* view lists the partners with their channels and the last pushes; per partner: *Push
+Now*, *Edit Channels…*, *Check Connection*, *Disconnect* (removes the pairing on both sides when
+you are signed in to the other engine). The other engine must allow pairing: an `admin:write`
+sign-in always may, any signed-in tool where it says `pairing :anyone`.
 
 ## Requirements
 

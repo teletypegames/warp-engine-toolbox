@@ -6,7 +6,7 @@ import type { CommandHandler } from './command.registry'
 export type CommandRow = readonly [string, CommandHandler]
 
 export function commandTable(controllers: Controllers): CommandRow[] {
-  return [...projectCommands(controllers), ...accountCommands(controllers), ...catalogCommands(controllers)]
+  return [...projectCommands(controllers), ...accountCommands(controllers), ...catalogCommands(controllers), ...syncCommands(controllers)]
 }
 
 function projectCommands({ newGame, connect, project, release }: Controllers): CommandRow[] {
@@ -33,6 +33,21 @@ function accountCommands({ signIn, host, refresh, link, localEngine }: Controlle
     ['warpengine.refresh', async (): Promise<void> => { await refresh.refresh() }],
     ['warpengine.openUrl', async (target?: string | TreeNode): Promise<void> => { await link.open(target) }],
     ['warpengine.copyLink', async (target?: string | TreeNode): Promise<void> => { await link.copy(target) }]
+  ]
+}
+
+function syncCommands({ sync, images }: Controllers): CommandRow[] {
+  return [
+    ['warpengine.syncTo', async (): Promise<void> => { await sync.syncTo() }],
+    ['warpengine.syncPushNow', async (node?: TreeNode): Promise<void> => { await sync.pushNow(node) }],
+    ['warpengine.syncEditChannels', async (node?: TreeNode): Promise<void> => { await sync.editChannels(node) }],
+    ['warpengine.syncCheck', async (node?: TreeNode): Promise<void> => { await sync.check(node) }],
+    ['warpengine.syncDisconnect', async (node?: TreeNode): Promise<void> => { await sync.disconnect(node) }],
+    ['warpengine.addImage', async (node?: TreeNode): Promise<void> => { await images.add(node) }],
+    ['warpengine.imageMakeDefault', async (node?: TreeNode): Promise<void> => { await images.makeDefault(node) }],
+    ['warpengine.imageMoveUp', async (node?: TreeNode): Promise<void> => { await images.moveUp(node) }],
+    ['warpengine.imageMoveDown', async (node?: TreeNode): Promise<void> => { await images.moveDown(node) }],
+    ['warpengine.imageRemove', async (node?: TreeNode): Promise<void> => { await images.remove(node) }]
   ]
 }
 

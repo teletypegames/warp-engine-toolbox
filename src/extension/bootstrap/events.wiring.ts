@@ -22,7 +22,7 @@ export function wireEvents(wiring: Wiring): Disposer[] {
   return [
     projects.onDidChange(() => { views.projectTree.refresh(); views.schemas.announce(); void states.refresh() }),
     states.onDidChange(() => { views.projectTree.refresh() }),
-    auth.onDidChangeSessions(() => { views.catalogTree.refresh(); views.mcp.announce(); void states.refresh() }),
+    auth.onDidChangeSessions(() => { views.catalogTree.refresh(); views.syncTree.refresh(); views.mcp.announce(); void states.refresh() }),
     hostWatcher.onDidChange(() => { views.schemas.forgetHost(); views.mcp.announce(); void controllers.refresh.refresh() }),
     vscode.window.onDidChangeWindowState((state: vscode.WindowState) => { if (state.focused) void states.refresh() }),
     new GitWatcher(() => { states.watch() }),

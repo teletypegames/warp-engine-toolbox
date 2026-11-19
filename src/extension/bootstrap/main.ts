@@ -31,7 +31,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   await workspace.projects.refresh()
   await controllers.localEngine.discover().catch(() => null)
   await Dialogs.setContext('warpengine.signedIn', (await services.connection.token(false)) !== null)
-  return { ...workspace, ...views, platforms: services.platforms, hosts: services.hosts, scaffold: services.scaffold }
+  return { ...workspace, ...views, platforms: services.platforms, hosts: services.hosts, scaffold: services.scaffold, sync: services.sync, signIn: services.signIn }
 }
 
 export function deactivate(): void {
@@ -39,7 +39,7 @@ export function deactivate(): void {
 }
 
 function disposables(views: Views): Disposer[] {
-  return [views.projectTree, views.catalogTree, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
+  return [views.projectTree, views.catalogTree, views.syncTree, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
 }
 
 function registrations(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Disposer[] {
@@ -47,6 +47,7 @@ function registrations(context: vscode.ExtensionContext, services: Services, wor
     new PipelineStatusBar(workspace.states),
     vscode.window.registerTreeDataProvider('warpengine.project', views.projectTree),
     vscode.window.registerTreeDataProvider('warpengine.catalog', views.catalogTree),
+    vscode.window.registerTreeDataProvider('warpengine.sync', views.syncTree),
     vscode.window.registerCustomEditorProvider(METADATA_VIEW, new MetadataEditor(context.extensionUri, views.schemas, workspace.projects)),
     vscode.tasks.registerTaskProvider(TASK_TYPE, views.tasks),
     vscode.languages.registerCompletionItemProvider(MARKER_SELECTOR, new MarkerCompletionProvider(services.platforms), ':', ' '),

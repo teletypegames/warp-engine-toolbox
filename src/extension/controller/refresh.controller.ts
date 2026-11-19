@@ -8,7 +8,7 @@ export interface RefreshDependencies {
   readonly platforms: PlatformService
   readonly projects: ProjectRegistry
   readonly states: RemoteStateStore
-  readonly catalogTree: TreeProvider
+  readonly trees: readonly TreeProvider[]
   readonly localEngine: LocalEngineController
 }
 
@@ -20,6 +20,6 @@ export class RefreshController {
     await this.deps.platforms.all(true).catch(() => undefined)
     await this.deps.projects.refresh()
     await this.deps.states.refresh()
-    this.deps.catalogTree.refresh()
+    for (const tree of this.deps.trees) tree.refresh()
   }
 }

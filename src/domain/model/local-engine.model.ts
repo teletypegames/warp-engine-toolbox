@@ -2,9 +2,13 @@ import type { Host } from './host.model'
 
 export type EngineProfile = 'server' | 'local'
 
+export type PairingPolicy = 'admin' | 'anyone'
+
 export interface EngineSync {
   readonly inbound: boolean
   readonly target: string | null
+  readonly pairing?: PairingPolicy | null
+  readonly features?: readonly string[]
 }
 
 export interface WellKnown {

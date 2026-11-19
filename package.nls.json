@@ -37,5 +37,18 @@
   "mcp.label": "WarpEngine Admin API",
   "command.installLocalEngine": "Install Local Engine",
   "config.localPort": "The port of the local WarpEngine on `127.0.0.1`. `0` (default) takes it from `~/.warpengine/config.json`, or 7470.",
-  "config.localData": "The local WarpEngine's data folder, where its token file is. Empty (default): `~/.warpengine`."
+  "config.localData": "The local WarpEngine's data folder, where its token file is. Empty (default): `~/.warpengine`.",
+  "command.syncTo": "Sync to…",
+  "command.syncPushNow": "Push Now",
+  "command.syncEditChannels": "Edit Channels…",
+  "command.syncCheck": "Check Connection",
+  "command.syncDisconnect": "Disconnect",
+  "command.addImage": "Add Image…",
+  "command.imageMakeDefault": "Make Default",
+  "command.imageMoveUp": "Move Up",
+  "command.imageMoveDown": "Move Down",
+  "command.imageRemove": "Remove Image",
+  "view.sync": "Sync",
+  "welcome.sync.local": "Sync sends the releases of your local engine on to another WarpEngine. It needs a local engine.\n[Install Local Engine](command:warpengine.installLocalEngine)",
+  "welcome.sync.pair": "Your local engine keeps its releases to itself so far. Pair it with another WarpEngine — Teletype Orbit, or your studio's — and they go on by themselves.\n[Sync to…](command:warpengine.syncTo)"
 }

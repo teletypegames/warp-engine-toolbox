@@ -6,6 +6,7 @@ import { CatalogService } from '../../domain/service/catalog.service'
 import { ConnectService } from '../../domain/service/connect.service'
 import { ConnectionService } from '../../domain/service/connection.service'
 import { HostService } from '../../domain/service/host.service'
+import { ImageService } from '../../domain/service/image.service'
 import { LocalEngineService } from '../../domain/service/local-engine.service'
 import { MakeService } from '../../domain/service/make.service'
 import { PipelineService } from '../../domain/service/pipeline.service'
@@ -17,6 +18,7 @@ import { ReleaseService } from '../../domain/service/release.service'
 import { RemoteStateService } from '../../domain/service/remote-state.service'
 import { ScaffoldService } from '../../domain/service/scaffold.service'
 import { SignInService } from '../../domain/service/sign-in.service'
+import { SyncService } from '../../domain/service/sync.service'
 import { GitCliFactory } from '../../infrastructure/git/git.cli-repository'
 import { DiscoveryHttpRepository } from '../../infrastructure/http/discovery.http-repository'
 import { WarpEngineHttpGateway } from '../../infrastructure/http/warp-engine.http-gateway'
@@ -33,6 +35,7 @@ import { AUTH_PROVIDER_ID } from '../auth/warp-engine.auth-provider'
 import type { CatalogController } from '../controller/catalog.controller'
 import type { ConnectController } from '../controller/connect.controller'
 import type { HostController } from '../controller/host.controller'
+import type { ImageController } from '../controller/image.controller'
 import type { LinkController } from '../controller/link.controller'
 import type { LocalEngineController } from '../controller/local-engine.controller'
 import type { NewGameController } from '../controller/new-game.controller'
@@ -40,6 +43,7 @@ import type { ProjectController } from '../controller/project.controller'
 import type { RefreshController } from '../controller/refresh.controller'
 import type { ReleaseController } from '../controller/release.controller'
 import type { SignInController } from '../controller/sign-in.controller'
+import type { SyncController } from '../controller/sync.controller'
 
 export interface Services {
   readonly hosts: HostService
@@ -58,6 +62,8 @@ export interface Services {
   readonly pipelines: PipelineService
   readonly make: MakeService
   readonly preview: PreviewRepository
+  readonly images: ImageService
+  readonly sync: SyncService
 }
 
 export interface Controllers {
@@ -71,6 +77,8 @@ export interface Controllers {
   readonly link: LinkController
   readonly catalog: CatalogController
   readonly localEngine: LocalEngineController
+  readonly sync: SyncController
+  readonly images: ImageController
 }
 
 interface Infrastructure {
@@ -85,7 +93,12 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const connection: ConnectionService = new ConnectionService(hosts, new AuthenticationTokenRepository(AUTH_PROVIDER_ID), new WarpEngineHttpGateway())
   const platforms: PlatformService = new PlatformService(hosts, connection, new MementoPlatformCacheRepository(context.globalState))
   const projects: ProjectService = new ProjectService(infrastructure.files, platforms, new ProcessShellRepository())
-  return { hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remoteServices(context, infrastructure, connection) }
+  const remote: Pick<Services, 'remoteState' | 'play' | 'signIn' | 'catalog' | 'pipelines' | 'preview'> = remoteServices(context, infrastructure, connection)
+  const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new DiscoveryHttpRepository(), hosts, local: localEngine, signIn: remote.signIn })
+  return {
+    hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remote,
+    images: new ImageService(connection), sync
+  }
 }
 
 function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {
