@@ -114,8 +114,8 @@ needs WarpEngine 5.2 or later.
 The local engine's installer asks whether you want a local CI: a git server (Gitea,
 `127.0.0.1:7471`) and a CI (Woodpecker) beside the engine, started and wired by it — no sign-in,
 no browser (`--ci on` later turns it on, `--ci off` stops it). With it running, the toolbox
-offers to set up a project of the local catalog without a pipeline (*Not for this project*
-stops asking; **WarpEngine: Set up local CI** in the command palette does it any time):
+offers to set up a project without a pipeline there (*Not for this project* stops asking);
+**Set up local CI** in the project panel and in the command palette does it any time:
 
 1. puts the project into the local catalog if it is not there, and gives it its repository, CI
    and CI token on the local git server;

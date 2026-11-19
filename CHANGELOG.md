@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.1
+
+- **Set up local CI** is back in the project panel while the project has no pipeline on the
+  local engine: the notification alone was easy to miss, and once it was gone nothing led there.
+
 ## 1.8.0
 
 - **Servers**: a view of the WarpEngine containers on this machine (the engine, the git server,

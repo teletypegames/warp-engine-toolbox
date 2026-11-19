@@ -91,7 +91,8 @@ export class ProjectTreeView implements TreeView {
 
   private remoteNodes(project: Project, state: RemoteState): TreeNode[] {
     const nodes: TreeNode[] = state.error ? [new TreeNode(state.error, { icon: 'warning' })] : []
-    if (!state.software) return [...nodes, ...this.connectNodes(state)]
+    nodes.push(...this.startNodes(state))
+    if (!state.software) return nodes
     nodes.push(new TreeNode(t('Release…'), { description: t('bump, tag, push'), icon: 'rocket', command: { title: t('Release'), command: 'warpengine.release' } }))
     if (state.pipeline) nodes.push(this.pipelineNode(state))
     if (RemoteStates.isOnSideBranch(state)) nodes.push(this.branchNode(project, state))
@@ -99,9 +100,12 @@ export class ProjectTreeView implements TreeView {
     return nodes
   }
 
-  private connectNodes(state: RemoteState): TreeNode[] {
-    if (state.error !== null || this.local.isCurrentHost()) return []
-    return [new TreeNode(t('Connect'), { description: t('repository, CI and catalog entry'), icon: 'plug', command: { title: t('Connect'), command: 'warpengine.connect' } })]
+  private startNodes(state: RemoteState): TreeNode[] {
+    if (state.error !== null) return []
+    if (this.local.isCurrentHost()) {
+      return state.pipeline ? [] : [new TreeNode(t('Set up local CI'), { icon: 'server-environment', command: { title: t('Set up local CI'), command: 'warpengine.setupLocalCi' } })]
+    }
+    return state.software ? [] : [new TreeNode(t('Connect'), { description: t('repository, CI and catalog entry'), icon: 'plug', command: { title: t('Connect'), command: 'warpengine.connect' } })]
   }
 
   private pipelineNode(state: RemoteState): TreeNode {
