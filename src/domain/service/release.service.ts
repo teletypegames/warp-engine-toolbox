@@ -1,5 +1,6 @@
 import { Changelog } from '../model/changelog.model'
 import type { Commit } from '../model/commit.model'
+import { LocalCi } from '../model/local-ci.model'
 import { msg, type Message } from '../model/message.model'
 import { MetadataDocument } from '../model/metadata-document.model'
 import { FilePath } from '../model/path.model'
@@ -14,6 +15,14 @@ import type { ProjectService } from './project.service'
 export type Readiness = 'unconnected' | 'dirty' | 'unwritable' | 'ready'
 export type ReleaseKind = 'stable' | 'beta'
 
+export interface ReleaseDependencies {
+  readonly sourceControl: SourceControlFactory
+  readonly files: FileSystemRepository
+  readonly connection: ConnectionService
+  readonly projects: ProjectService
+  readonly localHost?: () => boolean
+}
+
 export interface ReleaseInput {
   readonly project: Project
   readonly version: string
@@ -23,16 +32,23 @@ export interface ReleaseInput {
 const CHANGELOG = 'CHANGELOG.md'
 
 export class ReleaseService {
-  public constructor(
-    private readonly sourceControl: SourceControlFactory,
-    private readonly files: FileSystemRepository,
-    private readonly connection: ConnectionService,
-    private readonly projects: ProjectService
-  ) {}
+  private readonly sourceControl: SourceControlFactory
+  private readonly files: FileSystemRepository
+  private readonly connection: ConnectionService
+  private readonly projects: ProjectService
+  private readonly localHost: () => boolean
+
+  public constructor(deps: ReleaseDependencies) {
+    this.sourceControl = deps.sourceControl
+    this.files = deps.files
+    this.connection = deps.connection
+    this.projects = deps.projects
+    this.localHost = deps.localHost ?? ((): boolean => false)
+  }
 
   public async readiness(project: Project): Promise<Readiness> {
     const git: SourceControl = this.sourceControl.at(project.folder)
-    if (!(await git.isRepository()) || !(await git.remote())) return 'unconnected'
+    if (!(await git.isRepository()) || !(await this.pushRemote(git))) return 'unconnected'
     if (!(await git.isClean())) return 'dirty'
     return project.versionWritable ? 'ready' : 'unwritable'
   }
@@ -68,7 +84,12 @@ export class ReleaseService {
     await git.commit(`Release ${input.version}`)
     await git.tag(`v${input.version}`, entry)
     input.report(msg('pushing the tag: the CI builds and publishes it…'))
-    await git.push(['origin', 'HEAD', `v${input.version}`])
+    await git.push([(await this.pushRemote(git)) ?? 'origin', 'HEAD', `v${input.version}`])
+  }
+
+  public async pushRemote(git: SourceControl): Promise<string | null> {
+    if (this.localHost() && (await git.remoteUrl(LocalCi.REMOTE))) return LocalCi.REMOTE
+    return (await git.remote()) ? 'origin' : null
   }
 
   private async writeVersion(project: Project, version: string): Promise<void> {

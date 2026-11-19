@@ -7,6 +7,7 @@ import { ConnectService } from '../../domain/service/connect.service'
 import { ConnectionService } from '../../domain/service/connection.service'
 import { HostService } from '../../domain/service/host.service'
 import { ImageService } from '../../domain/service/image.service'
+import { LocalCiService } from '../../domain/service/local-ci.service'
 import { LocalEngineService } from '../../domain/service/local-engine.service'
 import { MakeService } from '../../domain/service/make.service'
 import { PipelineService } from '../../domain/service/pipeline.service'
@@ -37,6 +38,7 @@ import type { ConnectController } from '../controller/connect.controller'
 import type { HostController } from '../controller/host.controller'
 import type { ImageController } from '../controller/image.controller'
 import type { LinkController } from '../controller/link.controller'
+import type { LocalCiController } from '../controller/local-ci.controller'
 import type { LocalEngineController } from '../controller/local-engine.controller'
 import type { NewGameController } from '../controller/new-game.controller'
 import type { ProjectController } from '../controller/project.controller'
@@ -64,6 +66,7 @@ export interface Services {
   readonly preview: PreviewRepository
   readonly images: ImageService
   readonly sync: SyncService
+  readonly localCi: LocalCiService
 }
 
 export interface Controllers {
@@ -79,6 +82,7 @@ export interface Controllers {
   readonly localEngine: LocalEngineController
   readonly sync: SyncController
   readonly images: ImageController
+  readonly localCi: LocalCiController
 }
 
 interface Infrastructure {
@@ -95,18 +99,20 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const projects: ProjectService = new ProjectService(infrastructure.files, platforms, new ProcessShellRepository())
   const remote: Pick<Services, 'remoteState' | 'play' | 'signIn' | 'catalog' | 'pipelines' | 'preview'> = remoteServices(context, infrastructure, connection)
   const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new DiscoveryHttpRepository(), hosts, local: localEngine, signIn: remote.signIn })
+  const localCi: LocalCiService = new LocalCiService({ gateway: new WarpEngineHttpGateway(), local: localEngine, sourceControl: infrastructure.git })
+  const localHost = (): boolean => localEngine.isLocal(hosts.current()?.url ?? '')
   return {
-    hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remote,
-    images: new ImageService(connection), sync
+    hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects, localHost), ...remote,
+    images: new ImageService(connection), sync, localCi
   }
 }
 
-function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {
+function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService, localHost: () => boolean): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {
   const { files, git } = infrastructure
   return {
     scaffold: new ScaffoldService(new TarTemplateRepository(), files, git),
     connect: new ConnectService(connection, git, files),
-    release: new ReleaseService(git, files, connection, projects),
+    release: new ReleaseService({ sourceControl: git, files, connection, projects, localHost }),
     publishCheck: new PublishCheckService(connection, projects),
     make: new MakeService(files)
   }

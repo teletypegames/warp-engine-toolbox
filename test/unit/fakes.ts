@@ -27,6 +27,7 @@ export class FakeGit implements SourceControl {
   public repository = true
   public origin: string | null = 'git@host:games/rabbit.git'
   public clean = true
+  public readonly remotes: Map<string, string> = new Map<string, string>()
   public commits: Commit[] = [{ sha: 'abcdef1234', subject: 'Faster rabbit' }]
 
   public async isRepository(): Promise<boolean> { return Promise.resolve(this.repository) }
@@ -43,6 +44,8 @@ export class FakeGit implements SourceControl {
   public async addAll(): Promise<void> { this.calls.push('add'); this.clean = true; return Promise.resolve() }
   public async commit(message: string): Promise<void> { this.calls.push(`commit ${message}`); return Promise.resolve() }
   public async setRemote(url: string): Promise<void> { this.calls.push(`remote ${url}`); return Promise.resolve() }
+  public async remoteUrl(name: string): Promise<string | null> { return Promise.resolve(this.remotes.get(name) ?? null) }
+  public async setRemoteUrl(name: string, url: string): Promise<void> { this.calls.push(`remote ${name} ${url}`); this.remotes.set(name, url); return Promise.resolve() }
   public async tag(name: string): Promise<void> { this.calls.push(`tag ${name}`); return Promise.resolve() }
   public async push(args: readonly string[]): Promise<void> { this.calls.push(`push ${args.join(' ')}`); return Promise.resolve() }
 }

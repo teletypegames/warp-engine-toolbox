@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.0
+
+- **Set Up Local CI**: on a local engine (WarpEngine 5.4, warp-engine-local 1.2) one button gives
+  the project a git server and a CI on this machine: the engine starts Gitea and Woodpecker and
+  wires them (the steps show in the notification), puts the project in the local catalog when it
+  is not there, connects it, and the toolbox adds the `warp` remote and pushes — the first build
+  starts. In the project panel instead of *Connect* while the local engine is the host.
+- **Release… on the local CI**: with the local engine as the host and a `warp` remote, the tag
+  goes there, so the local Woodpecker builds and publishes it (and Sync sends it on).
+- **The Local CI view**: the components of the local engine (git server, CI) with their state;
+  *Start*, *Stop*, *Remove…* (with or without the data), *Open in Browser* for the git server
+  (its generated password on the clipboard).
+
 ## 1.5.0
 
 - **Sync to…**: pairs the local engine with another WarpEngine (5.3, `sync_pairings`) in one

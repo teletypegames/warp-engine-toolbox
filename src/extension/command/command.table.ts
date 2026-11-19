@@ -36,8 +36,13 @@ function accountCommands({ signIn, host, refresh, link, localEngine }: Controlle
   ]
 }
 
-function syncCommands({ sync, images }: Controllers): CommandRow[] {
+function syncCommands({ sync, images, localCi }: Controllers): CommandRow[] {
   return [
+    ['warpengine.setupLocalCi', async (): Promise<void> => { await localCi.setUp() }],
+    ['warpengine.localCiEnable', async (node?: TreeNode): Promise<void> => { await localCi.enable(node) }],
+    ['warpengine.localCiDisable', async (node?: TreeNode): Promise<void> => { await localCi.disable(node) }],
+    ['warpengine.localCiRemove', async (node?: TreeNode): Promise<void> => { await localCi.remove(node) }],
+    ['warpengine.localCiOpen', async (node?: TreeNode): Promise<void> => { await localCi.open(node) }],
     ['warpengine.syncTo', async (): Promise<void> => { await sync.syncTo() }],
     ['warpengine.syncPushNow', async (node?: TreeNode): Promise<void> => { await sync.pushNow(node) }],
     ['warpengine.syncEditChannels', async (node?: TreeNode): Promise<void> => { await sync.editChannels(node) }],

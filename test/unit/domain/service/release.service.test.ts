@@ -19,7 +19,7 @@ function project(): Project {
 }
 
 function service(files: MemoryFiles, git: FakeGitFactory): ReleaseService {
-  return new ReleaseService(git, files, Object.create(null) as ConnectionService, Object.create(null) as ProjectService)
+  return new ReleaseService({ sourceControl: git, files, connection: Object.create(null) as ConnectionService, projects: Object.create(null) as ProjectService })
 }
 
 describe('ReleaseService', () => {

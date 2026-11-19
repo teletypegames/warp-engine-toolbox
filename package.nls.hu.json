@@ -50,5 +50,12 @@
   "command.imageRemove": "Kép eltávolítása",
   "view.sync": "Szinkron",
   "welcome.sync.local": "A szinkron a helyi motorod kiadásait továbbküldi egy másik WarpEngine-re. Ehhez helyi motor kell.\n[Helyi motor telepítése](command:warpengine.installLocalEngine)",
-  "welcome.sync.pair": "A helyi motorod egyelőre megtartja a kiadásait. Párosítsd egy másik WarpEngine-nel — a Teletype Orbittal vagy a stúdiódéval —, és onnantól maguktól mennek tovább.\n[Szinkron ide…](command:warpengine.syncTo)"
+  "welcome.sync.pair": "A helyi motorod egyelőre megtartja a kiadásait. Párosítsd egy másik WarpEngine-nel — a Teletype Orbittal vagy a stúdiódéval —, és onnantól maguktól mennek tovább.\n[Szinkron ide…](command:warpengine.syncTo)",
+  "command.setupLocalCi": "Helyi CI beállítása",
+  "command.localCiEnable": "Indítás",
+  "command.localCiDisable": "Leállítás",
+  "command.localCiRemove": "Eltávolítás…",
+  "command.localCiOpen": "Megnyitás böngészőben",
+  "view.localCi": "Helyi CI",
+  "welcome.localCi": "Git-szerver és CI ezen a gépen, amit a helyi motorod indít és köt össze. Ehhez helyi motor kell.\n[Helyi motor telepítése](command:warpengine.installLocalEngine)"
 }

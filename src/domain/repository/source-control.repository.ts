@@ -7,6 +7,8 @@ export interface SourceControl {
   defaultBranch(): Promise<string | null>
   isClean(): Promise<boolean>
   remote(): Promise<string | null>
+  remoteUrl(name: string): Promise<string | null>
+  setRemoteUrl(name: string, url: string): Promise<void>
   hasCommits(): Promise<boolean>
   fetchTags(): Promise<void>
   lastTag(): Promise<string | null>

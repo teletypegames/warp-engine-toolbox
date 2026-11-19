@@ -44,7 +44,13 @@ export class GitCliRepository implements SourceControl {
   public async push(args: readonly string[]): Promise<void> { await this.must(['push', ...args]) }
 
   public async setRemote(url: string): Promise<void> {
-    await this.must((await this.remote()) ? ['remote', 'set-url', ORIGIN, url] : ['remote', 'add', ORIGIN, url])
+    await this.setRemoteUrl(ORIGIN, url)
+  }
+
+  public async remoteUrl(name: string): Promise<string | null> { return this.answer(['remote', 'get-url', name]) }
+
+  public async setRemoteUrl(name: string, url: string): Promise<void> {
+    await this.must((await this.remoteUrl(name)) ? ['remote', 'set-url', name, url] : ['remote', 'add', name, url])
   }
 
   private async git(args: readonly string[]): Promise<ShellResult> {

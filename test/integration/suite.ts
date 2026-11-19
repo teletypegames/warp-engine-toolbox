@@ -44,6 +44,22 @@ async function runLocal(api: ToolboxApi): Promise<void> {
   const remote: string = process.env['WARPENGINE_TEST_REMOTE'] ?? ''
   const token: string = process.env['WARPENGINE_TEST_REMOTE_TOKEN'] ?? ''
   if (remote && token) await runSync(api, remote, token)
+  if (process.env['WARPENGINE_TEST_LOCAL_CI'] === '1') await runLocalCi(api)
+}
+
+async function runLocalCi(api: ToolboxApi): Promise<void> {
+  await step('lists the local git server and CI', async () => {
+    const keys: string[] = (await api.localCi.components()).map((component) => component.key)
+    assert.deepEqual(keys, ['gitea', 'woodpecker'])
+  })
+
+  await step('sets the project up on the local CI and pushes it to the warp remote', async () => {
+    const steps: string[] = []
+    const setup = await api.localCi.setUp(api.projects.require(), (message) => { steps.push(String(message.args[0] ?? message.text)) })
+    assert.match(setup.pushUrl, /^http:\/\/warp:[^@]+@localhost:\d+\/games\/rabbit\.git$/)
+    assert.equal(setup.remoteName, 'warp')
+    assert.ok(steps.some((text) => text.includes('let warp push')), steps.join(' | '))
+  })
 }
 
 async function runSync(api: ToolboxApi, remote: string, token: string): Promise<void> {

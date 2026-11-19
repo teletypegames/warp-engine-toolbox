@@ -31,6 +31,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **This branch** | On a branch other than the default one: its development build (not listed in the catalog), with a play link to share with testers; a notification when a push has built it. |
 | **Catalog** | Your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; status, category and highlight can be changed in place. |
 | **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
+| **Local CI** | **Set Up Local CI** gives a project a git server and a CI on this machine, started and wired by the local engine; *Release…* then tags it there. |
 | **Sync** | A local engine's releases go on to another WarpEngine — Teletype Orbit, or your studio's: **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
@@ -105,6 +106,23 @@ refresh: it asks `http://127.0.0.1:<port>/.well-known/warp-engine` (the port fro
 Connecting signs in with the engine's token file (`~/.warpengine/local-token`;
 `warpengine.localData` names another folder) — no device code, no approval. A local engine
 needs WarpEngine 5.2 or later.
+
+## Local CI
+
+On a local engine (warp-engine-local 1.2 with WarpEngine 5.4) the project panel offers **Set Up
+Local CI** instead of *Connect*. One click:
+
+1. the local engine starts a git server (Gitea, `127.0.0.1:7471`) and a CI (Woodpecker) in
+   Docker and wires them together and to itself — no sign-in, no browser; the steps show in the
+   notification (the first time the images are pulled);
+2. the project goes into the local catalog if it is not there, and gets its repository, CI and
+   CI token;
+3. the toolbox adds the `warp` remote (a push token in its URL) and pushes: the first build starts.
+
+From then on **Release…** pushes the tag to `warp`, the local Woodpecker builds it with the
+pipeline the engine serves, publishes it on the local engine, and Sync sends it on. The *Local
+CI* view shows the components: *Start*, *Stop*, *Remove…* (keeping or dropping the data), and
+*Open in Browser* for the git server, with its generated password on the clipboard.
 
 ## Sync
 

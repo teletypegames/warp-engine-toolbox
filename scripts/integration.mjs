@@ -27,6 +27,6 @@ await runTests({
   vscodeExecutablePath: executable,
   extensionDevelopmentPath: resolve('.'),
   extensionTestsPath: resolve('scripts/integration-entry.cjs'),
-  extensionTestsEnv: localData ? { WARPENGINE_TEST_LOCAL: '1', WARPENGINE_TEST_REMOTE: process.env.WARPENGINE_TEST_REMOTE ?? '', WARPENGINE_TEST_REMOTE_TOKEN: process.env.WARPENGINE_TEST_REMOTE_TOKEN ?? '' } : {},
+  extensionTestsEnv: localData ? { WARPENGINE_TEST_LOCAL: '1', WARPENGINE_TEST_REMOTE: process.env.WARPENGINE_TEST_REMOTE ?? '', WARPENGINE_TEST_REMOTE_TOKEN: process.env.WARPENGINE_TEST_REMOTE_TOKEN ?? '', WARPENGINE_TEST_LOCAL_CI: process.env.WARPENGINE_TEST_LOCAL_CI ?? '' } : {},
   launchArgs: [workspace, '--disable-extensions', '--skip-welcome', '--skip-release-notes'],
 })

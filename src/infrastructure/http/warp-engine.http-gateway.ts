@@ -4,6 +4,7 @@ import type { AdminRepositories, WarpEngineGateway } from '../../domain/reposito
 import { HttpBuildRepository } from './build.http-repository'
 import { HttpCatalogRepository } from './catalog.http-repository'
 import { HttpImageRepository } from './image.http-repository'
+import { HttpLocalComponentRepository } from './local-component.http-repository'
 import { HttpPipelineRepository } from './pipeline.http-repository'
 import { HttpSignInRepository } from './sign-in.http-repository'
 import { HttpSyncPairingRepository, HttpSyncPeerRepository } from './sync.http-repository'
@@ -18,7 +19,8 @@ export class WarpEngineHttpGateway implements WarpEngineGateway {
     const client: WarpEngineHttpClient = new WarpEngineHttpClient(hostUrl, token)
     return {
       catalog: new HttpCatalogRepository(client), pipelines: new HttpPipelineRepository(client), images: new HttpImageRepository(client),
-      syncPeers: new HttpSyncPeerRepository(client), syncPairings: new HttpSyncPairingRepository(client)
+      syncPeers: new HttpSyncPeerRepository(client), syncPairings: new HttpSyncPairingRepository(client),
+      local: new HttpLocalComponentRepository(client)
     }
   }
 

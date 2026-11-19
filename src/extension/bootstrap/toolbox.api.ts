@@ -1,5 +1,6 @@
 import type { Platform } from '../../domain/model/platform.model'
 import type { Host } from '../../domain/model/host.model'
+import type { LocalCiService } from '../../domain/service/local-ci.service'
 import type { ScaffoldService } from '../../domain/service/scaffold.service'
 import type { SignInService } from '../../domain/service/sign-in.service'
 import type { SyncService } from '../../domain/service/sync.service'
@@ -20,4 +21,5 @@ export interface ToolboxApi {
   readonly scaffold: ScaffoldService
   readonly sync: SyncService
   readonly signIn: SignInService
+  readonly localCi: LocalCiService
 }

@@ -4,6 +4,7 @@ import { isRunning, isSuccess, type PipelineRun } from '../../../domain/model/pi
 import type { Project } from '../../../domain/model/project.model'
 import { isOnSideBranch, latestRun, type RemoteState } from '../../../domain/model/remote-state.model'
 import type { HostService } from '../../../domain/service/host.service'
+import type { LocalEngineService } from '../../../domain/service/local-engine.service'
 import type { PlayService } from '../../../domain/service/play.service'
 import { t } from '../../ui/l10n'
 import type { ProjectRegistry } from '../../workspace/project.registry'
@@ -16,13 +17,28 @@ import type { TreeView } from './tree.provider'
 const RUN_LIMIT = 10
 const RELEASE_LIMIT = 15
 
+export interface ProjectTreeDependencies {
+  readonly hosts: HostService
+  readonly projects: ProjectRegistry
+  readonly states: RemoteStateStore
+  readonly play: PlayService
+  readonly local: LocalEngineService
+}
+
 export class ProjectTreeView implements TreeView {
-  public constructor(
-    private readonly hosts: HostService,
-    private readonly projects: ProjectRegistry,
-    private readonly states: RemoteStateStore,
-    private readonly play: PlayService
-  ) {}
+  private readonly hosts: HostService
+  private readonly projects: ProjectRegistry
+  private readonly states: RemoteStateStore
+  private readonly play: PlayService
+  private readonly local: LocalEngineService
+
+  public constructor(deps: ProjectTreeDependencies) {
+    this.hosts = deps.hosts
+    this.projects = deps.projects
+    this.states = deps.states
+    this.play = deps.play
+    this.local = deps.local
+  }
 
   public async roots(): Promise<TreeNode[]> {
     const project: Project | null = this.projects.current()
@@ -64,12 +80,26 @@ export class ProjectTreeView implements TreeView {
 
   private remoteNodes(project: Project, state: RemoteState): TreeNode[] {
     const nodes: TreeNode[] = state.error ? [new TreeNode(state.error, { icon: 'warning' })] : []
-    if (!state.software) return [...nodes, this.connectNode()]
+    const start: TreeNode[] = this.startNodes(state)
+    if (!state.software) return [...nodes, ...start]
+    nodes.push(...start)
     nodes.push(new TreeNode(t('Release…'), { description: t('bump, tag, push'), icon: 'rocket', command: { title: t('Release'), command: 'warpengine.release' } }))
     if (state.pipeline) nodes.push(this.pipelineNode(state))
     if (isOnSideBranch(state)) nodes.push(this.branchNode(project, state))
     nodes.push(this.releasesNode(project, state))
     return nodes
+  }
+
+  private startNodes(state: RemoteState): TreeNode[] {
+    if (this.local.isLocal(this.hosts.current()?.url ?? '')) return state.pipeline ? [] : [ProjectTreeView.localCiNode()]
+    return state.software ? [] : [this.connectNode()]
+  }
+
+  private static localCiNode(): TreeNode {
+    return new TreeNode(t('Set up local CI'), {
+      description: t('git server + CI on this machine'), icon: 'server-environment',
+      command: { title: t('Set up local CI'), command: 'warpengine.setupLocalCi' }
+    })
   }
 
   private connectNode(): TreeNode {

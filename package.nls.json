@@ -50,5 +50,12 @@
   "command.imageRemove": "Remove Image",
   "view.sync": "Sync",
   "welcome.sync.local": "Sync sends the releases of your local engine on to another WarpEngine. It needs a local engine.\n[Install Local Engine](command:warpengine.installLocalEngine)",
-  "welcome.sync.pair": "Your local engine keeps its releases to itself so far. Pair it with another WarpEngine — Teletype Orbit, or your studio's — and they go on by themselves.\n[Sync to…](command:warpengine.syncTo)"
+  "welcome.sync.pair": "Your local engine keeps its releases to itself so far. Pair it with another WarpEngine — Teletype Orbit, or your studio's — and they go on by themselves.\n[Sync to…](command:warpengine.syncTo)",
+  "command.setupLocalCi": "Set Up Local CI",
+  "command.localCiEnable": "Start",
+  "command.localCiDisable": "Stop",
+  "command.localCiRemove": "Remove…",
+  "command.localCiOpen": "Open in Browser",
+  "view.localCi": "Local CI",
+  "welcome.localCi": "A git server and a CI on this machine, started and wired by your local engine. It needs a local engine.\n[Install Local Engine](command:warpengine.installLocalEngine)"
 }
