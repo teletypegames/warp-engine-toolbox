@@ -1,21 +1,42 @@
+import type * as vscode from 'vscode'
 import type { LocalCiSetup } from '../../domain/model/local-ci.model'
 import type { Project } from '../../domain/model/project.model'
+import type { RemoteState } from '../../domain/model/remote-state.model'
+import type { HostService } from '../../domain/service/host.service'
 import type { LocalCiService } from '../../domain/service/local-ci.service'
 import { Dialogs } from '../ui/dialogs'
-import { t } from '../ui/l10n'
+import { errorText, t } from '../ui/l10n'
 import type { TreeProvider } from '../view/tree/tree.provider'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
 
 export interface LocalCiDependencies {
   readonly localCi: LocalCiService
+  readonly hosts: HostService
+  readonly memory: vscode.Memento
   readonly projects: ProjectRegistry
   readonly states: RemoteStateStore
   readonly tree: TreeProvider
 }
 
+const DECLINED_KEY = 'warpengine.localCiDeclined'
+
 export class LocalCiController {
+  private readonly offered: Set<string> = new Set<string>()
+
   public constructor(private readonly deps: LocalCiDependencies) {}
+
+  public async offer(state: RemoteState | null): Promise<void> {
+    if (!state || !(await this.shouldAsk(state))) return
+    const name: string = state.project.name
+    this.offered.add(name)
+    const setUp: string = t('Set up')
+    const never: string = t('Not for this project')
+    const answer: string | undefined = await Dialogs.ask(t('The local CI runs on this machine. Set {0} up on it: a repository on the local git server, built on every push?', state.project.title), setUp, never)
+    if (answer === never) await this.deps.memory.update(DECLINED_KEY, [...this.declined(), name])
+    if (answer !== setUp) return
+    await this.setUp().catch((error: unknown) => { Dialogs.error(errorText(error)) })
+  }
 
   public async setUp(): Promise<void> {
     const project: Project = this.deps.projects.require()
@@ -27,4 +48,14 @@ export class LocalCiController {
     Dialogs.info(t('{0} builds on the local CI now: pushed to the "{1}" remote. Release… can tag it there.{2}', project.title, setup.remoteName, warnings))
   }
 
+  private async shouldAsk(state: RemoteState): Promise<boolean> {
+    if (!this.deps.localCi.needsSetUp(state, this.deps.hosts.current()?.url ?? null)) return false
+    const name: string = state.project.name
+    if (this.offered.has(name) || this.declined().includes(name)) return false
+    return this.deps.localCi.ready()
+  }
+
+  private declined(): string[] {
+    return this.deps.memory.get<string[]>(DECLINED_KEY) ?? []
+  }
 }

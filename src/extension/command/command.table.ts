@@ -29,6 +29,7 @@ function accountCommands({ signIn, host, refresh, link, localEngine }: Controlle
     ['warpengine.installLocalEngine', async (): Promise<void> => { localEngine.install(); return Promise.resolve() }],
     ['warpengine.signIn', async (): Promise<void> => { await signIn.signIn() }],
     ['warpengine.signOut', async (): Promise<void> => { await signIn.signOut() }],
+    ['warpengine.reauthorize', async (): Promise<void> => { await signIn.reauthorize() }],
     ['warpengine.selectHost', async (): Promise<void> => { await host.select() }],
     ['warpengine.refresh', async (): Promise<void> => { await refresh.refresh() }],
     ['warpengine.openUrl', async (target?: string | TreeNode): Promise<void> => { await link.open(target) }],
@@ -36,8 +37,9 @@ function accountCommands({ signIn, host, refresh, link, localEngine }: Controlle
   ]
 }
 
-function syncCommands({ sync, images, localCi }: Controllers): CommandRow[] {
+function syncCommands({ sync, images, localCi, servers }: Controllers): CommandRow[] {
   return [
+    ['warpengine.purgeLocalEngine', async (): Promise<void> => { await servers.purge() }],
     ['warpengine.setupLocalCi', async (): Promise<void> => { await localCi.setUp() }],
     ['warpengine.syncTo', async (): Promise<void> => { await sync.syncTo() }],
     ['warpengine.syncPushNow', async (node?: TreeNode): Promise<void> => { await sync.pushNow(node) }],
@@ -57,6 +59,8 @@ function catalogCommands({ catalog }: Controllers): CommandRow[] {
     ['warpengine.triggerPipeline', async (node?: TreeNode): Promise<void> => { await catalog.triggerPipeline(node) }],
     ['warpengine.editSoftwareField', async (node?: TreeNode): Promise<void> => { await catalog.editField(node) }],
     ['warpengine.showChecklist', async (node?: TreeNode): Promise<void> => { await catalog.showChecklist(node) }],
-    ['warpengine.showStatistics', async (node?: TreeNode): Promise<void> => { await catalog.showStatistics(node) }]
+    ['warpengine.showStatistics', async (node?: TreeNode): Promise<void> => { await catalog.showStatistics(node) }],
+    ['warpengine.deleteSoftware', async (node?: TreeNode): Promise<void> => { await catalog.deleteSoftware(node) }],
+    ['warpengine.deleteRelease', async (node?: TreeNode): Promise<void> => { await catalog.deleteRelease(node) }]
   ]
 }

@@ -10,6 +10,11 @@ export class SignInController {
     await this.refresh.refresh()
   }
 
+  public async reauthorize(): Promise<void> {
+    await this.auth.signOut()
+    await this.signIn()
+  }
+
   public async signOut(): Promise<void> {
     await this.auth.signOut()
     await this.refresh.refresh()

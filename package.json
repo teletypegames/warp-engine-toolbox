@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "%description%",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",
@@ -235,6 +235,30 @@
         "title": "%command.setupLocalCi%",
         "category": "WarpEngine",
         "icon": "$(server-environment)"
+      },
+      {
+        "command": "warpengine.reauthorize",
+        "title": "%command.reauthorize%",
+        "category": "WarpEngine",
+        "icon": "$(key)"
+      },
+      {
+        "command": "warpengine.purgeLocalEngine",
+        "title": "%command.purgeLocalEngine%",
+        "category": "WarpEngine",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "warpengine.deleteSoftware",
+        "title": "%command.deleteSoftware%",
+        "category": "WarpEngine",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "warpengine.deleteRelease",
+        "title": "%command.deleteRelease%",
+        "category": "WarpEngine",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -246,7 +270,7 @@
         },
         {
           "command": "warpengine.refresh",
-          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync",
+          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync || view == warpengine.servers",
           "group": "navigation@9"
         },
         {
@@ -262,6 +286,16 @@
         {
           "command": "warpengine.syncTo",
           "when": "view == warpengine.sync && warpengine.localEngine",
+          "group": "navigation@1"
+        },
+        {
+          "command": "warpengine.purgeLocalEngine",
+          "when": "view == warpengine.servers && warpengine.hasServers",
+          "group": "navigation@2"
+        },
+        {
+          "command": "warpengine.installLocalEngine",
+          "when": "view == warpengine.servers && !warpengine.hasServers",
           "group": "navigation@1"
         }
       ],
@@ -345,6 +379,16 @@
           "command": "warpengine.imageRemove",
           "when": "viewItem =~ /image\\b/",
           "group": "2_danger@1"
+        },
+        {
+          "command": "warpengine.deleteSoftware",
+          "when": "view == warpengine.catalog && viewItem =~ /software/",
+          "group": "2_danger@1"
+        },
+        {
+          "command": "warpengine.deleteRelease",
+          "when": "view == warpengine.catalog && viewItem =~ /release/",
+          "group": "2_danger@1"
         }
       ],
       "commandPalette": [
@@ -419,6 +463,14 @@
         {
           "command": "warpengine.setupLocalCi",
           "when": "warpengine.localEngine"
+        },
+        {
+          "command": "warpengine.deleteSoftware",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.deleteRelease",
+          "when": "false"
         }
       ],
       "editor/title": [
@@ -451,6 +503,10 @@
         {
           "id": "warpengine.sync",
           "name": "%view.sync%"
+        },
+        {
+          "id": "warpengine.servers",
+          "name": "%view.servers%"
         }
       ]
     },
@@ -478,6 +534,10 @@
         "view": "warpengine.sync",
         "contents": "%welcome.sync.pair%",
         "when": "warpengine.localEngine && !warpengine.syncing"
+      },
+      {
+        "view": "warpengine.servers",
+        "contents": "%welcome.servers%"
       }
     ],
     "authentication": [

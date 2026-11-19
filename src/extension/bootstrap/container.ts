@@ -1,10 +1,11 @@
-import type * as vscode from 'vscode'
+import * as vscode from 'vscode'
 import type { PreviewRepository } from '../../domain/repository/preview.repository'
 import type { FileSystemRepository } from '../../domain/repository/file-system.repository'
 import type { SourceControlFactory } from '../../domain/repository/source-control.repository'
 import { CatalogService } from '../../domain/service/catalog.service'
 import { ConnectService } from '../../domain/service/connect.service'
 import { ConnectionService } from '../../domain/service/connection.service'
+import { HostInfoService } from '../../domain/service/host-info.service'
 import { HostService } from '../../domain/service/host.service'
 import { ImageService } from '../../domain/service/image.service'
 import { LocalCiService } from '../../domain/service/local-ci.service'
@@ -18,12 +19,14 @@ import { PublishCheckService } from '../../domain/service/publish-check.service'
 import { ReleaseService } from '../../domain/service/release.service'
 import { RemoteStateService } from '../../domain/service/remote-state.service'
 import { ScaffoldService } from '../../domain/service/scaffold.service'
+import { ServerService } from '../../domain/service/server.service'
 import { SignInService } from '../../domain/service/sign-in.service'
 import { SyncService } from '../../domain/service/sync.service'
 import { GitCliFactory } from '../../infrastructure/git/git.cli-repository'
 import { DiscoveryHttpRepository } from '../../infrastructure/http/discovery.http-repository'
 import { WarpEngineHttpGateway } from '../../infrastructure/http/warp-engine.http-gateway'
 import { PreviewServer } from '../../infrastructure/preview/preview.server'
+import { DockerContainerRuntime } from '../../infrastructure/process/container.docker-repository'
 import { ProcessShellRepository } from '../../infrastructure/process/shell.process-repository'
 import { TarTemplateRepository } from '../../infrastructure/template/template.tar-repository'
 import { VsCodeFileSystemRepository } from '../../infrastructure/vscode/file-system.vscode-repository'
@@ -43,6 +46,7 @@ import type { LocalEngineController } from '../controller/local-engine.controlle
 import type { NewGameController } from '../controller/new-game.controller'
 import type { ProjectController } from '../controller/project.controller'
 import type { RefreshController } from '../controller/refresh.controller'
+import type { ServersController } from '../controller/servers.controller'
 import type { ReleaseController } from '../controller/release.controller'
 import type { SignInController } from '../controller/sign-in.controller'
 import type { SyncController } from '../controller/sync.controller'
@@ -67,6 +71,8 @@ export interface Services {
   readonly images: ImageService
   readonly sync: SyncService
   readonly localCi: LocalCiService
+  readonly servers: ServerService
+  readonly hostInfo: HostInfoService
 }
 
 export interface Controllers {
@@ -83,6 +89,7 @@ export interface Controllers {
   readonly sync: SyncController
   readonly images: ImageController
   readonly localCi: LocalCiController
+  readonly servers: ServersController
 }
 
 interface Infrastructure {
@@ -102,8 +109,13 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const localCi: LocalCiService = new LocalCiService({ gateway: new WarpEngineHttpGateway(), local: localEngine, sourceControl: infrastructure.git })
   return {
     hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remote,
-    images: new ImageService(connection), sync, localCi
+    images: new ImageService(connection), sync, localCi,
+    servers: new ServerService(new DockerContainerRuntime(dockerBinary)), hostInfo: new HostInfoService(new DiscoveryHttpRepository(), hosts)
   }
+}
+
+function dockerBinary(): string {
+  return vscode.workspace.getConfiguration('warpengine').get<string>('docker') ?? 'docker'
 }
 
 function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {

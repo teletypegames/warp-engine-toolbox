@@ -18,10 +18,11 @@ export interface RemoteState extends GitPosition {
   readonly releases: readonly Release[]
   readonly branchBuild: Release | null
   readonly error: string | null
+  readonly unauthorized: boolean
 }
 
 export function emptyRemoteState(project: Project, position: GitPosition, signedIn: boolean): RemoteState {
-  return { project, ...position, signedIn, software: null, pipeline: null, runs: [], headRun: null, releases: [], branchBuild: null, error: null }
+  return { project, ...position, signedIn, software: null, pipeline: null, runs: [], headRun: null, releases: [], branchBuild: null, error: null, unauthorized: false }
 }
 
 export function latestRun(state: RemoteState): PipelineRun | null {

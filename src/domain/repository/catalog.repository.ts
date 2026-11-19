@@ -6,6 +6,8 @@ export interface CatalogRepository {
   softwares(): Promise<Software[]>
   softwareByName(name: string): Promise<Software | null>
   updateSoftware(id: number, changes: Partial<Software>): Promise<Software>
+  deleteSoftware(id: number): Promise<void>
+  deleteRelease(id: number): Promise<void>
   releases(softwareId: number): Promise<Release[]>
   externalLinks(softwareId: number): Promise<ExternalLink[]>
   downloadStats(softwareId: number): Promise<unknown>

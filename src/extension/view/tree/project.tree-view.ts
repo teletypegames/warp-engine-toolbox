@@ -3,6 +3,7 @@ import { listedReleases, type Release } from '../../../domain/model/catalog.mode
 import { isRunning, isSuccess, type PipelineRun } from '../../../domain/model/pipeline.model'
 import type { Project } from '../../../domain/model/project.model'
 import { isOnSideBranch, latestRun, type RemoteState } from '../../../domain/model/remote-state.model'
+import type { HostInfoService } from '../../../domain/service/host-info.service'
 import type { HostService } from '../../../domain/service/host.service'
 import type { LocalEngineService } from '../../../domain/service/local-engine.service'
 import type { PlayService } from '../../../domain/service/play.service'
@@ -22,6 +23,7 @@ export interface ProjectTreeDependencies {
   readonly projects: ProjectRegistry
   readonly states: RemoteStateStore
   readonly play: PlayService
+  readonly hostInfo: HostInfoService
   readonly local: LocalEngineService
 }
 
@@ -30,6 +32,7 @@ export class ProjectTreeView implements TreeView {
   private readonly projects: ProjectRegistry
   private readonly states: RemoteStateStore
   private readonly play: PlayService
+  private readonly hostInfo: HostInfoService
   private readonly local: LocalEngineService
 
   public constructor(deps: ProjectTreeDependencies) {
@@ -37,6 +40,7 @@ export class ProjectTreeView implements TreeView {
     this.projects = deps.projects
     this.states = deps.states
     this.play = deps.play
+    this.hostInfo = deps.hostInfo
     this.local = deps.local
   }
 
@@ -46,7 +50,14 @@ export class ProjectTreeView implements TreeView {
     const nodes: TreeNode[] = [this.platformNode(project), ...(await this.localNodes(project))]
     const state: RemoteState | null = this.states.current()
     if (!state?.signedIn) return [...nodes, this.signInNode()]
-    return [...nodes, ...this.remoteNodes(project, state)]
+    if (state.unauthorized) return [...nodes, TreeNode.reauthorize()]
+    return [...nodes, ...this.remoteNodes(project, state), ...(await this.adminNodes(state))]
+  }
+
+  private async adminNodes(state: RemoteState): Promise<TreeNode[]> {
+    const url: string | null = state.software ? await this.hostInfo.adminUrl(state.software) : null
+    if (!url) return []
+    return [new TreeNode(t('Admin page'), { description: this.hosts.current()?.name ?? '', tooltip: url, icon: 'globe', command: TreeNode.openUrl(url), context: 'link' })]
   }
 
   private platformNode(project: Project): TreeNode {
@@ -80,9 +91,7 @@ export class ProjectTreeView implements TreeView {
 
   private remoteNodes(project: Project, state: RemoteState): TreeNode[] {
     const nodes: TreeNode[] = state.error ? [new TreeNode(state.error, { icon: 'warning' })] : []
-    const start: TreeNode[] = this.startNodes(state)
-    if (!state.software) return [...nodes, ...start]
-    nodes.push(...start)
+    if (!state.software) return [...nodes, ...this.connectNodes(state)]
     nodes.push(new TreeNode(t('Release…'), { description: t('bump, tag, push'), icon: 'rocket', command: { title: t('Release'), command: 'warpengine.release' } }))
     if (state.pipeline) nodes.push(this.pipelineNode(state))
     if (isOnSideBranch(state)) nodes.push(this.branchNode(project, state))
@@ -90,20 +99,9 @@ export class ProjectTreeView implements TreeView {
     return nodes
   }
 
-  private startNodes(state: RemoteState): TreeNode[] {
-    if (this.local.isLocal(this.hosts.current()?.url ?? '')) return state.pipeline ? [] : [ProjectTreeView.localCiNode()]
-    return state.software ? [] : [this.connectNode()]
-  }
-
-  private static localCiNode(): TreeNode {
-    return new TreeNode(t('Set up local CI'), {
-      description: t('git server + CI on this machine'), icon: 'server-environment',
-      command: { title: t('Set up local CI'), command: 'warpengine.setupLocalCi' }
-    })
-  }
-
-  private connectNode(): TreeNode {
-    return new TreeNode(t('Connect'), { description: t('repository, CI and catalog entry'), icon: 'plug', command: { title: t('Connect'), command: 'warpengine.connect' } })
+  private connectNodes(state: RemoteState): TreeNode[] {
+    if (state.error !== null || this.local.isLocal(this.hosts.current()?.url ?? '')) return []
+    return [new TreeNode(t('Connect'), { description: t('repository, CI and catalog entry'), icon: 'plug', command: { title: t('Connect'), command: 'warpengine.connect' } })]
   }
 
   private pipelineNode(state: RemoteState): TreeNode {

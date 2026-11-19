@@ -1,10 +1,9 @@
-export class WarpEngineError extends Error {
-  public readonly status: number
+import { HostError } from '../../domain/model/host-error.model'
 
+export class WarpEngineError extends HostError {
   public constructor(message: string, status: number) {
-    super(message)
+    super(message, status)
     this.name = 'WarpEngineError'
-    this.status = status
   }
 
   public static async from(response: Response): Promise<WarpEngineError> {

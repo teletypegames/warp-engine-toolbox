@@ -44,7 +44,7 @@ Nothing in the domain imports `vscode`, `node:*`, `fetch`, `infrastructure/` or
 |---|---|---|
 | `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). | `model/` |
 | `repository/` | Ports: interfaces only, for everything outside the process — the host API, git, the project's files, the template archives, the shell, the stored sessions, the settings, the preview server. | `model/` |
-| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
+| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
 
 A domain failure is a `DomainError` carrying a `Message` (an English text with `{0}`
 placeholders and its arguments); the extension translates it.
@@ -55,7 +55,7 @@ placeholders and its arguments); the extension translates it.
 |---|---|
 | `http/` | `WarpEngineHttpClient` (fetch, errors, the admin envelope) and the HTTP repositories on it: build, catalog, pipeline, sign-in; `WarpEngineHttpGateway` hands them out for the current host and token. |
 | `git/` | `SourceControl` with the `git` CLI. |
-| `process/` | Running a command (`execFile`) and a shell line. |
+| `process/` | Running a command (`execFile`) and a shell line; `ContainerRuntime` with the `docker` CLI (the Servers view, the purge). |
 | `template/` | `TemplateRepository`: a repository's archive downloaded and unpacked. |
 | `preview/` | `PreviewServer`: the loopback HTTP server Play uses. |
 | `vscode/` | The ports whose natural home is VS Code: the settings (hosts), the secret storage (sessions), the memento (platform cache), the workspace file system, the authentication session (token). The only infrastructure folder that may import `vscode`. |

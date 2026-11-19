@@ -3,6 +3,7 @@ import { LocalCi, type LocalCiSetup, type LocalComponent, type LocalOperation, t
 import type { LocalEngine } from '../model/local-engine.model'
 import { DomainError, msg, type Message } from '../model/message.model'
 import type { Project } from '../model/project.model'
+import type { RemoteState } from '../model/remote-state.model'
 import type { LocalComponentRepository } from '../repository/local-component.repository'
 import type { SourceControl, SourceControlFactory } from '../repository/source-control.repository'
 import type { AdminRepositories, WarpEngineGateway } from '../repository/warp-engine.gateway'
@@ -30,6 +31,16 @@ export class LocalCiService {
 
   public available(): boolean {
     return this.deps.local.current() !== null
+  }
+
+  public async ready(): Promise<boolean> {
+    if (!this.available()) return false
+    return LocalCi.ready(await this.components().catch((): LocalComponent[] => []))
+  }
+
+  public needsSetUp(state: RemoteState | null, hostUrl: string | null): boolean {
+    if (!state?.signedIn || state.error !== null || hostUrl === null || !this.deps.local.isLocal(hostUrl)) return false
+    return state.pipeline === null
   }
 
   public async components(): Promise<LocalComponent[]> {

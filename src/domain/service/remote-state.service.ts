@@ -2,6 +2,7 @@ import type { Release, Software } from '../model/catalog.model'
 import { isDevRelease } from '../model/catalog.model'
 import type { Pipeline, PipelineRun } from '../model/pipeline.model'
 import type { Project } from '../model/project.model'
+import { HostError } from '../model/host-error.model'
 import { emptyRemoteState, type GitPosition, type RemoteState } from '../model/remote-state.model'
 import { Version } from '../model/version.model'
 import type { AdminRepositories } from '../repository/warp-engine.gateway'
@@ -21,7 +22,7 @@ export class RemoteStateService {
     try {
       return await this.fill(empty, admin)
     } catch (error: unknown) {
-      return { ...empty, error: error instanceof Error ? error.message : String(error) }
+      return { ...empty, error: error instanceof Error ? error.message : String(error), unauthorized: HostError.isUnauthorized(error) }
     }
   }
 

@@ -27,6 +27,10 @@ export class WarpEngineHttpClient {
     return (await this.json<{ data: T }>(method, `${ADMIN}${path}`, body)).data
   }
 
+  public async adminDelete(path: string): Promise<void> {
+    await this.request('DELETE', `${ADMIN}${path}`)
+  }
+
   public async adminForm<T>(path: string, form: FormData): Promise<T> {
     const response: Response = await this.request('POST', `${ADMIN}${path}`, form)
     return (JSON.parse(await response.text()) as { data: T }).data

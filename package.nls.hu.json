@@ -51,5 +51,11 @@
   "view.sync": "Szinkron",
   "welcome.sync.local": "A szinkron a helyi motorod kiadásait továbbküldi egy másik WarpEngine-re. Ehhez helyi motor kell.\n[Helyi motor telepítése](command:warpengine.installLocalEngine)",
   "welcome.sync.pair": "A helyi motorod egyelőre megtartja a kiadásait. Párosítsd egy másik WarpEngine-példánnyal — pl. https://games.example.org —, és onnantól maguktól mennek tovább.\n[Szinkron ide…](command:warpengine.syncTo)",
-  "command.setupLocalCi": "Helyi CI beállítása"
+  "command.setupLocalCi": "Helyi CI beállítása",
+  "view.servers": "Szerverek",
+  "command.reauthorize": "Újra bejelentkezés",
+  "command.purgeLocalEngine": "Helyi motor teljes eltávolítása…",
+  "command.deleteSoftware": "Törlés a katalógusból…",
+  "command.deleteRelease": "Kiadás törlése…",
+  "welcome.servers": "Ezen a gépen nincs WarpEngine-konténer.\n[Helyi motor telepítése](command:warpengine.installLocalEngine)"
 }

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { t } from '../../ui/l10n'
 
 export type Children = () => TreeNode[] | Promise<TreeNode[]>
 
@@ -30,6 +31,13 @@ export class TreeNode extends vscode.TreeItem {
 
   public static openUrl(url: string): vscode.Command {
     return { title: 'Open', command: 'warpengine.openUrl', arguments: [url] }
+  }
+
+  public static reauthorize(): TreeNode {
+    return new TreeNode(t('Not authorized on this host'), {
+      description: t('click to sign in again'), icon: 'key', tooltip: t('The host refused the stored token: sign in again.'),
+      command: { title: t('Sign In Again'), command: 'warpengine.reauthorize' }
+    })
   }
 
   public static linkOf(node: TreeNode | undefined): string | undefined {

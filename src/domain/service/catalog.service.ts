@@ -56,6 +56,14 @@ export class CatalogService {
     await (await this.require(true)).catalog.updateSoftware(software.id, { [field]: value })
   }
 
+  public async deleteSoftware(software: Software): Promise<void> {
+    await (await this.require(true)).catalog.deleteSoftware(software.id)
+  }
+
+  public async deleteRelease(release: Release): Promise<void> {
+    await (await this.require(true)).catalog.deleteRelease(release.id)
+  }
+
   public async downloadStats(software: Software): Promise<unknown> {
     return (await this.require(true)).catalog.downloadStats(software.id)
   }

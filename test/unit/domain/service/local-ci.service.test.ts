@@ -8,6 +8,7 @@ import { Marker } from '../../../../src/domain/model/marker.model'
 import { DomainError, type Message } from '../../../../src/domain/model/message.model'
 import { Metadata } from '../../../../src/domain/model/metadata.model'
 import { Project } from '../../../../src/domain/model/project.model'
+import { emptyRemoteState, type RemoteState } from '../../../../src/domain/model/remote-state.model'
 import type { LocalComponentRepository } from '../../../../src/domain/repository/local-component.repository'
 import type { AdminRepositories, WarpEngineGateway } from '../../../../src/domain/repository/warp-engine.gateway'
 import type { ConnectionService } from '../../../../src/domain/service/connection.service'
@@ -71,10 +72,22 @@ async function world(known: Software | null): Promise<{ service: LocalCiService,
 }
 
 describe('LocalCiService', () => {
+  it('offers the local CI only on the local host, signed in, to a project without a pipeline', async () => {
+    const { service } = await world(null)
+    const state: RemoteState = emptyRemoteState(project(), { head: null, branch: 'master', defaultBranch: 'master' }, true)
+
+    assert.equal(service.needsSetUp(state, LOCAL), true)
+    assert.equal(service.needsSetUp(state, 'https://games.example.org'), false)
+    assert.equal(service.needsSetUp({ ...state, signedIn: false }, LOCAL), false)
+    assert.equal(service.needsSetUp({ ...state, error: 'Unauthorized', unauthorized: true }, LOCAL), false)
+    assert.equal(service.needsSetUp({ ...state, pipeline: { id: 1 } as RemoteState['pipeline'] }, LOCAL), false)
+    assert.equal(await service.ready(), true)
+  })
+
   it('follows the operation, reports its steps once, and pushes to the wplocal remote', async () => {
     const { service, components, git, scaffolded } = await world({ id: 4, name: 'rabbit' } as Software)
-    components.polls = [operation('running', ['queued', 'start warp-local-gitea']),
-                        operation('succeeded', ['queued', 'start warp-local-gitea', 'let warp push'], { pushUrl: PUSH, remoteName: 'wplocal', warnings: [] })]
+    components.polls = [operation('running', ['queued', 'start warp-engine-local-gitea']),
+                        operation('succeeded', ['queued', 'start warp-engine-local-gitea', 'let warp push'], { pushUrl: PUSH, remoteName: 'wplocal', warnings: [] })]
     const reported: string[] = []
 
     const setup = await service.setUp(project(), (message: Message) => { reported.push(String(message.args[0] ?? message.text)) })
@@ -82,7 +95,7 @@ describe('LocalCiService', () => {
     assert.deepEqual(components.setUpFor, [4])
     assert.deepEqual(scaffolded, [])
     assert.equal(setup.pushUrl, PUSH)
-    assert.deepEqual(reported.filter((text: string) => ['queued', 'start warp-local-gitea', 'let warp push'].includes(text)), ['queued', 'start warp-local-gitea', 'let warp push'])
+    assert.deepEqual(reported.filter((text: string) => ['queued', 'start warp-engine-local-gitea', 'let warp push'].includes(text)), ['queued', 'start warp-engine-local-gitea', 'let warp push'])
     assert.equal(git.git.named.get('wplocal'), PUSH)
     assert.ok(git.git.calls.includes('push -u wplocal master'), git.git.calls.join(', '))
   })

@@ -29,9 +29,11 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Pipeline** | The status bar follows the run of your current commit after a push. |
 | **Release…** | Asks for the channel (stable, or a beta: `1.3.0-beta.1`), bumps the version where the platform reads it, writes the changelog from the commits, tags and pushes; the CI publishes. |
 | **This branch** | On a branch other than the default one: its development build (not listed in the catalog), with a play link to share with testers; a notification when a push has built it. |
-| **Catalog** | Your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; status, category and highlight can be changed in place. |
+| **Catalog** | Your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; status, category and highlight can be changed in place; *Delete from Catalog…* and *Delete Release…* remove a software or a release. A host that refuses the stored token shows *Not authorized*: one click signs in again. |
 | **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
-| **Local CI** | **Set Up Local CI** points the project at the local engine's git server and CI (a `wplocal` remote); *Release…* asks which remote a tag goes to. |
+| **Admin page** | The project panel links the software's page in the host's admin web UI. |
+| **Local CI** | When the local engine runs a git server and a CI, the toolbox offers to set the open project up on them (a `wplocal` remote); *Release…* asks which remote a tag goes to. |
+| **Servers** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports; **Purge Local Engine…** removes all of it: containers, data, volumes, network and images. |
 | **Sync** | A local engine's releases go on to another WarpEngine instance (e.g. `https://games.example.org`): **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
@@ -111,8 +113,9 @@ needs WarpEngine 5.2 or later.
 
 The local engine's installer asks whether you want a local CI: a git server (Gitea,
 `127.0.0.1:7471`) and a CI (Woodpecker) beside the engine, started and wired by it — no sign-in,
-no browser (`--ci on` later turns it on, `--ci off` stops it). With it running, **Set Up Local
-CI** in the project panel (instead of *Connect* while the local engine is the host):
+no browser (`--ci on` later turns it on, `--ci off` stops it). With it running, the toolbox
+offers to set up a project of the local catalog without a pipeline (*Not for this project*
+stops asking; **WarpEngine: Set up local CI** in the command palette does it any time):
 
 1. puts the project into the local catalog if it is not there, and gives it its repository, CI
    and CI token on the local git server;
@@ -122,6 +125,15 @@ CI** in the project panel (instead of *Connect* while the local engine is the ho
 **Release…** asks which remote the tag goes to (*Release to*) when the repository has more than
 one: `wplocal` builds it on the local Woodpecker with the pipeline the engine serves, publishes
 it on the local engine, and Sync sends it on; `origin` builds it where it always did.
+
+## Servers
+
+The *Servers* view lists the containers the local engine's installer and the engine started
+(label `org.teletypegames.warp-engine.local=1`): `warp-engine-local`, `warp-engine-local-gitea`,
+`warp-engine-local-woodpecker` and its agent, with their state and ports; a click opens the
+engine or the git server. **Purge Local Engine…** (the trash button) asks once, then removes the
+containers, the data folder (`~/.warpengine`: the catalog, the releases, the token), the volumes,
+the network and the images — the same as the installer's `--uninstall --purge`.
 
 ## Sync
 

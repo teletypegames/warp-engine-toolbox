@@ -35,6 +35,20 @@ export class CatalogController {
     this.deps.tree.refresh()
   }
 
+  public async deleteSoftware(node?: TreeNode): Promise<void> {
+    const software: Software | undefined = node?.data as Software | undefined
+    if (!software || !(await Dialogs.confirm(t('Delete {0} ({1}) from the catalog? It and its releases leave every listing.', software.title, software.name), t('Delete')))) return
+    await this.deps.catalog.deleteSoftware(software)
+    await this.afterDelete()
+  }
+
+  public async deleteRelease(node?: TreeNode): Promise<void> {
+    const data: ReleaseData | undefined = node?.data as ReleaseData | undefined
+    if (!data || !(await Dialogs.confirm(t('Delete the release {0} of {1} with its files?', data.release.version, data.name), t('Delete')))) return
+    await this.deps.catalog.deleteRelease(data.release)
+    await this.afterDelete()
+  }
+
   public async showChecklist(node?: TreeNode): Promise<void> {
     const data: ReleaseData | undefined = node?.data as ReleaseData | undefined
     if (!data?.platform) return
@@ -57,6 +71,11 @@ export class CatalogController {
     if (!started) return
     Dialogs.info(t('Pipeline #{0} started on {1}.', started.run.number, started.branch))
     this.deps.states.watch()
+  }
+
+  private async afterDelete(): Promise<void> {
+    this.deps.tree.refresh()
+    await this.deps.states.refresh()
   }
 
   private async askField(data: FieldData): Promise<unknown> {

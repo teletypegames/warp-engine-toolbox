@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { HostError } from '../../../domain/model/host-error.model'
 import { errorText } from '../../ui/l10n'
 import { TreeNode } from './tree.node'
 
@@ -24,7 +25,7 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
     try {
       return node ? await Promise.resolve(node.load?.() ?? []) : await this.view.roots()
     } catch (error: unknown) {
-      return [new TreeNode(errorText(error), { icon: 'warning' })]
+      return [HostError.isUnauthorized(error) ? TreeNode.reauthorize() : new TreeNode(errorText(error), { icon: 'warning' })]
     }
   }
 

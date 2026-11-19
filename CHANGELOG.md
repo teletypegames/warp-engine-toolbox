@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.8.0
+
+- **Servers**: a view of the WarpEngine containers on this machine (the engine, the git server,
+  the CI and its agent) with their state and ports, a click opens the engine or the git server.
+  **Purge Local Engine…** removes all of it: containers, the data folder, volumes, network and
+  images.
+- **The local CI offers itself**: when the local engine runs a git server and a CI and the open
+  project has no pipeline there, a notification offers to set it up; the project panel has no
+  *Set Up Local CI* row any more, the command is **Set up local CI** in the palette.
+- **Delete from the catalog**: *Delete from Catalog…* on a software and *Delete Release…* on a
+  release (soft delete on the host, with a confirmation).
+- **Not authorized**: when the host refuses the stored token (e.g. the local engine was
+  reinstalled with a new one), the panels show *Not authorized on this host* and one click signs
+  in again (**Sign In Again**).
+- **Admin page**: the project panel links the software's page in the host's admin web UI (when
+  the host's `.well-known` does not say its admin is off).
+- The local CI's containers are `warp-engine-local-gitea` and `warp-engine-local-woodpecker*`
+  (warp-engine-local 1.4, WarpEngine 5.5.3).
+
 ## 1.7.0
 
 - **The local CI is the installer's business**: the *Local CI* view and its Start / Stop /

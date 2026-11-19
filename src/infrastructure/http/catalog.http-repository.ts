@@ -27,6 +27,14 @@ export class HttpCatalogRepository implements CatalogRepository {
     return this.client.admin<Software>('PATCH', `/softwares/${String(id)}`, changes)
   }
 
+  public async deleteSoftware(id: number): Promise<void> {
+    await this.client.adminDelete(`/softwares/${String(id)}`)
+  }
+
+  public async deleteRelease(id: number): Promise<void> {
+    await this.client.adminDelete(`/releases/${String(id)}`)
+  }
+
   public async releases(softwareId: number): Promise<Release[]> {
     return this.client.adminList<Release>(`/softwares/${String(softwareId)}/releases`, { ...PAGE, sort: '-createdAt' })
   }

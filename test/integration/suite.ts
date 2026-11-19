@@ -48,6 +48,12 @@ async function runLocal(api: ToolboxApi): Promise<void> {
 }
 
 async function runLocalCi(api: ToolboxApi): Promise<void> {
+  await step('lists the engine, the git server and the CI in the Servers view', async () => {
+    const names: string[] = (await api.servers.containers()).map((container) => container.name)
+    assert.deepEqual(names.slice(0, 2), ['warp-engine-local', 'warp-engine-local-gitea'])
+    assert.ok(names.includes('warp-engine-local-woodpecker'), names.join(', '))
+  })
+
   await step('lists the local git server and CI', async () => {
     const keys: string[] = (await api.localCi.components()).map((component) => component.key)
     assert.deepEqual(keys, ['gitea', 'woodpecker'])
