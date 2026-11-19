@@ -1,3 +1,9 @@
+/**
+ * The status bar item that follows the current project's pipeline.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { PipelineRuns, type PipelineRun } from '../../../domain/model/pipeline.model'
 import { RemoteStates, type RemoteState } from '../../../domain/model/remote-state.model'
@@ -7,15 +13,24 @@ import { TreeNode } from '../tree/tree.node'
 
 const PRIORITY = 50
 
+/**
+ * Shows the platform and name of the current project in the status bar with the state of its latest pipeline run; a click signs in, connects, refreshes or opens the run.
+ */
 export class PipelineStatusBar implements vscode.Disposable {
   private readonly item: vscode.StatusBarItem = vscode.window.createStatusBarItem('warpengine.pipeline', vscode.StatusBarAlignment.Left, PRIORITY)
   private readonly subscription: vscode.Disposable
 
+  /**
+   * Creates the item and redraws it on every remote state change.
+   *
+   * @param states - The remote state of the current project.
+   */
   public constructor(states: RemoteStateStore) {
     this.item.name = t('WarpEngine pipeline')
     this.subscription = states.onDidChange((state: RemoteState | null) => { this.render(state) })
   }
 
+  /** Stops listening and removes the item. */
   public dispose(): void {
     this.subscription.dispose()
     this.item.dispose()

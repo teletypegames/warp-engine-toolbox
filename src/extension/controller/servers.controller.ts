@@ -1,3 +1,9 @@
+/**
+ * Purge Local Engine…: the local WarpEngine removed from this machine.
+ *
+ * @packageDocumentation
+ */
+
 import type { PurgePlan } from '../../domain/model/server.model'
 import { Servers } from '../../domain/model/server.model'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
@@ -8,17 +14,34 @@ import { t } from '../ui/l10n'
 import type { LocalEngineController } from './local-engine.controller'
 import type { RefreshController } from './refresh.controller'
 
+/** What {@link ServersController} works with. */
 export interface ServersDependencies {
+  /** The local containers and their purge. */
   readonly servers: ServerService
+  /** Tells whether the local engine is the current host. */
   readonly local: LocalEngineService
+  /** Signs out of the purged engine. */
   readonly auth: WarpEngineAuthProvider
+  /** Looks for the local engine again after the purge. */
   readonly localEngine: LocalEngineController
+  /** Refreshes the views after the purge. */
   readonly refresh: RefreshController
 }
 
+/** Serves `warpengine.purgeLocalEngine`. */
 export class ServersController {
+  /**
+   * Creates the controller.
+   *
+   * @param deps - The services and controllers it uses.
+   */
   public constructor(private readonly deps: ServersDependencies) {}
 
+  /**
+   * `warpengine.purgeLocalEngine`: after a confirmation that lists what goes, removes the WarpEngine containers, volumes, networks, images and data folder from this machine, with a progress notification.
+   *
+   * Signs out when the local engine was the current host, looks for it again, refreshes everything and reports. With nothing to remove it only says so.
+   */
   public async purge(): Promise<void> {
     const plan: PurgePlan = await this.deps.servers.purgePlan()
     if (Servers.isEmpty(plan)) {

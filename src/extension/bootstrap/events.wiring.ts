@@ -1,3 +1,9 @@
+/**
+ * Which store event redraws which view or starts which controller flow.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import type { RemoteState } from '../../domain/model/remote-state.model'
 import type { HostInfoService } from '../../domain/service/host-info.service'
@@ -8,14 +14,31 @@ import type { Disposer } from './disposer'
 import type { Views } from './views.factory'
 import type { Workspace } from './workspace.factory'
 
+/** The objects {@link wireEvents} connects. */
 export interface Wiring {
+  /** The project registry, the remote state store and the authentication provider whose events are listened to. */
   readonly workspace: Workspace
+  /** The views the events redraw. */
   readonly views: Views
+  /** The controllers whose flows the events start. */
   readonly controllers: Controllers
+  /** Reports a change of the configured host. */
   readonly hostWatcher: HostWatcher
+  /** Forgets what it knew about the host when the host changes. */
   readonly hostInfo: HostInfoService
 }
 
+/**
+ * Subscribes the views and controllers to the events of the workspace state.
+ *
+ * A project change redraws the project view, announces the schemas and refreshes the remote state; a remote
+ * state change redraws the project view and offers the local CI; a session change redraws the catalog and sync
+ * views and announces the MCP server; a host change forgets the host data and refreshes everything; a focused
+ * window and a git change refresh or poll the remote state; a built branch is announced.
+ *
+ * @param wiring - The objects to connect.
+ * @returns The subscriptions, to dispose on deactivation.
+ */
 export function wireEvents(wiring: Wiring): Disposer[] {
   const { workspace: { projects, states, auth }, views, controllers, hostWatcher } = wiring
   return [

@@ -1,3 +1,8 @@
+/**
+ * The {@link domain/repository/preview.repository!PreviewRepository} port implemented with a loopback `node:http` server.
+ *
+ * @module
+ */
 import { createReadStream, type Stats } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
@@ -21,6 +26,14 @@ const HEADERS: Readonly<Record<string, string>> = {
   'Cache-Control': 'no-store'
 }
 
+/**
+ * The HTTP server on `127.0.0.1` that the Play panel loads a local build from.
+ *
+ * Every answer carries CORS and cross-origin isolation headers (so `SharedArrayBuffer`
+ * works) and `Cache-Control: no-store`. A request is served, in this order, by a
+ * proxied prefix (fetched once from upstream and cached in memory), a registered page,
+ * or a file under the root (a folder serves its `index.html`; paths outside the root get 403).
+ */
 export class PreviewServer implements PreviewRepository {
   private server: Server | null = null
   private root = ''
@@ -28,20 +41,41 @@ export class PreviewServer implements PreviewRepository {
   private readonly proxies: Map<string, string> = new Map<string, string>()
   private readonly cache: Map<string, Cached> = new Map<string, Cached>()
 
+  /**
+   * Serves a folder, starting the server on a free loopback port the first time.
+   *
+   * @param root - The folder to serve; replaces the earlier one.
+   * @returns The base URL, such as `http://127.0.0.1:53124/`.
+   */
   public async serve(root: string): Promise<string> {
     this.root = resolve(root)
     this.server ??= await this.listen()
     return `http://${LOOPBACK}:${String((this.server.address() as AddressInfo).port)}/`
   }
 
+  /**
+   * Forwards the requests below a path prefix to another server; each answer is fetched once and kept in memory.
+   *
+   * @param prefix - The path prefix, such as `/assets/`.
+   * @param upstream - The base URL to forward to; trailing slashes are removed.
+   */
   public proxy(prefix: string, upstream: string): void {
     this.proxies.set(prefix, upstream.replace(/\/+$/, ''))
   }
 
+  /**
+   * Serves fixed HTML at a path, ahead of the files, without the embedder policy.
+   *
+   * @param path - The path, such as `/index.html`.
+   * @param html - The page.
+   */
   public page(path: string, html: string): void {
     this.pages.set(path, html)
   }
 
+  /**
+   * Stops the server; does nothing when it is not running. The pages, proxies and cache are kept.
+   */
   public async close(): Promise<void> {
     const server: Server | null = this.server
     this.server = null

@@ -1,3 +1,8 @@
+/**
+ * The host-side state of the current project, polled while a build runs.
+ *
+ * @module
+ */
 import * as vscode from 'vscode'
 import type { Release } from '../../domain/model/catalog.model'
 import { PipelineRuns } from '../../domain/model/pipeline.model'
@@ -9,10 +14,19 @@ import type { ProjectRegistry } from './project.registry'
 const POLL_MS = 10_000
 const POLL_LIMIT_MS: number = 20 * 60_000
 
+/**
+ * Holds the {@link domain/model/remote-state.model!RemoteState} of the current project (its software, releases and
+ * pipeline runs on the host) and tells the views when it changes.
+ *
+ * After {@link RemoteStateStore.watch} it polls every 10 seconds, for at most 20 minutes,
+ * while a run for `HEAD` is running or has not appeared yet.
+ */
 export class RemoteStateStore implements vscode.Disposable {
   private readonly changed: vscode.EventEmitter<RemoteState | null> = new vscode.EventEmitter<RemoteState | null>()
+  /** Fires with the new state after every load; `null` when there is no current project. */
   public readonly onDidChange: vscode.Event<RemoteState | null> = this.changed.event
   private readonly built: vscode.EventEmitter<RemoteState> = new vscode.EventEmitter<RemoteState>()
+  /** Fires once per new branch build that appears while polling. */
   public readonly onDidBuildBranch: vscode.Event<RemoteState> = this.built.event
   private readonly announced: Set<string> = new Set<string>()
   private state: RemoteState | null = null
@@ -20,22 +34,39 @@ export class RemoteStateStore implements vscode.Disposable {
   private pollingSince = 0
   private loading: Promise<void> | null = null
 
+  /**
+   * Creates the store; it loads nothing until {@link RemoteStateStore.refresh} or {@link RemoteStateStore.watch}.
+   *
+   * @param service - Loads the state of a project from the host.
+   * @param projects - Tells the current project.
+   */
   public constructor(private readonly service: RemoteStateService, private readonly projects: ProjectRegistry) {}
 
+  /**
+   * Returns the last loaded state.
+   *
+   * @returns The state, or `null` before the first load or without a project.
+   */
   public current(): RemoteState | null {
     return this.state
   }
 
+  /** Starts polling, such as after a push or a release, and loads now. */
   public watch(): void {
     this.pollingSince = Date.now()
     void this.refresh()
   }
 
+  /**
+   * Loads the state of the current project from the host and fires {@link RemoteStateStore.onDidChange};
+   * a call while a load runs waits for that load. Schedules the next poll when polling.
+   */
   public async refresh(): Promise<void> {
     this.loading ??= this.load().finally(() => { this.loading = null })
     return this.loading
   }
 
+  /** Stops polling and releases the event emitters. */
   public dispose(): void {
     if (this.timer) clearTimeout(this.timer)
     this.changed.dispose()

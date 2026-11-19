@@ -1,3 +1,8 @@
+/**
+ * The content types the preview server sends, by file extension.
+ *
+ * @module
+ */
 import { extname } from 'node:path'
 
 const TYPES: Readonly<Record<string, string>> = {
@@ -17,8 +22,15 @@ const TYPES: Readonly<Record<string, string>> = {
   '.zip': 'application/zip'
 }
 
+/** The content type of a file whose extension is not known: `application/octet-stream`. */
 export const BINARY = 'application/octet-stream'
 
+/**
+ * Picks the content type of a file from its extension, ignoring case.
+ *
+ * @param file - The file name or path.
+ * @returns The content type, or {@link BINARY} for an unknown extension.
+ */
 export function contentType(file: string): string {
   return TYPES[extname(file).toLowerCase()] ?? BINARY
 }

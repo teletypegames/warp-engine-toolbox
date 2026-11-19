@@ -2,7 +2,7 @@
   "name": "warpengine-toolbox",
   "displayName": "WarpEngine Toolbox",
   "description": "%description%",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "publisher": "TeletypeGames",
   "license": "MIT",
   "author": "Teletype Games",
@@ -721,7 +721,9 @@
     "test:integration": "node scripts/integration.mjs",
     "test:walkthrough": "node scripts/walkthrough.mjs",
     "l10n": "node scripts/l10n.mjs",
-    "l10n:check": "node scripts/l10n.mjs --check"
+    "l10n:check": "node scripts/l10n.mjs --check",
+    "docs": "node scripts/reference.mjs && typedoc",
+    "docs:check": "node scripts/reference.mjs && typedoc --emit none"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -730,6 +732,7 @@
     "@vscode/vsce": "^4.1.1",
     "esbuild": "^0.25.0",
     "eslint": "^9.30.0",
+    "typedoc": "^0.28.20",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.35.0"
   }

@@ -1,3 +1,8 @@
+/**
+ * Recognising WarpEngine projects in the workspace folders.
+ *
+ * @module
+ */
 import { LuaHeader } from '../model/lua-header.model'
 import { Marker } from '../model/marker.model'
 import { Metadata } from '../model/metadata.model'
@@ -9,8 +14,11 @@ import type { FileSystemRepository } from '../repository/file-system.repository'
 import type { ShellRepository, ShellResult } from '../repository/shell.repository'
 import type { PlatformService } from './platform.service'
 
+/** A workspace folder to look for a project in. */
 export interface ProjectFolder {
+  /** The absolute folder path. */
   readonly path: string
+  /** The folder's name in the workspace. */
   readonly name: string
 }
 
@@ -21,13 +29,29 @@ interface MetadataSource {
 
 const LUA_CANDIDATES = 20
 
+/** Detects the WarpEngine project of a folder from its marker file, with its platform and metadata, and reads its version. */
 export class ProjectService {
+  /**
+   * Creates the service.
+   *
+   * @param files - Reads the marker, metadata and version files.
+   * @param platforms - Resolves the marker's platform.
+   * @param shell - Runs a platform's version command.
+   */
   public constructor(
     private readonly files: FileSystemRepository,
     private readonly platforms: PlatformService,
     private readonly shell: ShellRepository
   ) {}
 
+  /**
+   * Reads the first marker file of a folder that is a WarpEngine marker and builds the project
+   * from it: the platform (when the host knows it), and the metadata from `metadata.json`, the
+   * platform's metadata file or the Lua header, as the platform says.
+   *
+   * @param folder - The folder.
+   * @returns The project, or `null` when the folder has no marker.
+   */
   public async detect(folder: ProjectFolder): Promise<Project | null> {
     for (const file of MARKER_FILES) {
       const markerPath: string = FilePath.join(folder.path, file)
@@ -37,6 +61,14 @@ export class ProjectService {
     return null
   }
 
+  /**
+   * Reads the current version of a project: from its metadata, or, when the platform keeps it
+   * elsewhere, from the platform's version file or by running its version command in the
+   * project folder.
+   *
+   * @param project - The project.
+   * @returns The version, or `null` when none can be read.
+   */
   public async version(project: Project): Promise<string | null> {
     if (!project.platform?.versionFromCommand) return project.metadata.text('version')
     const versionFile: string | null = project.platform.versionFile

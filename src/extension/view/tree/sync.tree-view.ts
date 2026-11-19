@@ -1,3 +1,9 @@
+/**
+ * The Sync view: the local engine's sync partners and what went over.
+ *
+ * @packageDocumentation
+ */
+
 import type { SyncEvent } from '../../../domain/model/sync.model'
 import type { SyncLink } from '../../../domain/model/sync.model'
 import type { LocalEngineService } from '../../../domain/service/local-engine.service'
@@ -11,9 +17,21 @@ const STATUS_ICONS: Readonly<Record<SyncEvent['status'], string>> = {
   queued: 'clock', running: 'sync', succeeded: 'pass', failed: 'error', skipped: 'circle-slash'
 }
 
+/** The content of the Sync view (`warpengine.sync`): each partner with its channels and last sync, and under it the recent push events. */
 export class SyncTreeView implements TreeView {
+  /**
+   * Creates the view.
+   *
+   * @param local - Whether a local engine runs.
+   * @param sync - The sync links and their events.
+   */
   public constructor(private readonly local: LocalEngineService, private readonly sync: SyncService) {}
 
+  /**
+   * Returns one node per sync link; sets the `warpengine.localEngine` and `warpengine.syncing` context keys.
+   *
+   * @returns The partner nodes; none without a local engine.
+   */
   public async roots(): Promise<TreeNode[]> {
     const local: boolean = this.local.current() !== null
     await Dialogs.setContext('warpengine.localEngine', local)

@@ -1,3 +1,9 @@
+/**
+ * Choosing the WarpEngine host the toolbox works with.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { HostUrl, type Host } from '../../domain/model/host.model'
 import type { HostService } from '../../domain/service/host.service'
@@ -6,13 +12,31 @@ import { t } from '../ui/l10n'
 
 const ANOTHER: string | null = null
 
+/** Serves `warpengine.selectHost` and asks for a host whenever a flow needs one and none is set. */
 export class HostController {
+  /**
+   * Creates the controller.
+   *
+   * @param hosts - The configured hosts.
+   */
   public constructor(private readonly hosts: HostService) {}
 
+  /**
+   * Returns the current host, or asks for one when none is set.
+   *
+   * @returns The host, or `null` when the user cancelled.
+   */
   public async ensure(): Promise<Host | null> {
     return this.hosts.current() ?? (await this.select())
   }
 
+  /**
+   * `warpengine.selectHost`: offers the known hosts in a quick pick, or an input box for another address, and makes the chosen one current.
+   *
+   * Writes the choice to the settings.
+   *
+   * @returns The chosen host, or `null` when the user cancelled.
+   */
   public async select(): Promise<Host | null> {
     const choices: Host[] = this.hosts.choices()
     const picked: string | null | undefined = choices.length > 0 ? await this.pick(choices) : ANOTHER

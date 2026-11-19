@@ -1,3 +1,9 @@
+/**
+ * Creates the views: the tree views, the schemas, the diagnostics, the tasks, the Play panel, the reports, the MCP server definition.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { MakeTaskProvider } from '../language/make.task-provider'
 import { McpProvider } from '../language/mcp.provider'
@@ -14,19 +20,38 @@ import { TreeProvider } from '../view/tree/tree.provider'
 import type { Services } from './container'
 import type { Workspace } from './workspace.factory'
 
+/** Everything the toolbox draws, built by {@link "extension/bootstrap/views.factory".createViews}. */
 export interface Views {
+  /** The WarpEngine project view (`warpengine.project`) on a {@link ProjectTreeView}. */
   readonly projectTree: TreeProvider
+  /** The catalog view (`warpengine.catalog`) on a {@link CatalogTreeView}. */
   readonly catalogTree: TreeProvider
+  /** The Sync view (`warpengine.sync`) on a {@link SyncTreeView}. */
   readonly syncTree: TreeProvider
+  /** The Servers view (`warpengine.servers`) on a {@link ServersTreeView}. */
   readonly serversTree: TreeProvider
+  /** The metadata JSON schemas from the host's platform descriptions. */
   readonly schemas: MetadataSchemaProvider
+  /** The publish check problems on the metadata file. */
   readonly diagnostics: PublishDiagnostics
+  /** The Makefile targets as VS Code tasks. */
   readonly tasks: MakeTaskProvider
+  /** The Play panel. */
   readonly player: PlayPanel
+  /** The read-only report documents (checklists, statistics, pipeline preview). */
   readonly reports: ReportView
+  /** The host's Admin API as an MCP server definition. */
   readonly mcp: McpProvider
 }
 
+/**
+ * Creates the views on the services and the workspace state.
+ *
+ * @param context - The extension context; its extension URI locates the Play assets.
+ * @param services - The services from {@link "extension/bootstrap/container".createServices}.
+ * @param workspace - The workspace state from {@link "extension/bootstrap/workspace.factory".createWorkspace}.
+ * @returns The views, not registered yet: `activate` registers them.
+ */
 export function createViews(context: vscode.ExtensionContext, services: Services, workspace: Workspace): Views {
   const { projects, states } = workspace
   const tasks: MakeTaskProvider = new MakeTaskProvider(projects, services.make)

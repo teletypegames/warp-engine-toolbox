@@ -1,3 +1,9 @@
+/**
+ * Connect: the project put on the host with a repository, CI and a catalog entry.
+ *
+ * @packageDocumentation
+ */
+
 import type { ScaffoldResult } from '../../domain/model/catalog.model'
 import { msg } from '../../domain/model/message.model'
 import type { Project } from '../../domain/model/project.model'
@@ -7,14 +13,36 @@ import { t } from '../ui/l10n'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
 
+/**
+ * Serves `warpengine.connect`: creates the repository, the CI and the draft catalog entry on the host and pushes the working copy there.
+ */
 export class ConnectController {
+  /**
+   * Creates the controller.
+   *
+   * @param service - Connects the project on the host.
+   * @param projects - The projects of the workspace, re-read after a connect.
+   * @param states - The remote state, polled after a connect.
+   */
   public constructor(private readonly service: ConnectService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore) {}
 
+  /**
+   * `warpengine.connect`: connects the current project, then polls its remote state so the first build shows.
+   *
+   * @throws {@link "domain/model/message.model".DomainError} When there is no current project.
+   */
   public async connect(): Promise<void> {
     await this.connectProject(this.projects.require())
     this.states.watch()
   }
 
+  /**
+   * Connects a project: signs in, confirms replacing an existing remote, asks over which URL to push when the host offers several, and reports the result (with any warnings) in a notification.
+   *
+   * Creates the repository, the CI, a CI token and the draft catalog entry on the host, sets the remote and pushes, with a progress notification; then re-reads the projects.
+   *
+   * @param project - The project to connect.
+   */
   public async connectProject(project: Project): Promise<void> {
     if (!(await this.service.signIn())) return
     if (!(await this.confirmRemote(project))) return

@@ -1,34 +1,65 @@
+/**
+ * The plan of the files New Game writes, from the template, the demo and the generated files.
+ *
+ * @module
+ */
 import type { GameAnswers } from './game-answers.model'
 import { Marker } from './marker.model'
 import type { JsonEdits } from './placeholders.model'
 import type { Platform } from './platform.model'
 import { ProjectFiles } from './project-files.model'
 
+/** Which downloaded archive a planned file is copied from. */
 export type PlanRoot = 'template' | 'demo'
 
+/** One file New Game will write into the new project. */
 export interface PlannedFile {
+  /** The file's path in the new project. */
   readonly target: string
-  readonly source: { readonly root: PlanRoot; readonly path: string } | null
+  /** Where the file is copied from, or `null` when {@link PlannedFile.content} holds it. */
+  readonly source: {
+    /** The archive the file is copied from. */
+    readonly root: PlanRoot
+    /** The file's path in the archive. */
+    readonly path: string
+  } | null
+  /** The generated content, or `null` when the file is copied. */
   readonly content: string | null
+  /** How the copied text is changed: the project name set in a `Makefile`, placeholders filled, JSON edits applied, or none. */
   readonly transform: 'makefile' | 'fill' | 'json' | null
+  /** The JSON edits to apply when the transform is `json`. */
   readonly edits?: JsonEdits
 }
 
+/** The `warp-template.json` of a template or demo repository: how its files become a project. */
 export interface TemplateManifest {
+  /** Source path mapped to target path; when present, only these template files are copied. */
   readonly files?: Readonly<Record<string, string>>
+  /** Files whose placeholders are filled. */
   readonly fill?: readonly string[]
+  /** JSON edits to apply, keyed by file. */
   readonly json?: Readonly<Record<string, JsonEdits>>
+  /** Demo files that are copied although they would be skipped by default. */
   readonly keep?: readonly string[]
+  /** Template files left out when the project starts from the demo. */
   readonly templateOnly?: readonly string[]
 }
 
+/** What a {@link ProjectPlan} is made from. */
 export interface PlanInput {
+  /** The new game's platform. */
   readonly platform: Platform
+  /** The New Game answers. */
   readonly answers: GameAnswers
+  /** The files of the template archive. */
   readonly templateFiles: readonly string[]
+  /** The template's manifest, if it has one. */
   readonly manifest: TemplateManifest | null
+  /** The files of the demo archive; empty when starting from the template only. */
   readonly demoFiles: readonly string[]
+  /** The demo's manifest, if it has one. */
   readonly demoManifest?: TemplateManifest | null
+  /** The WarpEngine host the game will publish to. */
   readonly host: string
 }
 
@@ -38,18 +69,34 @@ const DEMO_SKIPPED: readonly RegExp[] = [
 const GENERATED_EXAMPLES: ReadonlySet<string> = new Set(['woodpecker.yaml', 'gitlab-ci.yml', 'metadata.json'])
 const EXAMPLE_TARGETS: Readonly<Record<string, string>> = { 'makefile.make': 'Makefile', 'tasks.json': '.vscode/tasks.json', 'launch.json': '.vscode/launch.json' }
 const EXAMPLE_PREFIX = 'example-'
+/** The placeholder in a template target path that becomes the game's name. */
 export const NAME_PLACEHOLDER = '{name}'
+/** The manifest file name in a template or demo repository. */
 export const TEMPLATE_MANIFEST = 'warp-template.json'
 
+/**
+ * The list of files New Game writes: template files, demo files, then the generated ones (CI marker, metadata, README, `.gitignore`, extension recommendations).
+ *
+ * A later file with the same target replaces an earlier one.
+ */
 export class ProjectPlan {
   private readonly files: Map<string, PlannedFile> = new Map<string, PlannedFile>()
 
+  /**
+   * Plans the files at once from the input.
+   * @param input - The platform, answers, archive listings and manifests.
+   */
   public constructor(private readonly input: PlanInput) {
     this.addTemplate()
     this.addDemo()
     this.addGenerated()
   }
 
+  /**
+   * Maps a template's top-level `example-*` file to the file it becomes, when the template has no manifest.
+   * @param file - A path in the template.
+   * @returns The target path (`example-makefile.make` becomes `Makefile`, `example-tasks.json` becomes `.vscode/tasks.json`), or `null` for files that are not examples or that New Game generates itself.
+   */
   public static exampleTarget(file: string): string | null {
     if (file.includes('/') || !file.startsWith(EXAMPLE_PREFIX)) return null
     const rest: string = file.slice(EXAMPLE_PREFIX.length)
@@ -57,6 +104,10 @@ export class ProjectPlan {
     return EXAMPLE_TARGETS[rest] ?? rest
   }
 
+  /**
+   * Lists the planned files.
+   * @returns The files sorted by target path.
+   */
   public list(): PlannedFile[] {
     return [...this.files.values()].sort((a: PlannedFile, b: PlannedFile) => a.target.localeCompare(b.target))
   }

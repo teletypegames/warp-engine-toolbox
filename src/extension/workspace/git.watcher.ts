@@ -1,3 +1,8 @@
+/**
+ * Watches the built-in git extension for new commits and pushes.
+ *
+ * @module
+ */
 import * as vscode from 'vscode'
 
 interface GitExtension { getAPI(version: 1): GitApi }
@@ -6,9 +11,19 @@ interface GitHead { readonly commit?: string; readonly ahead?: number }
 // eslint-disable-next-line @typescript-eslint/naming-convention -- the git extension's own field name
 interface GitRepository { readonly state: { readonly HEAD: GitHead | undefined; readonly onDidChange: vscode.Event<void> } }
 
+/**
+ * Calls back when `HEAD` of any repository the built-in git extension opens moves to
+ * another commit, or when its unpushed commits drop to zero (a push). Does nothing when
+ * the git extension is missing.
+ */
 export class GitWatcher implements vscode.Disposable {
   private readonly disposables: vscode.Disposable[] = []
 
+  /**
+   * Starts watching, activating the git extension when it is not active yet.
+   *
+   * @param onChange - Called on every commit or push.
+   */
   public constructor(private readonly onChange: () => void) {
     const git: vscode.Extension<GitExtension> | undefined = vscode.extensions.getExtension<GitExtension>('vscode.git')
     if (!git) return
@@ -17,6 +32,7 @@ export class GitWatcher implements vscode.Disposable {
       .catch(() => undefined)
   }
 
+  /** Stops watching the repositories. */
   public dispose(): void {
     for (const disposable of this.disposables) disposable.dispose()
   }

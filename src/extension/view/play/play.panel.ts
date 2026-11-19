@@ -1,3 +1,9 @@
+/**
+ * The Play panel: the current project built and played beside the editor.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { FilePath } from '../../../domain/model/path.model'
 import type { Project } from '../../../domain/model/project.model'
@@ -14,13 +20,21 @@ import type { PlayPageRenderer } from './play-page.renderer'
 
 const BROWSER_PAGE = '/__warpengine/play.html'
 
+/** What {@link PlayPanel} works with. */
 export interface PlayDependencies {
+  /** The current host, whose runtime page and files Play uses. */
   readonly hosts: HostService
+  /** The current project. */
   readonly projects: ProjectRegistry
+  /** Plans the play, finds the payload, fetches the host page. */
   readonly play: PlayService
+  /** The project's Makefile targets. */
   readonly make: MakeService
+  /** Runs the build target. */
   readonly tasks: MakeTaskProvider
+  /** The loopback server that serves the build and proxies the host files. */
   readonly preview: PreviewRepository
+  /** The page renderer. */
   readonly renderers: PlayRendererLoader
 }
 
@@ -32,14 +46,30 @@ interface Prepared {
   readonly shown: string
 }
 
+/**
+ * The webview panel that builds the current project and plays it: in the runtime its release plays in on the web, with the local build, or its own web build.
+ */
 export class PlayPanel implements vscode.Disposable {
   private panel: vscode.WebviewPanel | null = null
   private external = ''
   private handoff: { name: string; bytes: Uint8Array } | null = null
+  /** The URL of the last page played (the preview server or the host runtime page); `null` before the first play. */
   public lastUrl: string | null = null
 
+  /**
+   * Creates the panel controller; the webview panel opens on the first play.
+   *
+   * @param deps - The services and views it uses.
+   */
   public constructor(private readonly deps: PlayDependencies) {}
 
+  /**
+   * Builds the current project (the make target the plan names), finds the payload, serves its folder on the preview server and shows it in the panel beside the editor.
+   *
+   * With a web runtime binding, the host's runtime page is shown and the build is handed to it; otherwise the web build itself. The toolbar replays or opens the page in the browser. A failed build or a missing payload is shown as an error.
+   *
+   * @throws {@link "domain/model/message.model".DomainError} When there is no current project or no host.
+   */
   public async play(): Promise<void> {
     const prepared: Prepared | null = await this.prepare()
     if (!prepared) return
@@ -49,6 +79,7 @@ export class PlayPanel implements vscode.Disposable {
     else await this.showLocal(prepared, panel, renderer)
   }
 
+  /** Closes the panel and stops the preview server. */
   public dispose(): void {
     this.panel?.dispose()
     void this.deps.preview.close()

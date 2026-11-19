@@ -1,3 +1,9 @@
+/**
+ * Sync to… and the Sync view: the local engine's releases sent on to another WarpEngine instance.
+ *
+ * @packageDocumentation
+ */
+
 import * as os from 'node:os'
 import * as vscode from 'vscode'
 import type { Host } from '../../domain/model/host.model'
@@ -10,17 +16,34 @@ import { t } from '../ui/l10n'
 import type { TreeNode } from '../view/tree/tree.node'
 import type { TreeProvider } from '../view/tree/tree.provider'
 
+/** What {@link SyncController} works with. */
 export interface SyncDependencies {
+  /** Pairs the engines and manages the sync links. */
   readonly sync: SyncService
+  /** The known hosts, the pairing targets. */
   readonly hosts: HostService
+  /** The Sync view, redrawn after a change. */
   readonly tree: TreeProvider
 }
 
 const ADD_ENGINE = '\u0000add'
 
+/**
+ * Serves `warpengine.syncTo`, `warpengine.syncPushNow`, `warpengine.syncEditChannels`, `warpengine.syncCheck` and `warpengine.syncDisconnect`.
+ */
 export class SyncController {
+  /**
+   * Creates the controller.
+   *
+   * @param deps - The services and the view it uses.
+   */
   public constructor(private readonly deps: SyncDependencies) {}
 
+  /**
+   * `warpengine.syncTo`: pairs the local engine with another WarpEngine instance.
+   *
+   * Asks for the target (a known host or a new address), signs in to it when needed (switching the current host there and back), asks for the channels and the name the target will call this engine, pairs with a progress notification, redraws the Sync view and offers to push what is here already.
+   */
   public async syncTo(): Promise<void> {
     const target: Host | undefined = await this.chooseTarget()
     if (!target || !(await this.ensureSignedIn(target))) return
@@ -33,11 +56,21 @@ export class SyncController {
     await this.reportPaired(target, paired)
   }
 
+  /**
+   * `warpengine.syncPushNow`: queues every release of a sync link for sending, reports how many went and redraws the Sync view.
+   *
+   * @param node - The partner node; without one, the only link or the one picked in a quick pick.
+   */
   public async pushNow(node?: TreeNode): Promise<void> {
     const link: SyncLink | undefined = await this.linkOf(node)
     if (link) await this.push(link)
   }
 
+  /**
+   * `warpengine.syncEditChannels`: asks for the channels that go to a partner, saves them and redraws the Sync view.
+   *
+   * @param node - The partner node; without one, the only link or the one picked in a quick pick.
+   */
   public async editChannels(node?: TreeNode): Promise<void> {
     const link: SyncLink | undefined = await this.linkOf(node)
     if (!link) return
@@ -47,6 +80,11 @@ export class SyncController {
     this.deps.tree.refresh()
   }
 
+  /**
+   * `warpengine.syncCheck`: asks a partner whether it takes our pushes and reports the answer in a notification.
+   *
+   * @param node - The partner node; without one, the only link or the one picked in a quick pick.
+   */
   public async check(node?: TreeNode): Promise<void> {
     const link: SyncLink | undefined = await this.linkOf(node)
     if (!link) return
@@ -55,6 +93,13 @@ export class SyncController {
     else Dialogs.error(t('{0} does not take our pushes: {1}', link.peer.label, result.message))
   }
 
+  /**
+   * `warpengine.syncDisconnect`: after a confirmation, stops syncing to a partner and removes the pairing there too when signed in to it.
+   *
+   * Redraws the Sync view and reports whether the pairing was removed on both sides.
+   *
+   * @param node - The partner node; without one, the only link or the one picked in a quick pick.
+   */
   public async disconnect(node?: TreeNode): Promise<void> {
     const link: SyncLink | undefined = await this.linkOf(node)
     if (!link || !(await Dialogs.confirm(t('Stop syncing to {0}? The releases already there stay.', link.peer.label), t('Disconnect')))) return

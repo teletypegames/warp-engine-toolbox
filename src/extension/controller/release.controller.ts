@@ -1,3 +1,9 @@
+/**
+ * Release…: version, changelog, tag and push of the current project.
+ *
+ * @packageDocumentation
+ */
+
 import { GitRemotes, type GitRemote } from '../../domain/model/git-remote.model'
 import { Version } from '../../domain/model/version.model'
 import type { Project } from '../../domain/model/project.model'
@@ -10,9 +16,24 @@ import type { RemoteStateStore } from '../workspace/remote-state.store'
 
 const ANOTHER: string | null = null
 
+/** Serves `warpengine.release`. */
 export class ReleaseController {
+  /**
+   * Creates the controller.
+   *
+   * @param service - Decides and performs the release.
+   * @param projects - The current project.
+   * @param states - The remote state, polled after the push.
+   */
   public constructor(private readonly service: ReleaseService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore) {}
 
+  /**
+   * `warpengine.release`: releases the current project.
+   *
+   * Checks readiness (offers to commit a dirty working copy; shows an error when the project is not connected or its version cannot be written), asks for the channel (stable or beta) and the version, asks the host whether a publish would take it, asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
+   *
+   * @throws {@link "domain/model/message.model".DomainError} When there is no current project or a git step fails.
+   */
   public async run(): Promise<void> {
     const project: Project = this.projects.require()
     if (!(await this.ready(project))) return

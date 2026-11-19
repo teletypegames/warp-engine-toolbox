@@ -1,3 +1,9 @@
+/**
+ * Finding a WarpEngine on this machine and installing one.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { LocalEngine } from '../../domain/model/local-engine.model'
 import type { ConnectionService } from '../../domain/service/connection.service'
@@ -9,18 +15,36 @@ import { errorText, t } from '../ui/l10n'
 const OFFERED_KEY = 'warpengine.localEngineOffered'
 const TERMINAL = 'WarpEngine Local'
 
+/** What {@link LocalEngineController} works with. */
 export interface LocalEngineDependencies {
+  /** Discovers the local engine. */
   readonly local: LocalEngineService
+  /** The configured hosts. */
   readonly hosts: HostService
+  /** Tells whether the current host has a token. */
   readonly connection: ConnectionService
+  /** The global state that remembers that the install was offered. */
   readonly state: vscode.Memento
 }
 
+/** Serves `warpengine.installLocalEngine` and looks for a local engine on activation and refresh. */
 export class LocalEngineController {
   private announced: string | null = null
 
+  /**
+   * Creates the controller.
+   *
+   * @param deps - The services and the memento it uses.
+   */
   public constructor(private readonly deps: LocalEngineDependencies) {}
 
+  /**
+   * Looks for a WarpEngine running on this machine and sets the `warpengine.localEngine` context key.
+   *
+   * When one is found and it is the current host without a token, offers once to connect to it (runs `warpengine.signIn`); when none is found and no host is set, offers once to install one or to set a host.
+   *
+   * @returns The local engine, or `null` when none runs.
+   */
   public async discover(): Promise<LocalEngine | null> {
     const found: LocalEngine | null = await this.deps.local.discover()
     await Dialogs.setContext('warpengine.localEngine', found !== null)
@@ -29,6 +53,11 @@ export class LocalEngineController {
     return found
   }
 
+  /**
+   * `warpengine.installLocalEngine`: runs the WarpEngine Local installer in a terminal (`sh` on macOS and Linux, PowerShell on Windows).
+   *
+   * When the terminal closes, looks for the local engine again.
+   */
   public install(): void {
     const terminal: vscode.Terminal = vscode.window.createTerminal(LocalEngineController.installer())
     const closed: vscode.Disposable = vscode.window.onDidCloseTerminal((done: vscode.Terminal) => {

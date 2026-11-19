@@ -1,16 +1,34 @@
+/**
+ * The tree node of a release, shared by the project and the catalog views.
+ *
+ * @packageDocumentation
+ */
+
 import { AssetChecklist, type ChecklistEntry } from '../../../domain/model/asset-checklist.model'
 import type { Release, ReleaseAsset } from '../../../domain/model/catalog.model'
 import type { Platform } from '../../../domain/model/platform.model'
 import { t, translate } from '../../ui/l10n'
 import { TreeNode } from './tree.node'
 
+/** The data of a release node, for `warpengine.showChecklist` and `warpengine.deleteRelease`. */
 export interface ReleaseData {
+  /** The release. */
   readonly release: Release
+  /** The name of its software. */
   readonly name: string
+  /** The platform, for the asset checklist; `null` when the host does not describe it. */
   readonly platform: Platform | null
 }
 
+/** Builds release nodes. */
 export class ReleaseNode {
+  /**
+   * Creates the node of a release: its version, channel, asset count, missing assets and commit; its children are the checklist and the assets. A click plays it.
+   *
+   * @param data - The release and its software.
+   * @param playUrl - The play link; `null` for no click action.
+   * @returns The node.
+   */
   public static create(data: ReleaseData, playUrl: string | null): TreeNode {
     const checklist: AssetChecklist | null = data.platform ? new AssetChecklist(data.platform, data.release.assets) : null
     const missing: number = checklist?.missing ?? 0

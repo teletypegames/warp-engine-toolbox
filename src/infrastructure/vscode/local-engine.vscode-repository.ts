@@ -1,3 +1,8 @@
+/**
+ * The {@link domain/repository/local-engine.repository!LocalEngineRepository} port implemented with the VS Code settings, the installation's files and docker.
+ *
+ * @module
+ */
 import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -10,7 +15,17 @@ const SECTION = 'warpengine'
 const CONTAINER = 'warp-engine-local'
 const DATA_FOLDER = '.warpengine'
 
+/**
+ * Finds the WarpEngine Local installation on this machine: its data folder is the
+ * `warpengine.localData` setting, or `~/.warpengine`. The members resolve to `null` instead of rejecting.
+ */
 export class VsCodeLocalEngineRepository implements LocalEngineRepository {
+  /**
+   * Finds the local engine's port: the `warpengine.localPort` setting when positive, else
+   * the `port` of `config.json` in the data folder.
+   *
+   * @returns The port, or `null` when neither names one.
+   */
   public async port(): Promise<number | null> {
     const configured: number = this.settings().get<number>('localPort') ?? 0
     if (configured > 0) return configured
@@ -24,11 +39,22 @@ export class VsCodeLocalEngineRepository implements LocalEngineRepository {
     }
   }
 
+  /**
+   * Reads the admin token from the `local-token` file of the data folder.
+   *
+   * @returns The trimmed token, or `null` when the file is missing or empty.
+   */
   public async tokenFile(): Promise<string | null> {
     const token: string = (await VsCodeLocalEngineRepository.read(this.path('local-token')))?.trim() ?? ''
     return token.length > 0 ? token : null
   }
 
+  /**
+   * Asks the running `warp-engine-local` container for its admin token
+   * (`docker exec warp-engine-local bin/warp-engine token`, with the `warpengine.docker` binary).
+   *
+   * @returns The token, or `null` when the container is not running or prints none.
+   */
   public async tokenFromContainer(): Promise<string | null> {
     const docker: string = this.settings().get<string>('docker') ?? 'docker'
     const result: ShellResult = await ProcessRunner.run(docker, ['exec', CONTAINER, 'bin/warp-engine', 'token'], homedir())

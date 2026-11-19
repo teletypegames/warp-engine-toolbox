@@ -1,3 +1,9 @@
+/**
+ * New Game… and Add WarpEngine to This Project: a project from the host's template.
+ *
+ * @packageDocumentation
+ */
+
 import { homedir } from 'node:os'
 import * as vscode from 'vscode'
 import type { GameAnswers } from '../../domain/model/game-answers.model'
@@ -20,18 +26,36 @@ interface NewGame {
   readonly withDemo: boolean
 }
 
+/** What {@link NewGameController} works with. */
 export interface NewGameDependencies {
+  /** The current host, whose address the project gets. */
   readonly hosts: HostService
+  /** Asks for a host when none is set. */
   readonly hostController: HostController
+  /** Asks for the platform and the game answers. */
   readonly dialog: GameAnswersDialog
+  /** Writes the project from the host's template and demo. */
   readonly scaffold: ScaffoldService
+  /** The projects of the workspace, re-read after WarpEngine was added. */
   readonly projects: ProjectRegistry
+  /** Connects the project when the user asks for it. */
   readonly connect: ConnectController
 }
 
+/** Serves `warpengine.newGame` and `warpengine.addToProject`. */
 export class NewGameController {
+  /**
+   * Creates the controller.
+   *
+   * @param deps - The services, dialogs and controllers it uses.
+   */
   public constructor(private readonly deps: NewGameDependencies) {}
 
+  /**
+   * `warpengine.newGame`: asks for the host, the platform, the game answers, the parent folder and the starting point (demo or template only), then writes the new project, with a progress notification.
+   *
+   * Offers to open the new folder or add it to the workspace. Shows an error when the folder exists already.
+   */
   public async newGame(): Promise<void> {
     const game: NewGame | null = await this.askNewGame()
     if (!game) return
@@ -40,6 +64,11 @@ export class NewGameController {
     await NewGameController.offerOpen(game, result)
   }
 
+  /**
+   * `warpengine.addToProject`: adds the marker, the metadata and the template's files to a workspace folder; the project's own files are kept.
+   *
+   * Asks for the host, the folder (when there are several), the platform and the answers; writes with a progress notification, re-reads the projects and offers to connect.
+   */
   public async addToProject(): Promise<void> {
     if (!(await this.deps.hostController.ensure())) return
     const folder: vscode.WorkspaceFolder | undefined = await NewGameController.pickFolder()

@@ -1,3 +1,8 @@
+/**
+ * The questions New Game asks.
+ *
+ * @module
+ */
 import * as vscode from 'vscode'
 import type { Category } from '../../domain/model/catalog.model'
 import { FIRST_VERSION, GameName, LICENSES, type GameAnswers } from '../../domain/model/game-answers.model'
@@ -18,9 +23,24 @@ interface Texts {
 
 const STATUS_MS = 4000
 
+/** Asks for the platform and the details of a new game; every question can be dismissed, which ends the flow. */
 export class GameAnswersDialog {
+  /**
+   * Creates the dialog.
+   *
+   * @param platforms - Lists the host's platforms.
+   * @param catalog - Lists the host's categories.
+   * @param scaffold - Suggests the author.
+   */
   public constructor(private readonly platforms: PlatformService, private readonly catalog: CatalogService, private readonly scaffold: ScaffoldService) {}
 
+  /**
+   * Asks for a platform from a quick pick of the host's platforms (reloaded), and shows the
+   * chosen one's first description line in the status bar for a few seconds.
+   *
+   * @param title - The quick pick's title.
+   * @returns The platform, or `null` when the pick is dismissed.
+   */
   public async platform(title: string): Promise<Platform | null> {
     const all: Platform[] = await this.platforms.all(true)
     const items: PickItem<Platform>[] = all.map((platform: Platform) => ({ label: platform.label, description: platform.name, detail: PlatformFormatter.summary(platform), value: platform }))
@@ -29,6 +49,15 @@ export class GameAnswersDialog {
     return picked ?? null
   }
 
+  /**
+   * Asks, in turn, for the name (validated), title, one-line description, author, licence and
+   * category of a new game.
+   *
+   * @param platform - The chosen platform, named in the first question.
+   * @param suggestedName - A name to start from, such as the folder's, or `null`.
+   * @returns The answers with the first version, the title standing in for an empty
+   *   description; `null` when a question is dismissed.
+   */
   public async answers(platform: Platform, suggestedName: string | null): Promise<GameAnswers | null> {
     const texts: Texts | null = await this.texts(platform, suggestedName)
     if (!texts) return null

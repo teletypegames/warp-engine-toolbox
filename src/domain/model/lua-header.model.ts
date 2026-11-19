@@ -1,31 +1,79 @@
+/**
+ * The `-- key: value` metadata header of a Lua cartridge.
+ *
+ * @module
+ */
+/** One `-- key: value` line of a Lua header. */
 export interface HeaderLine {
+  /** The key, lowercased. */
   readonly key: string
+  /** The value, trimmed. */
   readonly value: string
+  /** The zero-based line number in the file. */
   readonly line: number
 }
 
 const SEPARATOR_FROM = 2
 
+/**
+ * The metadata header at the top of a Lua cartridge (TIC-80 style): the leading
+ * `-- key: value` comment lines.
+ */
 export class LuaHeader {
-  private constructor(private readonly text: string, public readonly lines: readonly HeaderLine[]) {}
+  private constructor(
+    private readonly text: string,
+    /** The header's `-- key: value` lines, in file order. */
+    public readonly lines: readonly HeaderLine[]
+  ) {}
 
+  /**
+   * Reads the header of a Lua file: the `-- key: value` lines of its leading comment block.
+   *
+   * @param text - The whole file content.
+   * @returns The header, keeping the text so it can be rewritten.
+   */
   public static parse(text: string): LuaHeader {
     return new LuaHeader(text, LuaHeader.read(text.split(/\r?\n/)))
   }
 
+  /**
+   * The `.lua` file a platform's version command reads, taken from the command line.
+   *
+   * @param command - The command, or `null`.
+   * @returns The first `*.lua` path in it, or `null` when there is none.
+   */
   public static fileFromCommand(command: string | null): string | null {
     if (!command) return null
     return /([\w./-]+\.lua)\b/.exec(command)?.[1] ?? null
   }
 
+  /**
+   * The header as a key → value record.
+   *
+   * @returns The values by lowercased key; a later duplicate key wins.
+   */
   public values(): Record<string, string> {
     return Object.fromEntries(this.lines.map((entry: HeaderLine) => [entry.key, entry.value]))
   }
 
+  /**
+   * The header line of a key.
+   *
+   * @param key - The key, in any case.
+   * @returns The first line with that key, or `null`.
+   */
   public line(key: string): HeaderLine | null {
     return this.lines.find((entry: HeaderLine) => entry.key === key.toLowerCase()) ?? null
   }
 
+  /**
+   * The file text with one header value set: the existing line's value is replaced,
+   * or a new `-- key: value` line is added after the header. Line endings are kept.
+   *
+   * @param key - The key to set.
+   * @param value - The new value.
+   * @returns The whole new file content.
+   */
   public with(key: string, value: string): string {
     const eol: string = this.text.includes('\r\n') ? '\r\n' : '\n'
     const lines: string[] = this.text.split(/\r?\n/)

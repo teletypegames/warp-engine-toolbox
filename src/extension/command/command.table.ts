@@ -1,10 +1,23 @@
+/**
+ * The table of the toolbox commands: command id to controller method.
+ *
+ * @module
+ */
 import type * as vscode from 'vscode'
 import type { Controllers } from '../bootstrap/container'
 import type { TreeNode } from '../view/tree/tree.node'
 import type { CommandHandler } from './command.registry'
 
+/** One command: its id, as contributed in `package.json`, and the handler that runs it. */
 export type CommandRow = readonly [string, CommandHandler]
 
+/**
+ * Lists every `warpengine.*` command with the controller method it calls: the project,
+ * account, catalog and sync commands.
+ *
+ * @param controllers - The controllers of the window.
+ * @returns The rows for {@link extension/command/command.registry!CommandRegistry.register}.
+ */
 export function commandTable(controllers: Controllers): CommandRow[] {
   return [...projectCommands(controllers), ...accountCommands(controllers), ...catalogCommands(controllers), ...syncCommands(controllers)]
 }

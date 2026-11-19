@@ -1,3 +1,9 @@
+/**
+ * Creates the controllers, the last of the extension objects, on the services, the workspace state and the views.
+ *
+ * @packageDocumentation
+ */
+
 import type * as vscode from 'vscode'
 import { CatalogController } from '../controller/catalog.controller'
 import { ConnectController } from '../controller/connect.controller'
@@ -17,6 +23,15 @@ import type { Controllers, Services } from './container'
 import type { Views } from './views.factory'
 import type { Workspace } from './workspace.factory'
 
+/**
+ * Creates one controller per user flow and wires each to the services, stores and views it uses.
+ *
+ * @param context - The extension context; its global state remembers the local engine offer, its workspace state the declined local CI offers.
+ * @param services - The services from {@link "extension/bootstrap/container".createServices}.
+ * @param workspace - The workspace state from {@link "extension/bootstrap/workspace.factory".createWorkspace}; its host controller is reused.
+ * @param views - The views from {@link "extension/bootstrap/views.factory".createViews}, which the controllers refresh and show.
+ * @returns The controllers.
+ */
 export function createControllers(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Controllers {
   const { projects, states, hostController, auth } = workspace
   const localEngine: LocalEngineController = new LocalEngineController({ local: services.localEngine, hosts: services.hosts, connection: services.connection, state: context.globalState })

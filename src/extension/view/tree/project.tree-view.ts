@@ -1,3 +1,9 @@
+/**
+ * The WarpEngine project view: the current project, locally and on the host.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { Releases, type Release } from '../../../domain/model/catalog.model'
 import { PipelineRuns, type PipelineRun } from '../../../domain/model/pipeline.model'
@@ -18,15 +24,25 @@ import type { TreeView } from './tree.provider'
 const RUN_LIMIT = 10
 const RELEASE_LIMIT = 15
 
+/** What {@link ProjectTreeView} reads. */
 export interface ProjectTreeDependencies {
+  /** The current host. */
   readonly hosts: HostService
+  /** The current project and its version. */
   readonly projects: ProjectRegistry
+  /** The project's state on the host. */
   readonly states: RemoteStateStore
+  /** The play links. */
   readonly play: PlayService
+  /** The software's admin page. */
   readonly hostInfo: HostInfoService
+  /** Whether the current host is the local engine. */
   readonly local: LocalEngineService
 }
 
+/**
+ * The content of the project view (`warpengine.project`): the platform (with its docs), the name and version, the metadata, Play and Check publish; on the host Sign in, Connect or Set up local CI, Release…, the pipeline and its runs, this branch's build, the releases and the admin page.
+ */
 export class ProjectTreeView implements TreeView {
   private readonly hosts: HostService
   private readonly projects: ProjectRegistry
@@ -35,6 +51,11 @@ export class ProjectTreeView implements TreeView {
   private readonly hostInfo: HostInfoService
   private readonly local: LocalEngineService
 
+  /**
+   * Creates the view.
+   *
+   * @param deps - What it reads.
+   */
   public constructor(deps: ProjectTreeDependencies) {
     this.hosts = deps.hosts
     this.projects = deps.projects
@@ -44,6 +65,11 @@ export class ProjectTreeView implements TreeView {
     this.local = deps.local
   }
 
+  /**
+   * Returns the nodes of the current project: the local ones, then a sign-in or reauthorize node, or the nodes of its state on the host.
+   *
+   * @returns The root nodes; none without a current project.
+   */
   public async roots(): Promise<TreeNode[]> {
     const project: Project | null = this.projects.current()
     if (!project) return []

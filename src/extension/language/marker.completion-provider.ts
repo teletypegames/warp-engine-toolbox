@@ -1,3 +1,8 @@
+/**
+ * Completion for the pipeline marker's keys and platform names.
+ *
+ * @module
+ */
 import * as vscode from 'vscode'
 import type { Platform } from '../../domain/model/platform.model'
 import type { PlatformService } from '../../domain/service/platform.service'
@@ -6,9 +11,23 @@ import { PlatformFormatter } from '../view/platform/platform.formatter'
 
 const KEYS: readonly string[] = ['platform', 'name', 'release', 'build']
 
+/** Completes the marker keys (`platform`, `name`, `release`, `build`) and, after `platform:`, the host's platforms. */
 export class MarkerCompletionProvider implements vscode.CompletionItemProvider {
+  /**
+   * Creates the provider.
+   *
+   * @param platforms - Lists the host's platforms.
+   */
   public constructor(private readonly platforms: PlatformService) {}
 
+  /**
+   * Provides the platform names, with label and description, after `platform:`; the marker keys
+   * (inserting `key: `) while a bare word is typed at the start of a line; nothing elsewhere.
+   *
+   * @param document - The pipeline file.
+   * @param position - The cursor position.
+   * @returns The items; no platforms when they cannot be loaded.
+   */
   public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.CompletionItem[]> {
     const before: string = document.lineAt(position.line).text.slice(0, position.character)
     if (/^platform:\s*\S*$/.test(before)) return this.platformItems()

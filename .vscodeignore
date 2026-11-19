@@ -13,3 +13,7 @@ media/icon.svg
 .vscode-test/**
 Makefile
 .github/**
+doc/**
+docs/**
+typedoc.json
+CLAUDE.md

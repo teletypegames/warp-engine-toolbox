@@ -1,7 +1,7 @@
 VSIX = dist/warpengine-toolbox.vsix
 CODE ?= code
 
-.PHONY: deps build check test package localinstall uninstall
+.PHONY: deps build check test docs package localinstall uninstall
 
 deps: node_modules
 
@@ -15,9 +15,13 @@ build: deps
 check: deps
 	npm run typecheck
 	npm run lint
+	npm run docs:check
 	npm test
 
 test: check
+
+docs: deps
+	npm run docs
 
 package: deps
 	npm run package

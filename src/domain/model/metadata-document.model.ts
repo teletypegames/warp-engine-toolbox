@@ -1,11 +1,32 @@
+/**
+ * Rewriting a project's metadata file with one value changed.
+ *
+ * @module
+ */
 import { DomainError, msg } from './message.model'
 import { LuaHeader } from './lua-header.model'
 import { Metadata, type MetadataValues } from './metadata.model'
 import type { MetadataFormat } from './platform-description.model'
 
+/**
+ * The text of a project's metadata file (JSON or a Lua header), rewritten with one value changed.
+ *
+ * Every method returns the new text and leaves the original untouched; writing it back is the caller's job.
+ */
 export class MetadataDocument {
+  /**
+   * Wraps the current text of a metadata file.
+   * @param text - The file's current content; an empty string stands for a missing JSON file.
+   * @param format - How the file is written, which decides how a value is set.
+   */
   public constructor(private readonly text: string, private readonly format: MetadataFormat) {}
 
+  /**
+   * Sets the version in the document.
+   * @param version - The new version.
+   * @returns The text with `version` replaced: the `-- version:` line of a Lua header, or the `version` key of the JSON object.
+   * @throws SyntaxError when a non-empty JSON document cannot be parsed.
+   */
   public withVersion(version: string): string {
     if (this.format === 'lua') return LuaHeader.parse(this.text).with('version', version)
     const values: MetadataValues = this.text ? JSON.parse(this.text) as MetadataValues : {}
@@ -13,6 +34,13 @@ export class MetadataDocument {
     return Metadata.stringify(values)
   }
 
+  /**
+   * Sets the `version` key of a separate JSON version file.
+   * @param text - The current content of the version file.
+   * @param version - The new version.
+   * @returns The JSON text with two-space indentation and a trailing newline.
+   * @throws {@link domain/model/message.model!DomainError} when the text is not valid JSON.
+   */
   public static jsonWithVersion(text: string, version: string): string {
     const values: MetadataValues | null = MetadataDocument.parseObject(text)
     if (!values) throw new DomainError(msg('The version file is not valid JSON; fix it in the text editor first.'))
@@ -20,6 +48,13 @@ export class MetadataDocument {
     return `${JSON.stringify(values, null, 2)}\n`
   }
 
+  /**
+   * Records the repository URL in the document.
+   *
+   * A Lua header gets it as `site`; a JSON object gets it as `repo`, and as `site` too when that is not set yet.
+   * @param url - The repository URL.
+   * @returns The new text, or `null` when the format is `custom` or the JSON cannot be parsed.
+   */
   public withRepository(url: string): string | null {
     if (this.format === 'lua') return LuaHeader.parse(this.text).with('site', url)
     if (this.format !== 'json') return null
@@ -30,6 +65,15 @@ export class MetadataDocument {
     return Metadata.stringify(values)
   }
 
+  /**
+   * Sets a nested value of a JSON metadata document, as the metadata form edits it.
+   *
+   * An empty value (`''`, `null` or `undefined`) removes the key, and objects left empty are removed with it.
+   * @param path - The keys from the root down to the value.
+   * @param value - The new value.
+   * @returns The new JSON text.
+   * @throws {@link domain/model/message.model!DomainError} when the current text is not valid JSON.
+   */
   public withPath(path: readonly string[], value: unknown): string {
     const values: MetadataValues | null = Metadata.parseJson(this.text || '{}')
     if (!values) throw new DomainError(msg('metadata.json is not valid JSON; fix it in the text editor first.'))

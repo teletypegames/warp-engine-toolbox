@@ -12,7 +12,7 @@ function layer(files, patterns, ignores = []) {
 }
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'dist-test/**', 'node_modules/**', 'scripts/*.mjs', 'scripts/*.cjs', 'media/**', '.vscode-test/**', 'eslint.config.mjs'] },
+  { ignores: ['dist/**', 'doc/**', 'dist-test/**', 'node_modules/**', 'scripts/*.mjs', 'scripts/*.cjs', 'media/**', '.vscode-test/**', 'eslint.config.mjs'] },
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {

@@ -15,10 +15,25 @@ steps:
       - npm ci --no-audit --no-fund
       - npm run typecheck
       - npm run lint
+      - npm run docs:check
       - npm test
       - npm run package
 
+  - name: publish-typedoc
+    image: node:22-bookworm-slim
+    depends_on: [check]
+    environment:
+      GITEA_TOKEN:
+        from_secret: gitea_token
+    commands:
+      - apt-get update -qq && apt-get install -y -qq curl ca-certificates git >/dev/null
+      - scripts/ci-typedoc.sh
+    when:
+      - event: tag
+        ref: refs/tags/v*
+
   - name: release
+    depends_on: [check]
     image: node:22-bookworm-slim
     environment:
       GITEA_TOKEN:

@@ -1,3 +1,9 @@
+/**
+ * The composition root of the services: the only file that creates infrastructure objects.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import type { PreviewRepository } from '../../domain/repository/preview.repository'
 import type { FileSystemRepository } from '../../domain/repository/file-system.repository'
@@ -51,44 +57,81 @@ import type { ReleaseController } from '../controller/release.controller'
 import type { SignInController } from '../controller/sign-in.controller'
 import type { SyncController } from '../controller/sync.controller'
 
+/** Every domain service of the toolbox, built once by {@link "extension/bootstrap/container".createServices} on the infrastructure that implements its ports. */
 export interface Services {
+  /** The configured WarpEngine hosts and the current one. */
   readonly hosts: HostService
+  /** Discovery of a WarpEngine running on this machine. */
   readonly localEngine: LocalEngineService
+  /** The signed-in connection to the current host: token and HTTP repositories. */
   readonly connection: ConnectionService
+  /** The host's platform descriptions, cached in the global state. */
   readonly platforms: PlatformService
+  /** Reading WarpEngine projects from the workspace folders. */
   readonly projects: ProjectService
+  /** New games and WarpEngine added to a project from the host's templates. */
   readonly scaffold: ScaffoldService
+  /** Connect: the repository, the CI and the catalog entry on the host, the remote in the working copy. */
   readonly connect: ConnectService
+  /** Release: version bump, changelog, commit, tag and push. */
   readonly release: ReleaseService
+  /** What the host would refuse in the metadata on a publish. */
   readonly publishCheck: PublishCheckService
+  /** The project's state on the host: software, pipeline, runs, releases. */
   readonly remoteState: RemoteStateService
+  /** The plan and the payload of playing a build, and the play links. */
   readonly play: PlayService
+  /** Signing in to a host and the stored sessions. */
   readonly signIn: SignInService
+  /** The host's catalog: softwares, releases, links, pipelines, statistics. */
   readonly catalog: CatalogService
+  /** The pipeline preview of a project and starting a pipeline. */
   readonly pipelines: PipelineService
+  /** The Makefile targets of a project. */
   readonly make: MakeService
+  /** The loopback HTTP server Play serves the build from. */
   readonly preview: PreviewRepository
+  /** A software's image gallery on the host. */
   readonly images: ImageService
+  /** Pairing the local engine with another WarpEngine instance and its sync links. */
   readonly sync: SyncService
+  /** Setting a project up on the local engine's git server and CI. */
   readonly localCi: LocalCiService
+  /** The WarpEngine containers on this machine and their purge. */
   readonly servers: ServerService
+  /** What the current host tells about itself, such as a software's admin page. */
   readonly hostInfo: HostInfoService
 }
 
+/** One controller per user flow, built by {@link "extension/bootstrap/controllers.factory".createControllers}; the command table maps the command ids to their methods. */
 export interface Controllers {
+  /** New Game… and Add WarpEngine to This Project. */
   readonly newGame: NewGameController
+  /** Connect. */
   readonly connect: ConnectController
+  /** Sign in, sign out and sign in again. */
   readonly signIn: SignInController
+  /** Choosing the WarpEngine host. */
   readonly host: HostController
+  /** The project panel actions: pipeline preview, Play, Build Like CI, Check Publish, metadata, platform docs. */
   readonly project: ProjectController
+  /** Release…. */
   readonly release: ReleaseController
+  /** Refresh of everything the toolbox shows. */
   readonly refresh: RefreshController
+  /** Opening and copying links. */
   readonly link: LinkController
+  /** The catalog view actions: fields, deletes, checklist, statistics, pipelines. */
   readonly catalog: CatalogController
+  /** Finding and installing the local engine. */
   readonly localEngine: LocalEngineController
+  /** Sync to… and the Sync view actions. */
   readonly sync: SyncController
+  /** The image gallery actions of the catalog view. */
   readonly images: ImageController
+  /** Set Up Local CI and its offer. */
   readonly localCi: LocalCiController
+  /** Purge Local Engine…. */
   readonly servers: ServersController
 }
 
@@ -97,6 +140,13 @@ interface Infrastructure {
   readonly git: SourceControlFactory
 }
 
+/**
+ * Creates every service on its infrastructure: the settings, the secret storage, the global state memento,
+ * the workspace file system, the git and docker CLIs, the HTTP gateway and the preview server.
+ *
+ * @param context - The extension context; its global state caches the platforms and its secrets keep the sessions.
+ * @returns The services, wired to each other.
+ */
 export function createServices(context: vscode.ExtensionContext): Services {
   const infrastructure: Infrastructure = { files: new VsCodeFileSystemRepository(), git: new GitCliFactory() }
   const hosts: HostService = new HostService(new ConfigHostRepository())

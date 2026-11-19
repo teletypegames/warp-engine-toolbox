@@ -1,3 +1,9 @@
+/**
+ * The actions of the project view on the current project.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { DomainError, msg } from '../../domain/model/message.model'
 import type { Release } from '../../domain/model/catalog.model'
@@ -15,28 +21,55 @@ import type { ReportView } from '../view/report/report.view'
 import type { TreeNode } from '../view/tree/tree.node'
 import type { ProjectRegistry } from '../workspace/project.registry'
 
+/** What {@link ProjectController} works with. */
 export interface ProjectDependencies {
+  /** The current project. */
   readonly projects: ProjectRegistry
+  /** The host's preview of the project's pipeline. */
   readonly pipelines: PipelineService
+  /** The play link of a branch build. */
   readonly play: PlayService
+  /** Runs Makefile targets, also in the CI builder image. */
   readonly tasks: MakeTaskProvider
+  /** Checks the metadata against the host. */
   readonly diagnostics: PublishDiagnostics
+  /** The Play panel. */
   readonly player: PlayPanel
+  /** Shows the pipeline preview. */
   readonly reports: ReportView
 }
 
+/**
+ * Serves `warpengine.previewPipeline`, `warpengine.play`, `warpengine.buildLikeCi`, `warpengine.checkPublish`, `warpengine.editMetadata` and `warpengine.openPlatformDocs`, and announces branch builds.
+ */
 export class ProjectController {
+  /**
+   * Creates the controller.
+   *
+   * @param deps - The services and views it uses.
+   */
   public constructor(private readonly deps: ProjectDependencies) {}
 
+  /**
+   * `warpengine.previewPipeline`: shows the full pipeline the host serves for the current project as a YAML document.
+   *
+   * @throws {@link "domain/model/message.model".DomainError} When there is no current project.
+   */
   public async previewPipeline(): Promise<void> {
     const project: Project = this.deps.projects.require()
     await this.deps.reports.show(`${project.name}-pipeline.yaml`, await this.deps.pipelines.preview(project), false)
   }
 
+  /** `warpengine.play`: builds the current project and plays it in the {@link PlayPanel}. */
   public async play(): Promise<void> {
     await this.deps.player.play()
   }
 
+  /**
+   * `warpengine.buildLikeCi`: runs the `build` target in the platform's CI builder image (Docker) in a terminal, and reports success or failure in a notification.
+   *
+   * @throws {@link "domain/model/message.model".DomainError} When there is no current project or the host names no builder image for its platform.
+   */
   public async buildLikeCi(): Promise<void> {
     const project: Project = this.deps.projects.require()
     if (!project.platform?.builder) throw new DomainError(msg('The host names no builder image for this platform.'))
@@ -45,22 +78,44 @@ export class ProjectController {
     else Dialogs.error(t('The CI builder failed; see the terminal.'))
   }
 
+  /**
+   * `warpengine.checkPublish`: asks the host what a publish would refuse in the current project's metadata, shows the problems as diagnostics and reports the result.
+   *
+   * @throws {@link "domain/model/message.model".DomainError} When there is no current project.
+   */
   public async checkPublish(): Promise<void> {
     await this.deps.diagnostics.check(this.deps.projects.require(), true)
   }
 
+  /**
+   * `warpengine.editMetadata`: opens a metadata file, a JSON one in the metadata form and any other as text.
+   *
+   * @param uri - The file; without one, the active editor's document or the current project's metadata file.
+   * @throws {@link "domain/model/message.model".DomainError} When there is no metadata file to open.
+   */
   public async editMetadata(uri?: vscode.Uri): Promise<void> {
     const target: vscode.Uri | null = uri ?? vscode.window.activeTextEditor?.document.uri ?? this.metadataUri()
     if (!target) throw new DomainError(msg('This project has no metadata file.'))
     await vscode.commands.executeCommand('vscode.openWith', target, target.path.endsWith('.json') ? METADATA_VIEW : 'default')
   }
 
+  /**
+   * `warpengine.openPlatformDocs`: opens the host's documentation page of the platform in the browser.
+   *
+   * @param node - The platform node carrying the docs URL; without one, the current project's platform docs.
+   * @throws {@link "domain/model/message.model".DomainError} When the host links no documentation for the platform.
+   */
   public async openPlatformDocs(node?: TreeNode): Promise<void> {
     const url: string | null = typeof node?.data === 'string' ? node.data : this.deps.projects.current()?.platform?.docsUrl ?? null
     if (!url) throw new DomainError(msg('The host links no documentation for this platform.'))
     await Dialogs.openExternal(url)
   }
 
+  /**
+   * Announces that a push to a side branch was built: a notification offers to play the build or copy its link.
+   *
+   * @param state - The remote state with the branch build; without a build or a play link nothing is shown.
+   */
   public async announceBranchBuild(state: RemoteState): Promise<void> {
     const build: Release | null = state.branchBuild
     const url: string | null = build ? this.deps.play.playUrl(state.project.name, build.version) : null

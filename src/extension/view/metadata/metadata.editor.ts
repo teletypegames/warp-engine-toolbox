@@ -1,3 +1,9 @@
+/**
+ * The metadata form: `metadata.json` edited in a webview form built from the host's schema.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { MetadataDocument } from '../../../domain/model/metadata-document.model'
 import type { Project } from '../../../domain/model/project.model'
@@ -7,6 +13,7 @@ import { errorText, t } from '../../ui/l10n'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 import { WebviewHtml } from '../webview.html'
 
+/** The view type of the metadata form custom editor. */
 export const METADATA_VIEW = 'warpengine.metadata'
 
 interface FieldMessage {
@@ -17,13 +24,31 @@ interface FieldMessage {
 
 type FormMessage = FieldMessage | { readonly type: 'ready' } | { readonly type: 'source' }
 
+/**
+ * The custom text editor that shows `metadata.json` as a form built from the platform's JSON schema; every change in the form is written into the document.
+ */
 export class MetadataEditor implements vscode.CustomTextEditorProvider {
   private readonly assets: vscode.Uri
 
+  /**
+   * Creates the editor provider.
+   *
+   * @param extensionUri - The extension's folder, whose `media/webview` holds the form's script and style.
+   * @param schemas - The metadata JSON schemas of the platforms.
+   * @param projects - Finds the project of the opened file.
+   */
   public constructor(extensionUri: vscode.Uri, private readonly schemas: MetadataSchemaProvider, private readonly projects: ProjectRegistry) {
     this.assets = vscode.Uri.joinPath(extensionUri, 'media', 'webview')
   }
 
+  /**
+   * Fills a metadata form panel: renders the form for the project's platform schema, sends it the document text on every change, and writes the field values the form sends back into the document (or reopens the file as text on request).
+   *
+   * An edit that cannot be applied is shown as an error notification.
+   *
+   * @param document - The `metadata.json` document.
+   * @param panel - The webview panel to fill.
+   */
   public async resolveCustomTextEditor(document: vscode.TextDocument, panel: vscode.WebviewPanel): Promise<void> {
     panel.webview.options = { enableScripts: true, localResourceRoots: [this.assets] }
     const project: Project | null = this.projects.byMetadata(document.uri)

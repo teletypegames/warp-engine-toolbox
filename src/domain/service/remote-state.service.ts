@@ -1,3 +1,8 @@
+/**
+ * What the host knows about a project.
+ *
+ * @module
+ */
 import { Releases, type Release, type Software } from '../model/catalog.model'
 import type { Pipeline, PipelineRun } from '../model/pipeline.model'
 import type { Project } from '../model/project.model'
@@ -10,9 +15,23 @@ import type { ConnectionService } from './connection.service'
 
 const DEFAULT_BRANCH = 'master'
 
+/** Loads the remote state of a project: its git position, and from the host its software, pipeline, runs and releases. */
 export class RemoteStateService {
+  /**
+   * Creates the service.
+   *
+   * @param connection - Gives the admin repositories of the current host.
+   * @param sourceControl - Reads the project's git position.
+   */
   public constructor(private readonly connection: ConnectionService, private readonly sourceControl: SourceControlFactory) {}
 
+  /**
+   * Loads the remote state of a project without asking the user. Never rejects because of the
+   * host: a host error is recorded in the state, flagged `unauthorized` on a 401.
+   *
+   * @param project - The project.
+   * @returns The state; only the git position and `signedIn: false` without a session.
+   */
   public async load(project: Project): Promise<RemoteState> {
     const position: GitPosition = await this.position(this.sourceControl.at(project.folder))
     const admin: AdminRepositories | null = await this.connection.admin(false)

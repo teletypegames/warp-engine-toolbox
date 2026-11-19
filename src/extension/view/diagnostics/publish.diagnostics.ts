@@ -1,3 +1,9 @@
+/**
+ * The publish check of the metadata as diagnostics in the Problems view.
+ *
+ * @packageDocumentation
+ */
+
 import * as vscode from 'vscode'
 import { LuaHeader, type HeaderLine } from '../../../domain/model/lua-header.model'
 import type { Project } from '../../../domain/model/project.model'
@@ -8,10 +14,20 @@ import { Dialogs } from '../../ui/dialogs'
 import { errorText, t } from '../../ui/l10n'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 
+/**
+ * Shows what the host would refuse on a publish as diagnostics on the metadata file (`metadata.json` or the TIC-80 Lua header), checked on every save while `warpengine.checkOnSave` is on.
+ */
 export class PublishDiagnostics implements vscode.Disposable {
   private readonly collection: vscode.DiagnosticCollection = vscode.languages.createDiagnosticCollection('warpengine')
   private readonly subscription: vscode.Disposable
 
+  /**
+   * Creates the diagnostic collection and starts listening to document saves.
+   *
+   * @param hosts - The current host; without one nothing is checked.
+   * @param projects - Finds the project a saved metadata file belongs to.
+   * @param service - Asks the host for the publish check.
+   */
   public constructor(
     private readonly hosts: HostService,
     private readonly projects: ProjectRegistry,
@@ -20,6 +36,14 @@ export class PublishDiagnostics implements vscode.Disposable {
     this.subscription = vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => { this.onSave(document) })
   }
 
+  /**
+   * Checks a project's metadata against the host and puts the problems on the file as errors and warnings.
+   *
+   * @param project - The project; without a metadata file or a known platform nothing is checked.
+   * @param report - When `true`, a missing host and a failed check are shown as errors, and the result is announced: a notification when nothing is wrong, the Problems view otherwise.
+   * @returns The check, or `null` when nothing was checked or the check failed.
+   * @throws {@link "domain/model/message.model".DomainError} With `report`, when no host is set.
+   */
   public async check(project: Project, report: boolean): Promise<PublishCheck | null> {
     if (!project.metadataPath || !project.platform) return null
     if (!this.hosts.current()) {
@@ -37,6 +61,7 @@ export class PublishDiagnostics implements vscode.Disposable {
     return result
   }
 
+  /** Stops listening to saves and clears the diagnostics. */
   public dispose(): void {
     this.subscription.dispose()
     this.collection.dispose()

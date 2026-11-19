@@ -1,0 +1,58 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "WarpEngine Toolbox",
+  "entryPoints": [
+    "src"
+  ],
+  "entryPointStrategy": "expand",
+  "exclude": [
+    "**/*.test.ts"
+  ],
+  "tsconfig": "tsconfig.json",
+  "readme": "README.md",
+  "projectDocuments": [
+    "docs/reference/commands-and-settings.md",
+    "STRUCTURE.md"
+  ],
+  "navigation": {
+    "includeCategories": false,
+    "includeGroups": false,
+    "includeFolders": true
+  },
+  "sort": ["kind", "alphabetical"],
+  "highlightLanguages": ["bash", "console", "css", "html", "javascript", "json", "jsonc", "json5", "yaml", "tsx", "typescript", "sh", "mermaid"],
+  "out": "doc",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeExternals": true,
+  "includeVersion": true,
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": true
+  },
+  "requiredToBeDocumented": [
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember",
+    "Variable",
+    "Function",
+    "Class",
+    "Interface",
+    "Constructor",
+    "Property",
+    "Method",
+    "Accessor",
+    "TypeAlias"
+  ],
+  "treatWarningsAsErrors": true,
+  "externalSymbolLinkMappings": {
+    "@types/vscode": {
+      "*": "https://code.visualstudio.com/api/references/vscode-api"
+    },
+    "@types/node": {
+      "*": "https://nodejs.org/api/"
+    }
+  }
+}

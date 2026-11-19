@@ -1,16 +1,40 @@
+/**
+ * The local WarpEngine containers: the Servers view and Purge.
+ *
+ * @module
+ */
 import { msg, type Message } from '../model/message.model'
 import { Servers, type PurgePlan, type ServerContainer } from '../model/server.model'
 import type { ContainerRuntime } from '../repository/container-runtime.repository'
 
+/** Receives each step of a purge, for the progress notification. */
 export type PurgeReport = (message: Message) => void
 
+/** Lists the local WarpEngine containers and removes everything they left behind. */
 export class ServerService {
+  /**
+   * Creates the service.
+   *
+   * @param runtime - The local container runtime.
+   */
   public constructor(private readonly runtime: ContainerRuntime) {}
 
+  /**
+   * Lists the containers labelled as WarpEngine Local components, running or not.
+   *
+   * @returns The containers in display order.
+   * @throws When the container runtime fails.
+   */
   public async containers(): Promise<ServerContainer[]> {
     return Servers.sorted(await this.runtime.containers(Servers.LABEL))
   }
 
+  /**
+   * Collects what a purge would remove: the containers, their volumes, network and images (the engine image included), and the engine's data folder when it may be wiped. Removes nothing.
+   *
+   * @returns The plan to show the user.
+   * @throws When the container runtime fails.
+   */
   public async purgePlan(): Promise<PurgePlan> {
     const containers: ServerContainer[] = await this.containers()
     const engine: ServerContainer | undefined = containers.find((container: ServerContainer) => Servers.role(container) === 'engine')
@@ -23,6 +47,14 @@ export class ServerService {
     }
   }
 
+  /**
+   * Removes everything in a plan: the containers, the data folder (emptied through the engine
+   * image), then the volumes, networks and images. Objects that fail to go are skipped.
+   *
+   * @param plan - The plan from {@link ServerService.purgePlan}.
+   * @param report - Receives the steps.
+   * @throws When the data folder cannot be wiped.
+   */
   public async purge(plan: PurgePlan, report: PurgeReport): Promise<void> {
     report(msg('removing {0} containers…', plan.containers.length))
     await this.runtime.remove('container', plan.containers.map((container: ServerContainer) => container.name))

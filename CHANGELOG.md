@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.0
+
+- **API reference**: every module, class, interface and public member of the source carries a
+  TSDoc comment, and every release publishes the TypeDoc built from them on the wiki at
+  https://wiki.teletypegames.org/typedoc/warp-engine-toolbox/latest/ — with a generated
+  *Commands and Settings* page (every command, setting, view, task type and problem matcher
+  from `package.json`) and the STRUCTURE guide. `npm run docs:check` keeps it at 100% in CI.
+
 ## 1.8.1
 
 - **Set up local CI** is back in the project panel while the project has no pipeline on the

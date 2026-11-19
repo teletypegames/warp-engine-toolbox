@@ -1,3 +1,9 @@
+/**
+ * The catalog view: the host's softwares, their releases, images and links, and the pipelines.
+ *
+ * @packageDocumentation
+ */
+
 import type { ExternalLink, Release, Software, SoftwareField } from '../../../domain/model/catalog.model'
 import type { Host } from '../../../domain/model/host.model'
 import type { SoftwareImage } from '../../../domain/model/image.model'
@@ -14,24 +20,39 @@ import { ReleaseNode } from './release.node'
 import { TreeNode } from './tree.node'
 import type { TreeView } from './tree.provider'
 
+/** The data of a software field node, for `warpengine.editSoftwareField`. */
 export interface FieldData {
+  /** The software. */
   readonly software: Software
+  /** The field to change. */
   readonly field: SoftwareField
 }
 
+/** The data of an image node, for the gallery commands. */
 export interface ImageData {
+  /** The software the image belongs to. */
   readonly software: Software
+  /** The image. */
   readonly image: SoftwareImage
 }
 
+/** What {@link CatalogTreeView} reads. */
 export interface CatalogTreeDependencies {
+  /** The current host. */
   readonly hosts: HostService
+  /** The host's catalog. */
   readonly catalog: CatalogService
+  /** The platform labels. */
   readonly platforms: PlatformService
+  /** The play links of the releases. */
   readonly play: PlayService
+  /** The image galleries. */
   readonly images: ImageService
 }
 
+/**
+ * The content of the catalog view (`warpengine.catalog`): the host and the signed-in principal, the softwares by platform with their fields, releases (with the asset checklist), images and links, and the pipelines.
+ */
 export class CatalogTreeView implements TreeView {
   private readonly hosts: HostService
   private readonly catalog: CatalogService
@@ -39,6 +60,11 @@ export class CatalogTreeView implements TreeView {
   private readonly play: PlayService
   private readonly images: ImageService
 
+  /**
+   * Creates the view.
+   *
+   * @param deps - What it reads.
+   */
   public constructor(deps: CatalogTreeDependencies) {
     this.hosts = deps.hosts
     this.catalog = deps.catalog
@@ -47,6 +73,11 @@ export class CatalogTreeView implements TreeView {
     this.images = deps.images
   }
 
+  /**
+   * Returns the host, the softwares and the pipelines nodes; sets the `warpengine.signedIn` context key.
+   *
+   * @returns The root nodes; none without a host or a sign-in.
+   */
   public async roots(): Promise<TreeNode[]> {
     const host: Host | null = this.hosts.current()
     if (!host) return []

@@ -168,11 +168,14 @@ The code is a domain core with VS Code adapters around it; [STRUCTURE.md](https:
 the layers, the naming and the rules ESLint holds them to.
 
 ```sh
-make check          # typecheck, lint, l10n check, unit tests
+make check          # typecheck, lint, documentation gate, l10n check, unit tests
+make docs           # the API reference (TypeDoc) in doc/
 make package        # dist/warpengine-toolbox.vsix
 make localinstall   # package and install it into your VS Code (code --install-extension --force)
 make uninstall
 ```
+
+The API reference is built from the TSDoc comments of the source and published on every release tag: [wiki.teletypegames.org/typedoc/warp-engine-toolbox](https://wiki.teletypegames.org/typedoc/warp-engine-toolbox/latest/), with a generated *Commands and Settings* page. `CLAUDE.md` has the rules; CI fails while anything is undocumented.
 
 `npm run test:integration` runs the extension in a downloaded VS Code against the default host.
 

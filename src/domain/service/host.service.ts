@@ -1,40 +1,83 @@
+/**
+ * The WarpEngine hosts: the current one, the configured and the discovered ones.
+ *
+ * @module
+ */
 import { HostUrl, type Host } from '../model/host.model'
 import { DomainError, msg } from '../model/message.model'
 import type { HostRepository } from '../repository/host.repository'
 
+/** Keeps track of the current host and the hosts to choose from; stores choices in the user settings. */
 export class HostService {
   private discovered: Host[] = []
 
+  /**
+   * Creates the service.
+   *
+   * @param repository - The stored host settings.
+   */
   public constructor(private readonly repository: HostRepository) {}
 
+  /**
+   * Replaces the hosts found on this machine (a running local engine), which are offered first.
+   *
+   * @param hosts - The discovered hosts.
+   */
   public setDiscovered(hosts: readonly Host[]): void {
     this.discovered = hosts.map((host: Host) => HostUrl.host(host.url, host.name))
   }
 
+  /**
+   * Lists the configured hosts with a URL, normalized.
+   *
+   * @returns The hosts.
+   */
   public known(): Host[] {
     return this.repository.configuredHosts()
       .filter((host: Host) => typeof host.url === 'string' && host.url.trim().length > 0)
       .map((host: Host) => HostUrl.host(host.url, host.name))
   }
 
+  /**
+   * Gives the host the settings point at, named after a discovered or configured entry when one matches.
+   *
+   * @returns The host, or `null` when no URL is set.
+   */
   public current(): Host | null {
     const url: string = HostUrl.normalize(this.repository.configuredUrl())
     if (!url) return null
     return [...this.discovered, ...this.known()].find((host: Host) => host.url === url) ?? HostUrl.host(url)
   }
 
+  /**
+   * Gives the current host.
+   *
+   * @returns The host.
+   * @throws {@link "domain/model/message.model".DomainError} When no host is set.
+   */
   public require(): Host {
     const host: Host | null = this.current()
     if (!host) throw new DomainError(msg('No WarpEngine host is set: run "WarpEngine: Set Host…" or set warpengine.url.'))
     return host
   }
 
+  /**
+   * Lists the hosts to pick from: discovered, then configured, with the current one first when it is in neither.
+   *
+   * @returns The hosts without duplicates.
+   */
   public choices(): Host[] {
     const current: Host | null = this.current()
     const listed: Host[] = [...this.discovered, ...this.known().filter((host: Host) => !this.discovered.some((found: Host) => found.url === host.url))]
     return current && !listed.some((host: Host) => host.url === current.url) ? [current, ...listed] : listed
   }
 
+  /**
+   * Makes a URL the current host, adding it to the configured hosts when it is new; writes the settings.
+   *
+   * @param url - The host URL; normalized first.
+   * @returns The new current host.
+   */
   public async choose(url: string): Promise<Host | null> {
     const normalized: string = HostUrl.normalize(url)
     if (!this.choices().some((host: Host) => host.url === normalized)) await this.repository.saveHosts([...this.known(), HostUrl.host(normalized)])
@@ -42,12 +85,24 @@ export class HostService {
     return this.current()
   }
 
+  /**
+   * Adds a URL to the configured hosts when it is not among the choices yet; does not change the current host.
+   *
+   * @param url - The host URL.
+   * @returns The host.
+   */
   public async remember(url: string): Promise<Host> {
     const host: Host = HostUrl.host(url)
     if (!this.choices().some((known: Host) => known.url === host.url)) await this.repository.saveHosts([...this.known(), host])
     return host
   }
 
+  /**
+   * Makes a URL the current host without adding it to the list; writes the settings.
+   *
+   * @param url - The host URL, stored as given.
+   * @returns The new current host.
+   */
   public async select(url: string): Promise<Host | null> {
     await this.repository.saveUrl(url)
     return this.current()
