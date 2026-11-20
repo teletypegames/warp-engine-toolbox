@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.12.0
+
+- **A clearer Dashboard**: Pipeline and Releases show their five newest rows with a count, and
+  *More* opens all of them in a dialog. Local Server and Sync share a row half and half.
+- Statuses are coloured pills, times read as *3 hours ago* (the exact time on hover), the
+  newest release is marked *latest*, and the header shows platform, version, branch and host
+  as chips. Signed out, the Catalog shrinks to a one-line strip.
+- **Health names the project**: the group is titled *Project* and starts with *Name*, so the
+  three groups are Host, Local engine and Project.
+
 ## 1.11.1
 
 - **The Dashboard and Health show the host's part from the start**: opened before the project's
