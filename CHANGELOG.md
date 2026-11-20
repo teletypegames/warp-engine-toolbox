@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Catalog keeps up by itself**: after Connect, Set up local CI or a release, the Catalog
+  view redraws as soon as the project's software, pipeline or releases change on the host
+  (the draft entry appears, a finished build's release shows) — no manual refresh.
+- **A running build is followed wherever it was started**: when the toolbox sees the run of
+  `HEAD` running (a push from a terminal, a run started on the host), it polls until it ends,
+  not only after its own push.
+
 ## 1.9.0
 
 - **API reference**: every module, class, interface and public member of the source carries a

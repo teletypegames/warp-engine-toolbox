@@ -64,6 +64,19 @@ export class RemoteStates {
   }
 
   /**
+   * Sums up what of a state the catalog also shows: the software, its pipeline and its releases with their assets.
+   * Two states with the same key need no redraw of the catalog.
+   * @param state - The state, or `null` without a project.
+   * @returns A key that changes when a software appears or changes, a pipeline is linked, or a release is added, updated or removed.
+   */
+  public static catalogKey(state: RemoteState | null): string {
+    if (!state?.signedIn || state.error) return ''
+    const software: string = state.software ? `${String(state.software.id)}:${state.software.status ?? ''}:${state.software.title}` : '-'
+    const releases: string[] = state.releases.map((release: Release) => `${String(release.id)}@${release.updatedAt ?? release.createdAt ?? ''}#${String(release.assets.length)}`)
+    return [software, String(state.pipeline?.id ?? '-'), ...releases].join('|')
+  }
+
+  /**
    * Tells whether the checkout is on a branch other than the default one.
    * @param state - The state.
    * @returns `true` when both branches are known and differ.

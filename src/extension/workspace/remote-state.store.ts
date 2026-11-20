@@ -18,8 +18,9 @@ const POLL_LIMIT_MS: number = 20 * 60_000
  * Holds the {@link domain/model/remote-state.model!RemoteState} of the current project (its software, releases and
  * pipeline runs on the host) and tells the views when it changes.
  *
- * After {@link RemoteStateStore.watch} it polls every 10 seconds, for at most 20 minutes,
- * while a run for `HEAD` is running or has not appeared yet.
+ * After {@link RemoteStateStore.watch}, or whenever a load finds the run of `HEAD` running (a push from a
+ * terminal, a run started on the host), it polls every 10 seconds, for at most 20 minutes, while a run for
+ * `HEAD` is running or, after a watch, has not appeared yet.
  */
 export class RemoteStateStore implements vscode.Disposable {
   private readonly changed: vscode.EventEmitter<RemoteState | null> = new vscode.EventEmitter<RemoteState | null>()
@@ -92,6 +93,7 @@ export class RemoteStateStore implements vscode.Disposable {
   }
 
   private schedule(state: RemoteState): void {
+    if (this.pollingSince === 0 && PipelineRuns.isRunning(state.headRun)) this.pollingSince = Date.now()
     const polling: boolean = Date.now() - this.pollingSince < POLL_LIMIT_MS
     const waiting: boolean = state.headRun === null ? this.pollingSince > 0 : PipelineRuns.isRunning(state.headRun)
     if (polling && waiting) this.timer = setTimeout(() => { void this.refresh() }, POLL_MS)
