@@ -45,7 +45,7 @@ export interface Wiring {
 export function wireEvents(wiring: Wiring): Disposer[] {
   const { workspace: { projects, states, auth, known }, views, controllers, hostWatcher } = wiring
   const redrawCatalog: (state: RemoteState | null) => void = onKeyChange((state: RemoteState | null) => RemoteStates.catalogKey(state), () => { views.catalogTree.refresh() })
-  const redrawHealth: (state: RemoteState | null) => void = onKeyChange((state: RemoteState | null) => RemoteStates.healthKey(state), () => { views.healthTree.refresh(); void views.dashboard.refresh() })
+  const redrawHealth: (state: RemoteState | null) => void = onKeyChange((state: RemoteState | null) => RemoteStates.healthKey(state), () => { views.healthTree.refresh(); void views.dashboard.refresh() }, true)
   return [
     projects.onDidChange(() => { void known.remember(projects.all()); views.projectTree.refresh(); views.catalogTree.refresh(); views.healthTree.refresh(); void views.dashboard.refresh(); views.schemas.announce(); void states.refresh() }),
     states.onDidChange((state: RemoteState | null) => { views.projectTree.refresh(); redrawCatalog(state); redrawHealth(state); void controllers.localCi.offer(state); void controllers.connect.offer(state) }),
@@ -58,12 +58,12 @@ export function wireEvents(wiring: Wiring): Disposer[] {
   ]
 }
 
-function onKeyChange(keyOf: (state: RemoteState | null) => string, redraw: () => void): (state: RemoteState | null) => void {
+function onKeyChange(keyOf: (state: RemoteState | null) => string, redraw: () => void, first: boolean = false): (state: RemoteState | null) => void {
   let last: string | null = null
   return (state: RemoteState | null): void => {
     const key: string = keyOf(state)
     if (key === '') return
-    if (last !== null && key !== last) redraw()
+    if (key !== last && (last !== null || first)) redraw()
     last = key
   }
 }
