@@ -10,7 +10,7 @@ import { PipelineRuns, type PipelineRun } from '../../../domain/model/pipeline.m
 import { Servers, type ServerContainer } from '../../../domain/model/server.model'
 import type { SyncLink } from '../../../domain/model/sync.model'
 import { WebviewHtml } from '../webview.html'
-import type { DashboardCatalog, DashboardData, DashboardRelease } from './dashboard.data'
+import type { DashboardCatalog, DashboardData, DashboardRelease, DashboardSoftware } from './dashboard.data'
 
 /** The button of a remedy on the page. */
 export interface RemedyButton {
@@ -78,14 +78,15 @@ export class DashboardRenderer {
 
   /**
    * Renders the whole page: the header with the project's actions, then one card per part — Health, Pipeline,
-   * Releases, Catalog, Local Server, Sync. Buttons carry a `data-command`, links a `data-url`; the script posts them.
+   * Releases, Local Server, Sync, Catalog. Buttons carry a `data-command` (a catalog entry's *Open* a `data-open` with
+   * the software name), links a `data-url`; the script posts them.
    *
    * @param data - What to show.
    * @param page - The CSP source, the nonce and the asset URIs.
    * @returns The HTML document.
    */
   public render(data: DashboardData, page: DashboardPage): string {
-    const cards: string[] = [this.health(data.health), this.runs(data), this.releases(data), this.catalog(data.catalog), this.servers(data.containers), this.sync(data.sync)]
+    const cards: string[] = [this.health(data.health), this.runs(data), this.releases(data), this.servers(data.containers), this.sync(data.sync), this.catalog(data.catalog)]
     return `<!doctype html><html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${page.cspSource}; script-src 'nonce-${page.nonce}'">
 <link rel="stylesheet" href="${page.style}"><title>WarpEngine</title></head>
@@ -148,9 +149,17 @@ export class DashboardRenderer {
   private catalog(catalog: DashboardCatalog | null): string {
     const { t } = this.text
     if (!catalog) return this.card(esc(t('Catalog')), `<p class="muted">${esc(t('Sign in to see the catalog.'))}</p>${DashboardRenderer.button('warpengine.signIn', t('Sign in'), 'small')}`)
-    const rows: string = catalog.platforms.map((platform) => `<tr><td>${esc(platform.label)}</td><td class="num">${String(platform.count)}</td></tr>`).join('')
     const who: string = catalog.principal ? `<p class="muted">${esc(t('Signed in as {0}', catalog.principal))}</p>` : ''
-    return this.card(`${esc(t('Catalog'))} <span class="count">${String(catalog.total)}</span>`, `${who}<table>${rows}</table>${DashboardRenderer.button('warpengine.catalog.focus', t('Open in the sidebar'), 'small')}`)
+    const head = `<thead><tr><th>${esc(t('Title'))}</th><th>${esc(t('Name'))}</th><th>${esc(t('Platform'))}</th><th>${esc(t('Status'))}</th><th>${esc(t('Category'))}</th><th>${esc(t('Project'))}</th></tr></thead>`
+    const rows: string = catalog.softwares.map((row: DashboardSoftware) => `<tr${row.local === 'here' ? ' class="head"' : ''}><td>${row.software.highlighted ? '★ ' : ''}${esc(row.software.title)}</td>
+<td><code>${esc(row.software.name)}</code></td><td>${esc(row.platform)}</td><td>${esc(row.software.status ?? '—')}</td><td>${esc(row.software.category ?? '—')}</td><td>${this.local(row)}</td></tr>`).join('')
+    return this.card(`${esc(t('Catalog'))} <span class="count">${String(catalog.softwares.length)}</span>`, `${who}<table>${head}${rows}</table>`, 'wide')
+  }
+
+  private local(row: DashboardSoftware): string {
+    if (row.local === 'here') return `<span class="tag">${esc(this.text.t('open'))}</span>`
+    if (row.local === 'known') return `<button class="small" data-open="${esc(row.software.name)}">${esc(this.text.t('Open'))}</button>`
+    return ''
   }
 
   private servers(containers: readonly ServerContainer[] | null): string {

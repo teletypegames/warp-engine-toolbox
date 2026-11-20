@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-import { Releases, type Release } from '../../../domain/model/catalog.model'
+import { Releases, type Release, type Software } from '../../../domain/model/catalog.model'
 import type { HealthSection } from '../../../domain/model/health.model'
 import type { Host } from '../../../domain/model/host.model'
 import type { PipelineRun } from '../../../domain/model/pipeline.model'
@@ -20,6 +20,7 @@ import type { PlayService } from '../../../domain/service/play.service'
 import type { PlatformService } from '../../../domain/service/platform.service'
 import type { ServerService } from '../../../domain/service/server.service'
 import type { SyncService } from '../../../domain/service/sync.service'
+import type { KnownProjects } from '../../workspace/known-projects'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 import type { RemoteStateStore } from '../../workspace/remote-state.store'
 
@@ -48,22 +49,25 @@ export interface DashboardRelease {
   readonly playUrl: string | null
 }
 
-/** A platform row of the catalog summary. */
-export interface DashboardPlatform {
-  /** The platform's label. */
-  readonly label: string
-  /** How many softwares it has. */
-  readonly count: number
+/** Where a catalog entry's project is on this machine. */
+export type LocalCopy = 'here' | 'known' | null
+
+/** A row of the catalog table. */
+export interface DashboardSoftware {
+  /** The software. */
+  readonly software: Software
+  /** Its platform's label. */
+  readonly platform: string
+  /** `here` when its project is open in this window, `known` when it was opened here before, `null` otherwise. */
+  readonly local: LocalCopy
 }
 
-/** The catalog summary. */
+/** The catalog table. */
 export interface DashboardCatalog {
   /** Who is signed in, or `null`. */
   readonly principal: string | null
-  /** How many softwares the catalog has. */
-  readonly total: number
-  /** The softwares per platform, the biggest first. */
-  readonly platforms: readonly DashboardPlatform[]
+  /** The softwares, by platform and title. */
+  readonly softwares: readonly DashboardSoftware[]
 }
 
 /** Everything the Dashboard page shows; `null` parts are left out. */
@@ -112,6 +116,8 @@ export interface DashboardSources {
   readonly local: LocalEngineService
   /** The sync partners. */
   readonly sync: SyncService
+  /** The folders of the projects opened before. */
+  readonly known: KnownProjects
 }
 
 /** Gathers the {@link DashboardData}; each part that fails is left empty instead of failing the page. */
@@ -163,10 +169,17 @@ export class DashboardCollector {
     const overview: CatalogOverview | null = await this.sources.catalog.overview().catch((): null => null)
     if (!overview) return null
     const labels: Map<string, string> = new Map<string, string>((await this.sources.platforms.all().catch(() => [])).map((platform) => [platform.name, platform.label]))
-    const platforms: DashboardPlatform[] = [...overview.byPlatform.entries()]
-      .map(([name, softwares]) => ({ label: labels.get(name) ?? name, count: softwares.length }))
-      .sort((a: DashboardPlatform, b: DashboardPlatform) => b.count - a.count || a.label.localeCompare(b.label))
-    return { principal: overview.principal?.label ?? null, total: overview.softwares.length, platforms }
+    const open: Set<string> = new Set<string>(this.sources.projects.all().map((project: Project) => project.name))
+    const rows: DashboardSoftware[] = await Promise.all(overview.softwares.map(async (software: Software) => ({
+      software, platform: labels.get(software.platform) ?? software.platform, local: await this.localCopy(software.name, open)
+    })))
+    rows.sort((a: DashboardSoftware, b: DashboardSoftware) => a.platform.localeCompare(b.platform) || a.software.title.localeCompare(b.software.title))
+    return { principal: overview.principal?.label ?? null, softwares: rows }
+  }
+
+  private async localCopy(name: string, open: ReadonlySet<string>): Promise<LocalCopy> {
+    if (open.has(name)) return 'here'
+    return (await this.sources.known.folderOf(name)) ? 'known' : null
   }
 
   private async syncLinks(): Promise<SyncLink[] | null> {

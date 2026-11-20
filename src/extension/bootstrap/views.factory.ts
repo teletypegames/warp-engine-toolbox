@@ -71,8 +71,8 @@ export function createViews(context: vscode.ExtensionContext, services: Services
     healthTree: new TreeProvider(new HealthTreeView(services.health, projects, states)),
     dashboard: new DashboardPanel(new DashboardCollector({
       hosts: services.hosts, projects, states, health: services.health, catalog: services.catalog, platforms: services.platforms,
-      play: services.play, servers: services.servers, local: services.localEngine, sync: services.sync
-    }), context.extensionUri),
+      play: services.play, servers: services.servers, local: services.localEngine, sync: services.sync, known: workspace.known
+    }), workspace.known, context.extensionUri),
     schemas: new MetadataSchemaProvider(services.hosts, services.connection, projects),
     diagnostics: new PublishDiagnostics(services.hosts, projects, services.publishCheck),
     reports: new ReportView(),

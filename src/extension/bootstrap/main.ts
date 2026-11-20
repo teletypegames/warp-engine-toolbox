@@ -42,7 +42,7 @@ import { createWorkspace, type Workspace } from './workspace.factory'
  */
 export async function activate(context: vscode.ExtensionContext): Promise<ToolboxApi> {
   const services: Services = createServices(context)
-  const workspace: Workspace = createWorkspace(services)
+  const workspace: Workspace = createWorkspace(context, services)
   const views: Views = createViews(context, services, workspace)
   const controllers: Controllers = createControllers(context, services, workspace, views)
   const hostWatcher: HostWatcher = new HostWatcher(services.hosts)

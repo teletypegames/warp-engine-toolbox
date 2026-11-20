@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
+import type { Software } from '../../../../../src/domain/model/catalog.model'
 import type { Message } from '../../../../../src/domain/model/message.model'
 import type { DashboardData } from '../../../../../src/extension/view/dashboard/dashboard.data'
 import { DashboardRenderer } from '../../../../../src/extension/view/dashboard/dashboard.renderer'
@@ -39,6 +40,21 @@ describe('DashboardRenderer', () => {
     assert.ok(page.includes('data-url="http://127.0.0.1:7470/play/rabbit/1.2.0"'))
     assert.ok(page.includes('data-command="warpengine.installLocalEngine"'))
     assert.ok(!page.includes('>Sync<'))
+  })
+
+  it('lists the catalog last, as a table, with Open for a project opened before', () => {
+    const software = (name: string): Software => ({ id: 1, name, title: name.toUpperCase(), platform: 'tic80', status: 'published', category: null, author: null, desc: null, license: null })
+    const catalog = { principal: 'admin', softwares: [
+      { software: software('rabbit'), platform: 'TIC-80', local: 'here' as const },
+      { software: software('fox'), platform: 'TIC-80', local: 'known' as const },
+      { software: software('owl'), platform: 'TIC-80', local: null }
+    ] }
+    const page: string = RENDERER.render({ ...DATA, catalog, sync: [] }, PAGE)
+    assert.ok(page.indexOf('>Catalog') > page.indexOf('>Sync<'))
+    assert.ok(page.indexOf('>Sync<') > page.indexOf('>Local Server<'))
+    assert.ok(page.includes('<button class="small" data-open="fox">Open</button>'))
+    assert.ok(!page.includes('data-open="owl"'))
+    assert.ok(page.includes('<span class="tag">open</span>'))
   })
 
   it('offers a new game without a project', () => {

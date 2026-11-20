@@ -9,6 +9,7 @@ import type { Message, Remedy } from '../../../domain/model/message.model'
 import { Dialogs } from '../../ui/dialogs'
 import { t, translate } from '../../ui/l10n'
 import { Remedies } from '../../ui/remedies'
+import type { KnownProjects } from '../../workspace/known-projects'
 import { WebviewHtml } from '../webview.html'
 import type { DashboardCollector } from './dashboard.data'
 import { DashboardRenderer, type DashboardText } from './dashboard.renderer'
@@ -20,12 +21,14 @@ interface PageMessage {
   readonly type?: unknown
   readonly command?: unknown
   readonly url?: unknown
+  readonly name?: unknown
 }
 
 /**
  * Serves `warpengine.openDashboard`: one editor tab with the project's health, pipeline runs, releases, the catalog
  * summary, the local containers and the sync partners. It redraws when it is shown again and on
- * {@link DashboardPanel.refresh}; its buttons run WarpEngine commands and its links open in the browser.
+ * {@link DashboardPanel.refresh}; its buttons run WarpEngine commands, a catalog entry's *Open* opens the folder its
+ * project was opened from before, and its links open in the browser.
  */
 export class DashboardPanel implements vscode.Disposable {
   private panel: vscode.WebviewPanel | null = null
@@ -36,9 +39,10 @@ export class DashboardPanel implements vscode.Disposable {
    * Creates the panel; nothing is shown until {@link DashboardPanel.open}.
    *
    * @param collector - Gathers what the page shows.
+   * @param known - Opens a catalog entry's project from the folder it was opened in before.
    * @param extensionUri - The extension's folder, whose `media/webview` holds the page's style and script.
    */
-  public constructor(private readonly collector: DashboardCollector, private readonly extensionUri: vscode.Uri) {}
+  public constructor(private readonly collector: DashboardCollector, private readonly known: KnownProjects, private readonly extensionUri: vscode.Uri) {}
 
   /** `warpengine.openDashboard`: opens the tab (or brings it to the front) and redraws it. */
   public async open(): Promise<void> {
@@ -64,7 +68,7 @@ export class DashboardPanel implements vscode.Disposable {
     panel.iconPath = vscode.Uri.joinPath(this.extensionUri, 'media', 'warp.svg')
     panel.onDidDispose(() => { this.panel = null })
     panel.onDidChangeViewState(() => { if (panel.visible) void this.draw() })
-    panel.webview.onDidReceiveMessage((message: PageMessage) => { void DashboardPanel.handle(message) })
+    panel.webview.onDidReceiveMessage((message: PageMessage) => { void this.handle(message) })
     return panel
   }
 
@@ -84,11 +88,19 @@ export class DashboardPanel implements vscode.Disposable {
     if (this.panel === panel) panel.webview.html = html
   }
 
-  private static async handle(message: PageMessage): Promise<void> {
-    if (message.type === 'command' && typeof message.command === 'string' && message.command.startsWith(COMMAND_PREFIX)) {
-      await Promise.resolve(vscode.commands.executeCommand(message.command)).catch(async (error: unknown) => { await Remedies.report(error) })
-    }
+  private async handle(message: PageMessage): Promise<void> {
+    if (message.type === 'openProject' && typeof message.name === 'string') await this.openProject(message.name)
+    if (message.type === 'command' && typeof message.command === 'string') await DashboardPanel.run(message.command)
     if (message.type === 'open' && typeof message.url === 'string' && /^https?:\/\//.test(message.url)) await Dialogs.openExternal(message.url)
+  }
+
+  private async openProject(name: string): Promise<void> {
+    if (!(await this.known.open(name))) Dialogs.error(t('The folder of {0} is gone.', name))
+  }
+
+  private static async run(command: string): Promise<void> {
+    if (!command.startsWith(COMMAND_PREFIX)) return
+    await Promise.resolve(vscode.commands.executeCommand(command)).catch(async (error: unknown) => { await Remedies.report(error) })
   }
 
   private static text(): DashboardText {
