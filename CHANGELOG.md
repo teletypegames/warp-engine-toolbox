@@ -16,6 +16,11 @@
 - **The status bar leads to what is missing**: on the local engine a project without a
   pipeline opens *Set up local CI*; on another host a software without a linked pipeline opens
   its admin page.
+- **Release… on a project without a remote** offers the fix in place: *Connect*, or *Set up
+  local CI* on the local engine, and goes on with the release once it is done.
+- **Set Host… signs in** to the chosen host when there is no session for it yet.
+- **Your own game first in the Catalog**: the current project's software stands right under the
+  host, expanded and starred (*this project*), above the platform groups.
 
 ## 1.9.0
 

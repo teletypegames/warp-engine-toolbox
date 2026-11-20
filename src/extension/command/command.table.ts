@@ -43,7 +43,7 @@ function accountCommands({ signIn, host, refresh, link, localEngine }: Controlle
     ['warpengine.signIn', async (): Promise<void> => { await signIn.signIn() }],
     ['warpengine.signOut', async (): Promise<void> => { await signIn.signOut() }],
     ['warpengine.reauthorize', async (): Promise<void> => { await signIn.reauthorize() }],
-    ['warpengine.selectHost', async (): Promise<void> => { await host.select() }],
+    ['warpengine.selectHost', async (): Promise<void> => { await signIn.signInTo(await host.select()) }],
     ['warpengine.refresh', async (): Promise<void> => { await refresh.refresh() }],
     ['warpengine.openUrl', async (target?: string | TreeNode): Promise<void> => { await link.open(target) }],
     ['warpengine.copyLink', async (target?: string | TreeNode): Promise<void> => { await link.copy(target) }]

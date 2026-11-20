@@ -31,7 +31,7 @@ export interface Wiring {
 /**
  * Subscribes the views and controllers to the events of the workspace state.
  *
- * A project change redraws the project view, announces the schemas and refreshes the remote state; a remote
+ * A project change redraws the project and catalog views, announces the schemas and refreshes the remote state; a remote
  * state change redraws the project view, redraws the catalog view when the project's software, pipeline or
  * releases changed (such as after a connect or a finished build) and offers the local CI; a session change redraws the catalog and sync
  * views and announces the MCP server; a host change forgets the host data and refreshes everything; a focused
@@ -50,7 +50,7 @@ export function wireEvents(wiring: Wiring): Disposer[] {
     if (key !== '') catalogKey = key
   }
   return [
-    projects.onDidChange(() => { views.projectTree.refresh(); views.schemas.announce(); void states.refresh() }),
+    projects.onDidChange(() => { views.projectTree.refresh(); views.catalogTree.refresh(); views.schemas.announce(); void states.refresh() }),
     states.onDidChange((state: RemoteState | null) => { views.projectTree.refresh(); redrawCatalog(state); void controllers.localCi.offer(state) }),
     auth.onDidChangeSessions(() => { views.catalogTree.refresh(); views.syncTree.refresh(); views.mcp.announce(); void states.refresh() }),
     hostWatcher.onDidChange(() => { wiring.hostInfo.forget(); views.schemas.forgetHost(); views.mcp.announce(); void controllers.refresh.refresh() }),

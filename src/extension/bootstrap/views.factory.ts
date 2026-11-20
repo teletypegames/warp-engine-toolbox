@@ -58,7 +58,7 @@ export function createViews(context: vscode.ExtensionContext, services: Services
   return {
     tasks,
     projectTree: new TreeProvider(new ProjectTreeView({ hosts: services.hosts, projects, states, play: services.play, local: services.localEngine, hostInfo: services.hostInfo })),
-    catalogTree: new TreeProvider(new CatalogTreeView({ hosts: services.hosts, catalog: services.catalog, platforms: services.platforms, play: services.play, images: services.images })),
+    catalogTree: new TreeProvider(new CatalogTreeView({ hosts: services.hosts, catalog: services.catalog, platforms: services.platforms, play: services.play, images: services.images, projects })),
     syncTree: new TreeProvider(new SyncTreeView(services.localEngine, services.sync)),
     serversTree: new TreeProvider(new ServersTreeView(services.servers)),
     schemas: new MetadataSchemaProvider(services.hosts, services.connection, projects),

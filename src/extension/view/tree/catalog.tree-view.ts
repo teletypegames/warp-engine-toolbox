@@ -15,6 +15,7 @@ import type { ImageService } from '../../../domain/service/image.service'
 import type { PlatformService } from '../../../domain/service/platform.service'
 import type { PlayService } from '../../../domain/service/play.service'
 import { Dialogs } from '../../ui/dialogs'
+import type { ProjectRegistry } from '../../workspace/project.registry'
 import { t } from '../../ui/l10n'
 import { ReleaseNode } from './release.node'
 import { TreeNode } from './tree.node'
@@ -48,10 +49,14 @@ export interface CatalogTreeDependencies {
   readonly play: PlayService
   /** The image galleries. */
   readonly images: ImageService
+  /** The current project, whose software is shown first. */
+  readonly projects: ProjectRegistry
 }
 
 /**
- * The content of the catalog view (`warpengine.catalog`): the host and the signed-in principal, the softwares by platform with their fields, releases (with the asset checklist), images and links, and the pipelines.
+ * The content of the catalog view (`warpengine.catalog`): the host and the signed-in principal, the current project's
+ * software (expanded), the softwares by platform with their fields, releases (with the asset checklist), images and links,
+ * and the pipelines.
  */
 export class CatalogTreeView implements TreeView {
   private readonly hosts: HostService
@@ -59,6 +64,7 @@ export class CatalogTreeView implements TreeView {
   private readonly platforms: PlatformService
   private readonly play: PlayService
   private readonly images: ImageService
+  private readonly projects: ProjectRegistry
 
   /**
    * Creates the view.
@@ -71,10 +77,12 @@ export class CatalogTreeView implements TreeView {
     this.platforms = deps.platforms
     this.play = deps.play
     this.images = deps.images
+    this.projects = deps.projects
   }
 
   /**
-   * Returns the host, the softwares and the pipelines nodes; sets the `warpengine.signedIn` context key.
+   * Returns the host, the current project's software (when it is in the catalog), the softwares and the pipelines nodes;
+   * sets the `warpengine.signedIn` context key.
    *
    * @returns The root nodes; none without a host or a sign-in.
    */
@@ -86,7 +94,15 @@ export class CatalogTreeView implements TreeView {
     const overview: CatalogOverview | null = signedIn ? await this.catalog.overview() : null
     if (!overview) return []
     const described: Platform[] = await this.platforms.all().catch((): Platform[] => [])
-    return [this.hostNode(host, overview), this.softwaresNode(overview, described), this.pipelinesNode()]
+    return [this.hostNode(host, overview), ...this.projectNode(overview, described), this.softwaresNode(overview, described), this.pipelinesNode()]
+  }
+
+  private projectNode(overview: CatalogOverview, described: readonly Platform[]): TreeNode[] {
+    const name: string | undefined = this.projects.current()?.name
+    const software: Software | undefined = overview.softwares.find((item: Software) => item.name === name)
+    if (!software) return []
+    const platform: Platform | null = described.find((item: Platform) => item.name === software.platform) ?? null
+    return [this.softwareNode(software, platform, true)]
   }
 
   private hostNode(host: Host, overview: CatalogOverview): TreeNode {
@@ -117,9 +133,11 @@ export class CatalogTreeView implements TreeView {
     })
   }
 
-  private softwareNode(software: Software, platform: Platform | null): TreeNode {
+  private softwareNode(software: Software, platform: Platform | null, current: boolean = false): TreeNode {
+    const description = `${software.name} · ${software.status ?? t('no status')}`
     return new TreeNode(software.title, {
-      description: `${software.name} · ${software.status ?? t('no status')}`, icon: 'game', context: 'software', data: software,
+      description: current ? `${description} · ${t('this project')}` : description, icon: current ? 'star-full' : 'game',
+      context: 'software', data: software, expanded: current,
       load: (): TreeNode[] => [...CatalogTreeView.fields(software), this.releasesNode(software, platform), this.imagesNode(software), this.linksNode(software)]
     })
   }

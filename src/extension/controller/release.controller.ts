@@ -9,6 +9,7 @@ import { GitRemotes, type GitRemote } from '../../domain/model/git-remote.model'
 import { Version } from '../../domain/model/version.model'
 import type { Project } from '../../domain/model/project.model'
 import type { PublishProblem } from '../../domain/model/publish-check.model'
+import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { Readiness, ReleaseService } from '../../domain/service/release.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t } from '../ui/l10n'
@@ -25,13 +26,14 @@ export class ReleaseController {
    * @param service - Decides and performs the release.
    * @param projects - The current project.
    * @param states - The remote state, polled after the push.
+   * @param local - Tells whether the current host is the local engine, for the setup a release needs first.
    */
-  public constructor(private readonly service: ReleaseService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore) {}
+  public constructor(private readonly service: ReleaseService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore, private readonly local: LocalEngineService) {}
 
   /**
    * `warpengine.release`: releases the current project.
    *
-   * Checks readiness (offers to commit a dirty working copy; shows an error when the project is not connected or its version cannot be written), asks for the version in one list (the stable bumps, the beta pre-releases, or another), asks the host whether a publish would take it, asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
+   * Checks readiness (offers Connect, or Set up local CI on the local engine, when the project has no remote; offers to commit a dirty working copy; shows an error when its version cannot be written), asks for the version in one list (the stable bumps, the beta pre-releases, or another), asks the host whether a publish would take it, asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
    *
    * @throws {@link "domain/model/message.model".DomainError} When there is no current project or a git step fails.
    */
@@ -49,14 +51,23 @@ export class ReleaseController {
 
   private async ready(project: Project): Promise<boolean> {
     let readiness: Readiness = await this.service.readiness(project)
+    if (readiness === 'unconnected') readiness = await this.connectFirst(project)
     if (readiness === 'dirty') {
       if (!(await Dialogs.confirm(t('The working copy has changes.'), t('Commit everything first')))) return false
       await this.service.commitWork(project)
       readiness = await this.service.readiness(project)
     }
-    if (readiness === 'unconnected') Dialogs.error(t('Connect the project first: a release is a tag the CI builds.'))
     if (readiness === 'unwritable') Dialogs.error(t('This platform reads its version in a way the toolbox cannot write; bump it by hand and push a vX.Y.Z tag.'))
     return readiness === 'ready'
+  }
+
+  private async connectFirst(project: Project): Promise<Readiness> {
+    const local: boolean = this.local.isCurrentHost()
+    const action: string = local ? t('Set up local CI') : t('Connect')
+    const message: string = local ? t('A release is a tag the CI builds: set the project up on the local CI first.') : t('A release is a tag the CI builds: connect the project first.')
+    if ((await Dialogs.alert(message, action)) !== action) return 'unconnected'
+    await vscode.commands.executeCommand(local ? 'warpengine.setupLocalCi' : 'warpengine.connect')
+    return this.service.readiness(project)
   }
 
   private async askVersion(project: Project): Promise<string | null> {
