@@ -137,7 +137,7 @@ export class LocalCiService {
   public async setUp(project: Project, report: Report): Promise<LocalCiSetup> {
     const admin: AdminRepositories = await this.admin()
     if (!LocalCi.ready(await admin.local.components())) {
-      throw new DomainError(msg('The local CI is not running: run the local engine\'s installer again and answer yes to "Local CI" (or --ci on).'))
+      throw new DomainError(msg('The local CI is not running: run the local engine\'s installer again and answer yes to "Local CI" (or --ci on).'), 'installLocalEngine')
     }
     report(msg('finding {0} in the local catalog…', project.name))
     const software: Software = (await admin.catalog.softwareByName(project.name)) ?? (await this.scaffold(admin, project)).software
@@ -168,7 +168,7 @@ export class LocalCiService {
 
   private async admin(): Promise<AdminRepositories> {
     const local: LocalEngine | null = this.deps.local.current()
-    if (!local) throw new DomainError(msg('No local WarpEngine is running: install one first ("WarpEngine: Install Local Engine").'))
+    if (!local) throw new DomainError(msg('No local WarpEngine is running: install one first ("WarpEngine: Install Local Engine").'), 'installLocalEngine')
     return this.deps.gateway.admin(local.url, await this.deps.local.token())
   }
 

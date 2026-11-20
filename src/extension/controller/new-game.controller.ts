@@ -54,14 +54,15 @@ export class NewGameController {
   /**
    * `warpengine.newGame`: asks for the host, the platform, the game answers, the parent folder and the starting point (demo or template only), then writes the new project, with a progress notification.
    *
-   * Offers to open the new folder or add it to the workspace. Shows an error when the folder exists already.
+   * Offers to open the new folder or add it to the workspace; once it is open, {@link extension/controller/connect.controller!ConnectController.offer}
+   * offers to connect it. Shows an error when the folder exists already.
    */
   public async newGame(): Promise<void> {
     const game: NewGame | null = await this.askNewGame()
     if (!game) return
     const result: WriteResult = await Dialogs.progress(t('WarpEngine: creating {0}', game.answers.title), async (report) =>
       this.deps.scaffold.createGame({ ...game, host: this.deps.hosts.require().url, overwrite: true, report }))
-    await NewGameController.offerOpen(game, result)
+    await NewGameController.offerOpen(game, result, this.deps.connect)
   }
 
   /**
@@ -127,11 +128,12 @@ export class NewGameController {
     return vscode.window.showWorkspaceFolderPick({ placeHolder: t('The project to add WarpEngine to') })
   }
 
-  private static async offerOpen(game: NewGame, result: WriteResult): Promise<void> {
+  private static async offerOpen(game: NewGame, result: WriteResult, connect: ConnectController): Promise<void> {
     const open: string = t('Open')
     const add: string = t('Add to Workspace')
     const answer: string | undefined = await Dialogs.ask(t('{0} is ready ({1} files). Open it to build, play and connect it.', game.answers.title, result.written.length), open, add)
     const uri: vscode.Uri = vscode.Uri.file(game.folder)
+    if (answer === open || answer === add) await connect.offerLater(game.folder)
     if (answer === open) await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow: false })
     if (answer === add) vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders?.length ?? 0, 0, { uri })
   }

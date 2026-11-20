@@ -7,6 +7,7 @@
 import * as vscode from 'vscode'
 import { AssetChecklist, type ChecklistEntry } from '../../domain/model/asset-checklist.model'
 import type { Category, Software } from '../../domain/model/catalog.model'
+import { DomainError, msg } from '../../domain/model/message.model'
 import type { Pipeline } from '../../domain/model/pipeline.model'
 import type { CatalogService } from '../../domain/service/catalog.service'
 import type { PipelineService } from '../../domain/service/pipeline.service'
@@ -124,10 +125,11 @@ export class CatalogController {
    * Then polls the remote state, so the status bar and the project view follow the run.
    *
    * @param node - The pipeline node; without one, the current project's pipeline is started.
+   * @throws {@link "domain/model/message.model".DomainError} Without a node, when the current project has no pipeline.
    */
   public async triggerPipeline(node?: TreeNode): Promise<void> {
     const pipeline: Pipeline | null = (node?.data as Pipeline | undefined) ?? this.deps.states.current()?.pipeline ?? null
-    if (!pipeline) return
+    if (!pipeline) throw new DomainError(msg('This project has no pipeline on the host yet.'))
     const started = await this.deps.pipelines.trigger(pipeline, this.deps.projects.current())
     if (!started) return
     Dialogs.info(t('Pipeline #{0} started on {1}.', started.run.number, started.branch))

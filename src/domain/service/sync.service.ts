@@ -217,7 +217,7 @@ export class SyncService {
 
   private requireLocal(): LocalEngine {
     const local: LocalEngine | null = this.deps.local.current()
-    if (!local) throw new DomainError(msg('No local WarpEngine is running: install one first ("WarpEngine: Install Local Engine").'))
+    if (!local) throw new DomainError(msg('No local WarpEngine is running: install one first ("WarpEngine: Install Local Engine").'), 'installLocalEngine')
     return local
   }
 

@@ -23,6 +23,20 @@
   host, expanded and starred (*this project*), above the platform groups.
 - **The Sync view is the last one** in the WarpEngine sidebar and starts collapsed.
 - **Servers is called Local Server**: the view shows the containers of the local engine only.
+- **Health view** (above Sync): the host, the sign-in, the local engine and its CI, and the
+  project's platform, metadata, catalog entry, pipeline and last run, each green, blue, yellow or
+  red; a click on a gap runs the step that fixes it or opens its page.
+- **Errors come with their fix**: *Sign in first*, *No host is set*, *No local engine*, *not a
+  WarpEngine project* and a refused token show a button (*Sign in*, *Set Host…*, *Install Local
+  Engine*, *Add WarpEngine to This Project*, *Sign In Again*) in the message and in the views.
+- **No more stuck *Not authorized***: a sign-in no longer stores a token the host refuses; on the
+  local engine it tries the token file, then the running container's token, and keeps the one
+  the engine takes (a reinstalled engine left an old token file behind). The status bar shows
+  the refused token and signs in again on a click.
+- **Release…, when the host would refuse the metadata**, lists the problems in the Problems view
+  and offers *Edit Metadata*.
+- **A new game offers Connect** once its folder is open (on the local engine, the local CI offer).
+- **Refresh** and **Run Pipeline** are in the Command Palette.
 
 ## 1.9.0
 

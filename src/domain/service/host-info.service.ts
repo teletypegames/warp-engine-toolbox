@@ -39,6 +39,17 @@ export class HostInfoService {
     this.known.clear()
   }
 
+  /**
+   * Asks a host about itself (`/.well-known/warp-engine`) now, and keeps the answer for {@link HostInfoService.adminUrl}.
+   *
+   * @param host - The host URL.
+   * @returns What it says, or `null` when it does not answer.
+   */
+  public async wellKnown(host: string): Promise<WellKnown | null> {
+    this.known.delete(host)
+    return this.info(host)
+  }
+
   private async info(host: string): Promise<WellKnown | null> {
     if (!this.known.has(host)) this.known.set(host, await this.discovery.probe(host).catch((): null => null))
     return this.known.get(host) ?? null

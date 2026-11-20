@@ -4,8 +4,7 @@
  * @module
  */
 import * as vscode from 'vscode'
-import { Dialogs } from '../ui/dialogs'
-import { errorText } from '../ui/l10n'
+import { Remedies } from '../ui/remedies'
 
 /** The function a command runs: a controller method, given the command's arguments. */
 export type CommandHandler = (...args: never[]) => Promise<void>
@@ -32,7 +31,7 @@ export class CommandRegistry {
       try {
         await handler(...args)
       } catch (error: unknown) {
-        if (!(error instanceof vscode.CancellationError)) Dialogs.error(`WarpEngine: ${errorText(error)}`)
+        if (!(error instanceof vscode.CancellationError)) void Remedies.report(error, 'WarpEngine: ')
       }
     }
   }

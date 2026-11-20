@@ -79,6 +79,14 @@ describe('LocalEngineService', () => {
     await assert.rejects(service.token(), DomainError)
   })
 
+  it('lists the token file before the container\'s, and prefers the token a sign-in accepted', async () => {
+    const service: LocalEngineService = new LocalEngineService(discovery({}), local(null, 'old', 'new'), new HostService(new MemoryHosts()))
+    assert.deepEqual(await service.tokens(), ['old', 'new'])
+    assert.equal(await service.token(), 'old')
+    service.accept('new')
+    assert.equal(await service.token(), 'new')
+  })
+
   it('recognises a well-known answer', () => {
     assert.ok(LocalEngine.isWellKnown(wellKnown('local')))
     assert.ok(!LocalEngine.isWellKnown({ engine: 'other', version: '1', profile: 'local' }))

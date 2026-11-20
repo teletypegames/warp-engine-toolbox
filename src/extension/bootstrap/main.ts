@@ -59,7 +59,7 @@ export function deactivate(): void {
 }
 
 function disposables(views: Views): Disposer[] {
-  return [views.projectTree, views.catalogTree, views.syncTree, views.serversTree, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
+  return [views.projectTree, views.catalogTree, views.syncTree, views.serversTree, views.healthTree, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
 }
 
 function registrations(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Disposer[] {
@@ -69,6 +69,7 @@ function registrations(context: vscode.ExtensionContext, services: Services, wor
     vscode.window.registerTreeDataProvider('warpengine.catalog', views.catalogTree),
     vscode.window.registerTreeDataProvider('warpengine.sync', views.syncTree),
     vscode.window.registerTreeDataProvider('warpengine.servers', views.serversTree),
+    vscode.window.registerTreeDataProvider('warpengine.health', views.healthTree),
     vscode.window.registerCustomEditorProvider(METADATA_VIEW, new MetadataEditor(context.extensionUri, views.schemas, workspace.projects)),
     vscode.tasks.registerTaskProvider(TASK_TYPE, views.tasks),
     vscode.languages.registerCompletionItemProvider(MARKER_SELECTOR, new MarkerCompletionProvider(services.platforms), ':', ' '),

@@ -270,7 +270,7 @@
         },
         {
           "command": "warpengine.refresh",
-          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync || view == warpengine.servers",
+          "when": "view == warpengine.project || view == warpengine.catalog || view == warpengine.sync || view == warpengine.servers || view == warpengine.health",
           "group": "navigation@9"
         },
         {
@@ -398,7 +398,7 @@
         },
         {
           "command": "warpengine.triggerPipeline",
-          "when": "false"
+          "when": "warpengine.isProject && warpengine.signedIn"
         },
         {
           "command": "warpengine.editSoftwareField",
@@ -414,7 +414,7 @@
         },
         {
           "command": "warpengine.refresh",
-          "when": "false"
+          "when": "warpengine.hasHost"
         },
         {
           "command": "warpengine.copyLink",
@@ -503,6 +503,10 @@
         {
           "id": "warpengine.servers",
           "name": "%view.servers%"
+        },
+        {
+          "id": "warpengine.health",
+          "name": "%view.health%"
         },
         {
           "id": "warpengine.sync",

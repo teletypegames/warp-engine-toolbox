@@ -11,6 +11,7 @@ import type { SourceControlFactory } from '../../domain/repository/source-contro
 import { CatalogService } from '../../domain/service/catalog.service'
 import { ConnectService } from '../../domain/service/connect.service'
 import { ConnectionService } from '../../domain/service/connection.service'
+import { HealthService } from '../../domain/service/health.service'
 import { HostInfoService } from '../../domain/service/host-info.service'
 import { HostService } from '../../domain/service/host.service'
 import { ImageService } from '../../domain/service/image.service'
@@ -101,6 +102,8 @@ export interface Services {
   readonly servers: ServerService
   /** What the current host tells about itself, such as a software's admin page. */
   readonly hostInfo: HostInfoService
+  /** What is set up and what is not, for the Health view. */
+  readonly health: HealthService
 }
 
 /** One controller per user flow, built by {@link "extension/bootstrap/controllers.factory".createControllers}; the command table maps the command ids to their methods. */
@@ -157,10 +160,13 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const remote: Pick<Services, 'remoteState' | 'play' | 'signIn' | 'catalog' | 'pipelines' | 'preview'> = remoteServices(context, infrastructure, connection)
   const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new HttpDiscoveryRepository(), hosts, local: localEngine, signIn: remote.signIn })
   const localCi: LocalCiService = new LocalCiService({ gateway: new WarpEngineHttpGateway(), local: localEngine, sourceControl: infrastructure.git })
+  const servers: ServerService = new ServerService(new DockerContainerRuntime(dockerBinary))
+  const hostInfo: HostInfoService = new HostInfoService(new HttpDiscoveryRepository(), hosts)
+  const project: Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> = projectServices(infrastructure, connection, projects)
   return {
-    hosts, localEngine, connection, platforms, projects, ...projectServices(infrastructure, connection, projects), ...remote,
-    images: new ImageService(connection), sync, localCi,
-    servers: new ServerService(new DockerContainerRuntime(dockerBinary)), hostInfo: new HostInfoService(new HttpDiscoveryRepository(), hosts)
+    hosts, localEngine, connection, platforms, projects, ...project, ...remote,
+    images: new ImageService(connection), sync, localCi, servers, hostInfo,
+    health: new HealthService({ hosts, hostInfo, connection, local: localEngine, servers, publishCheck: project.publishCheck, files: infrastructure.files })
   }
 }
 

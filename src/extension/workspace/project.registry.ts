@@ -65,7 +65,7 @@ export class ProjectRegistry implements vscode.Disposable {
    */
   public require(): Project {
     const project: Project | null = this.current()
-    if (!project) throw new DomainError(msg('This workspace is no WarpEngine project: it has no pipeline marker (.woodpecker.yaml with platform:).'))
+    if (!project) throw new DomainError(msg('This workspace is no WarpEngine project: it has no pipeline marker (.woodpecker.yaml with platform:).'), 'addToProject')
     return project
   }
 

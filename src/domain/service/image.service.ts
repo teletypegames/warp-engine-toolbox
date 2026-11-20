@@ -101,7 +101,7 @@ export class ImageService {
 
   private async repository(): Promise<ImageRepository> {
     const admin: AdminRepositories | null = await this.connection.admin(false)
-    if (!admin) throw new DomainError(msg('Sign in first.'))
+    if (!admin) throw new DomainError(msg('Sign in first.'), 'signIn')
     return admin.images
   }
 }

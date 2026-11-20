@@ -11,6 +11,8 @@ import type { HostService } from './host.service'
 
 /** Discovers the WarpEngine Local on this machine, offers it as a host and finds its admin token. */
 export class LocalEngineService {
+  private accepted: string | null = null
+
   private found: LocalEngine | null = null
 
   /**
@@ -70,14 +72,40 @@ export class LocalEngineService {
   }
 
   /**
-   * Finds the local engine's admin token: the installation's token file, else from the running container.
+   * Finds the local engine's admin token: the one a sign-in found the engine taking, else the installation's token
+   * file, else the one from the running container.
    *
    * @returns The token.
-   * @throws {@link "domain/model/message.model".DomainError} When neither gives one.
+   * @throws {@link "domain/model/message.model".DomainError} When none is found.
    */
   public async token(): Promise<string> {
-    const token: string | null = (await this.local.tokenFile()) ?? (await this.local.tokenFromContainer())
-    if (!token) throw new DomainError(msg('The local engine\'s token was not found: run its installer again, or "docker exec warp-engine-local bin/warp-engine token".'))
+    if (this.accepted) return this.accepted
+    const [token] = await this.tokens()
     return token
+  }
+
+  /**
+   * Remembers the token the local engine took at a sign-in, so {@link LocalEngineService.token} gives it instead of an
+   * outdated token file.
+   *
+   * @param token - The token.
+   */
+  public accept(token: string): void {
+    this.accepted = token
+  }
+
+  /**
+   * Lists the local engine's admin tokens to try, the token file's first, then the one the running container gives
+   * (a reinstalled engine may have left an old file behind).
+   *
+   * @returns The distinct tokens, at least one.
+   * @throws {@link "domain/model/message.model".DomainError} When neither gives one.
+   */
+  public async tokens(): Promise<[string, ...string[]]> {
+    const file: string | null = await this.local.tokenFile()
+    const container: string | null = await this.local.tokenFromContainer()
+    const [first, ...rest] = [...new Set([file, container].filter((token: string | null): token is string => token !== null))]
+    if (first === undefined) throw new DomainError(msg('The local engine\'s token was not found: run its installer again, or "docker exec warp-engine-local bin/warp-engine token".'), 'installLocalEngine')
+    return [first, ...rest]
   }
 }

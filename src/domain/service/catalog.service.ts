@@ -170,7 +170,7 @@ export class CatalogService {
    */
   public async require(createIfNone: boolean): Promise<AdminRepositories> {
     const admin: AdminRepositories | null = await this.connection.admin(createIfNone)
-    if (!admin) throw new DomainError(msg('Sign in first.'))
+    if (!admin) throw new DomainError(msg('Sign in first.'), 'signIn')
     return admin
   }
 

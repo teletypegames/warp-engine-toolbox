@@ -26,14 +26,15 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Build** | The Makefile's targets as tasks with problem matchers (ACME, cc65, gcc-style, Lua), and **Build Like CI**: the same builder image the pipeline uses, in Docker. |
 | **Play** | Builds and plays the game in a panel: in the runtime its release will play in on the web (EmulatorJS, TIC-80 …) with your local build, or its own web build. One click starts it: the browser lets the game's sound start only after a click. |
 | **Platform docs** | A book button on the platform in the project panel opens the host's page about the platform (the `docs` link of its tooling), when the host gives one. |
-| **Pipeline** | The status bar follows the run of your current commit after a push. |
-| **Release…** | Asks for the channel (stable, or a beta: `1.3.0-beta.1`), bumps the version where the platform reads it, writes the changelog from the commits, tags and pushes; the CI publishes. |
+| **Pipeline** | The status bar follows the run of your current commit, wherever it was pushed from; when it ends, a notification says so: a failure with its log, a published release with *Play*. |
+| **Release…** | Asks for the version in one list (the stable bumps, the betas such as `1.3.0-beta.1`), connects the project first when it has no remote, bumps the version where the platform reads it, writes the changelog from the commits, tags and pushes; the CI publishes. |
 | **This branch** | On a branch other than the default one: its development build (not listed in the catalog), with a play link to share with testers; a notification when a push has built it. |
-| **Catalog** | Your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; status, category and highlight can be changed in place; *Delete from Catalog…* and *Delete Release…* remove a software or a release. A host that refuses the stored token shows *Not authorized*: one click signs in again. |
+| **Catalog** | Your own game first, then your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; it redraws by itself when a build publishes; status, category and highlight can be changed in place; *Delete from Catalog…* and *Delete Release…* remove a software or a release. A host that refuses the stored token shows *Not authorized*: one click signs in again. |
 | **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
 | **Admin page** | The project panel links the software's page in the host's admin web UI. |
 | **Local CI** | When the local engine runs a git server and a CI, the toolbox offers to set the open project up on them (a `wplocal` remote); *Release…* asks which remote a tag goes to. |
 | **Local Server** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports; **Purge Local Engine…** removes all of it: containers, data, volumes, network and images. |
+| **Health** | What is set up and what is not — the host, the sign-in, the local engine and its CI, the project's metadata, catalog entry, pipeline and last run — green, yellow or red; a click on a gap runs the step that fixes it. |
 | **Sync** | A local engine's releases go on to another WarpEngine instance (e.g. `https://games.example.org`): **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
@@ -134,6 +135,21 @@ The *Local Server* view lists the containers the local engine's installer and th
 engine or the git server. **Purge Local Engine…** (the trash button) asks once, then removes the
 containers, the data folder (`~/.warpengine`: the catalog, the releases, the token), the volumes,
 the network and the images — the same as the installer's `--uninstall --purge`.
+
+## Health
+
+The *Health* view checks everything the toolbox depends on, in three groups: the **host**
+(set, answering, signed in, the token taken), the **local engine** (shown when it is installed
+or it is the host: its container, its git server and CI) and the **project** (its platform, the
+host's publish check of its metadata, its catalog entry, pipeline and last run). A click on a
+yellow or red line runs the step that fixes it — *Set Host…*, *Sign in*, *Sign In Again*,
+*Install Local Engine*, *Connect*, *Set up local CI*, *Edit Metadata* — or opens the page that
+tells more (a run's log, the admin page). The same buttons come with the error messages.
+
+When a host refuses the stored token, the status bar, the views and Health offer *Sign In
+Again*. On the local engine the sign-in tries the token file and then the token the running
+container gives, and keeps the one the engine takes, so a reinstalled engine does not leave the
+toolbox stuck on an old token.
 
 ## Sync
 

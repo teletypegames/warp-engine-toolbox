@@ -77,7 +77,7 @@ export class ConnectService {
    */
   public async scaffold(project: Project): Promise<ScaffoldResult> {
     const admin = await this.connection.admin(true)
-    if (!admin) throw new DomainError(msg('Sign in first.'))
+    if (!admin) throw new DomainError(msg('Sign in first.'), 'signIn')
     const title: string = project.title
     return admin.catalog.scaffold({
       name: project.name, title, platform: project.platformName,

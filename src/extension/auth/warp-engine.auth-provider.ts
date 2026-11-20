@@ -50,19 +50,24 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
   }
 
   /**
-   * Returns the stored sessions of the current host; the requested scopes are not used to filter.
+   * Returns the stored sessions of the current host; the requested scopes are not used to filter. On the local engine
+   * the session's token is handed to {@link domain/service/local-engine.service!LocalEngineService.accept}.
    *
    * @returns The sessions, or an empty list when no host is set.
    */
   public async getSessions(): Promise<vscode.AuthenticationSession[]> {
     const host: string | undefined = this.hosts.current()?.url
-    return host ? (await this.signIn.forHost(host)).map((session: Session) => WarpEngineAuthProvider.toSession(session)) : []
+    if (!host) return []
+    const sessions: Session[] = await this.signIn.forHost(host)
+    if (this.local.isLocal(host) && sessions[0]) this.local.accept(sessions[0].token)
+    return sessions.map((session: Session) => WarpEngineAuthProvider.toSession(session))
   }
 
   /**
    * Signs in to the current host, asking for a host first when none is set.
    *
-   * On the local engine it uses the local admin token. Elsewhere it starts a device grant,
+   * On the local engine it uses the first local admin token the engine takes (the token file's, else the container's).
+   * Elsewhere it starts a device grant,
    * opens the approval page in the browser, shows the code in a notification and waits
    * (with cancellable progress) for the approval. The new session is stored and announced
    * through {@link WarpEngineAuthProvider.onDidChangeSessions}.
@@ -75,7 +80,7 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
     const host: Host | null = await this.hostController.ensure()
     if (!host) throw new vscode.CancellationError()
     const wanted: readonly string[] = this.signIn.scopes(scopes)
-    if (this.local.isLocal(host.url)) return this.adopt(await this.signIn.createSession(host.url, await this.local.token(), wanted))
+    if (this.local.isLocal(host.url)) return this.adoptLocal(await this.signIn.createFirstSession(host.url, await this.local.tokens(), wanted))
     const grant: DeviceGrant = await this.signIn.start(host.url, `WarpEngine Toolbox (${vscode.env.appName})`, wanted)
     await WarpEngineAuthProvider.showApproval(host.url, grant)
     const token: string = await this.waitForApproval(host.url, grant)
@@ -109,7 +114,8 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
     this.changed.dispose()
   }
 
-  private adopt(session: Session): vscode.AuthenticationSession {
+  private adoptLocal(session: Session): vscode.AuthenticationSession {
+    this.local.accept(session.token)
     const created: vscode.AuthenticationSession = WarpEngineAuthProvider.toSession(session)
     this.changed.fire({ added: [created], removed: [], changed: [] })
     return created

@@ -57,7 +57,7 @@ export class HostService {
    */
   public require(): Host {
     const host: Host | null = this.current()
-    if (!host) throw new DomainError(msg('No WarpEngine host is set: run "WarpEngine: Set Host…" or set warpengine.url.'))
+    if (!host) throw new DomainError(msg('No WarpEngine host is set: run "WarpEngine: Set Host…" or set warpengine.url.'), 'selectHost')
     return host
   }
 

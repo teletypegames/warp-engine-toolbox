@@ -52,6 +52,7 @@
   "welcome.sync.local": "Sync sends the releases of your local engine on to another WarpEngine. It needs a local engine.\n[Install Local Engine](command:warpengine.installLocalEngine)",
   "welcome.sync.pair": "Your local engine keeps its releases to itself so far. Pair it with another WarpEngine instance — e.g. https://games.example.org — and they go on by themselves.\n[Sync to…](command:warpengine.syncTo)",
   "command.setupLocalCi": "Set up local CI",
+  "view.health": "Health",
   "view.servers": "Local Server",
   "command.reauthorize": "Sign In Again",
   "command.purgeLocalEngine": "Purge Local Engine…",

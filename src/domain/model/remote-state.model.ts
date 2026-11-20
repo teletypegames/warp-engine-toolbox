@@ -78,6 +78,18 @@ export class RemoteStates {
   }
 
   /**
+   * Sums up what of a state the Health view shows: the catalog part, the latest run and the authorization.
+   * @param state - The state, or `null` without a project.
+   * @returns A key that changes with any of those; empty without a session.
+   */
+  public static healthKey(state: RemoteState | null): string {
+    if (!state?.signedIn) return ''
+    const run: PipelineRun | null = RemoteStates.latestRun(state)
+    const runKey: string = run ? `${String(run.number)}:${run.status}` : '-'
+    return [state.project.folder, RemoteStates.catalogKey(state), runKey, String(state.unauthorized)].join('|')
+  }
+
+  /**
    * Sums up what of a state the catalog also shows: the software, its pipeline and its releases with their assets.
    * Two states with the same key need no redraw of the catalog.
    * @param state - The state, or `null` without a project.

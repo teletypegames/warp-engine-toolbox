@@ -6,7 +6,9 @@
 
 import * as vscode from 'vscode'
 import { HostError } from '../../../domain/model/host-error.model'
+import type { Remedy } from '../../../domain/model/message.model'
 import { errorText } from '../../ui/l10n'
+import { Remedies } from '../../ui/remedies'
 import { TreeNode } from './tree.node'
 
 /** The content of a tree view: its root nodes. */
@@ -50,7 +52,8 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
   /**
    * Returns the roots of the view, or the loaded children of a node.
    *
-   * A failure becomes a single node: *Not authorized* (click to sign in again) when the host refused the token, the error text otherwise.
+   * A failure becomes a single node: *Not authorized* (click to sign in again) when the host refused the token, the error text otherwise —
+   * with its remedy as the click when it has one.
    *
    * @param node - The parent node; `undefined` for the roots.
    * @returns The nodes.
@@ -59,7 +62,9 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
     try {
       return node ? await Promise.resolve(node.load?.() ?? []) : await this.view.roots()
     } catch (error: unknown) {
-      return [HostError.isUnauthorized(error) ? TreeNode.reauthorize() : new TreeNode(errorText(error), { icon: 'warning' })]
+      if (HostError.isUnauthorized(error)) return [TreeNode.reauthorize()]
+      const remedy: Remedy | null = Remedies.of(error)
+      return [new TreeNode(errorText(error), { icon: 'warning', ...(remedy ? { description: Remedies.label(remedy), command: Remedies.command(remedy) } : {}) })]
     }
   }
 

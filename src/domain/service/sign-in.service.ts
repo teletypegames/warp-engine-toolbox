@@ -4,6 +4,7 @@
  * @module
  */
 import type { Principal } from '../model/catalog.model'
+import { HostError } from '../model/host-error.model'
 import { DomainError, msg } from '../model/message.model'
 import { TOOL_SCOPES, type DeviceGrant, type Session, type TokenPoll } from '../model/sign-in.model'
 import type { SessionRepository } from '../repository/session.repository'
@@ -80,16 +81,41 @@ export class SignInService {
   }
 
   /**
+   * Stores a session for the first of several tokens the host takes, such as the local engine's token file and the
+   * token its container gives.
+   *
+   * @param host - The host URL.
+   * @param tokens - The tokens to try, in order.
+   * @param scopes - The scopes to record when the host cannot be asked.
+   * @returns The stored session.
+   * @throws {@link "domain/model/message.model".DomainError} When the host refuses every token; its remedy is reinstalling the local engine.
+   */
+  public async createFirstSession(host: string, tokens: readonly string[], scopes: readonly string[]): Promise<Session> {
+    for (const token of tokens) {
+      try {
+        return await this.createSession(host, token, scopes)
+      } catch (error: unknown) {
+        if (!HostError.isUnauthorized(error)) throw error
+      }
+    }
+    throw new DomainError(msg('{0} refused every token found on this machine: run the local engine\'s installer again.', host), 'installLocalEngine')
+  }
+
+  /**
    * Stores a session for a token, replacing the earlier session of the same host; asks the host who the token belongs to for its label and scopes.
    *
    * @param host - The host URL.
    * @param token - The admin token.
    * @param scopes - The scopes to record when the host cannot be asked.
    * @returns The stored session.
+   * @throws {@link domain/model/host-error.model!HostError} With 401, without storing anything, when the host refuses the token.
    */
   public async createSession(host: string, token: string, scopes: readonly string[]): Promise<Session> {
     const principal: Principal = await this.connection.signIn(host).principal(token)
-      .catch((): Principal => ({ label: null, scopes: [...scopes] }))
+      .catch((error: unknown): Principal => {
+        if (HostError.isUnauthorized(error)) throw error
+        return { label: null, scopes: [...scopes] }
+      })
     const session: Session = { id: `${host}#${String(Date.now())}`, host, token, label: principal.label ?? host, scopes: principal.scopes }
     await this.sessions.save([...(await this.sessions.all()).filter((stored: Session) => stored.host !== host), session])
     return session

@@ -4,14 +4,28 @@
  * @packageDocumentation
  */
 
+import type * as vscode from 'vscode'
 import type { ScaffoldResult } from '../../domain/model/catalog.model'
 import { msg } from '../../domain/model/message.model'
 import type { Project } from '../../domain/model/project.model'
+import type { RemoteState } from '../../domain/model/remote-state.model'
+import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { ConnectService, RemoteOption } from '../../domain/service/connect.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t } from '../ui/l10n'
+import { Remedies } from '../ui/remedies'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
+
+const OFFER_KEY = 'warpengine.connectOffer'
+
+/** What {@link ConnectController} needs for the offer it makes to a new game. */
+export interface ConnectOffers {
+  /** The global state, where the new game's folder waits until it is open. */
+  readonly memory: vscode.Memento
+  /** Tells whether the current host is the local engine. */
+  readonly local: LocalEngineService
+}
 
 /**
  * Serves `warpengine.connect`: creates the repository, the CI and the draft catalog entry on the host and pushes the working copy there.
@@ -23,8 +37,33 @@ export class ConnectController {
    * @param service - Connects the project on the host.
    * @param projects - The projects of the workspace, re-read after a connect.
    * @param states - The remote state, polled after a connect.
+   * @param offers - Where the offer for a new game waits, and whether the host is the local engine.
    */
-  public constructor(private readonly service: ConnectService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore) {}
+  public constructor(private readonly service: ConnectService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore, private readonly offers: ConnectOffers) {}
+
+  /**
+   * Remembers a new game's folder, so that {@link ConnectController.offer} offers to connect it once it is open.
+   *
+   * @param folder - The new project's folder.
+   */
+  public async offerLater(folder: string): Promise<void> {
+    await this.offers.memory.update(OFFER_KEY, folder)
+  }
+
+  /**
+   * Offers to connect a new game (see {@link ConnectController.offerLater}) once its remote state is loaded and it is not
+   * on the host yet; on the local engine the local CI offer does it instead. The offer is made once.
+   *
+   * @param state - The remote state just loaded.
+   */
+  public async offer(state: RemoteState | null): Promise<void> {
+    if (!state || state.error || state.project.folder !== this.offers.memory.get<string>(OFFER_KEY)) return
+    await this.offers.memory.update(OFFER_KEY, undefined)
+    if (state.software || this.offers.local.isCurrentHost()) return
+    const connect: string = t('Connect')
+    if ((await Dialogs.ask(t('{0} is not on WarpEngine yet. Connect it: a repository, the CI and a catalog entry?', state.project.title), connect)) !== connect) return
+    await this.connect().catch(async (error: unknown) => { await Remedies.report(error) })
+  }
 
   /**
    * `warpengine.connect`: connects the current project, then polls its remote state so the first build shows.

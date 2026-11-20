@@ -17,7 +17,7 @@ const PRIORITY = 50
 
 /**
  * Shows the platform and name of the current project in the status bar with the state of its latest pipeline run; a click
- * signs in, connects, sets up the local CI, opens the software's admin page (where a pipeline is linked) or opens the run.
+ * signs in (again, when the host refused the token), connects, sets up the local CI, opens the software's admin page (where a pipeline is linked) or opens the run.
  */
 export class PipelineStatusBar implements vscode.Disposable {
   private readonly item: vscode.StatusBarItem = vscode.window.createStatusBarItem('warpengine.pipeline', vscode.StatusBarAlignment.Left, PRIORITY)
@@ -50,6 +50,7 @@ export class PipelineStatusBar implements vscode.Disposable {
     }
     const label = `${state.project.platformLabel} · ${state.project.name}`
     if (!state.signedIn) this.renderSignedOut(label)
+    else if (state.unauthorized) this.renderUnauthorized(label)
     else if (!state.pipeline) this.renderUnlinked(label, state)
     else this.renderRun(label, state, RemoteStates.latestRun(state))
     this.item.show()
@@ -59,6 +60,12 @@ export class PipelineStatusBar implements vscode.Disposable {
     this.item.text = `$(rocket) ${label}`
     this.item.tooltip = t('WarpEngine: sign in to see the pipeline')
     this.item.command = 'warpengine.signIn'
+  }
+
+  private renderUnauthorized(label: string): void {
+    this.item.text = `$(key) ${label}`
+    this.item.tooltip = t('The host refused the stored token: click to sign in again.')
+    this.item.command = 'warpengine.reauthorize'
   }
 
   private renderUnlinked(label: string, state: RemoteState): void {

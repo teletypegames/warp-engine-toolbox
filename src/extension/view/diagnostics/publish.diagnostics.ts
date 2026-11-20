@@ -11,7 +11,8 @@ import type { PublishCheck, PublishProblem } from '../../../domain/model/publish
 import type { HostService } from '../../../domain/service/host.service'
 import type { PublishCheckService } from '../../../domain/service/publish-check.service'
 import { Dialogs } from '../../ui/dialogs'
-import { errorText, t } from '../../ui/l10n'
+import { t } from '../../ui/l10n'
+import { Remedies } from '../../ui/remedies'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 
 /**
@@ -52,7 +53,7 @@ export class PublishDiagnostics implements vscode.Disposable {
     }
     const document: vscode.TextDocument = await vscode.workspace.openTextDocument(vscode.Uri.file(project.metadataPath))
     const result: PublishCheck | null = await this.service.check(project, document.getText()).catch((error: unknown) => {
-      if (report) Dialogs.error(`${t('WarpEngine check')}: ${errorText(error)}`)
+      if (report) void Remedies.report(error, `${t('WarpEngine check')}: `)
       return null
     })
     if (!result) return null

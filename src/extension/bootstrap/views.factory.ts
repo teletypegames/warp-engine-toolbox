@@ -13,6 +13,7 @@ import { PlayRendererLoader } from '../view/play/play.assets'
 import { PlayPanel } from '../view/play/play.panel'
 import { ReportView } from '../view/report/report.view'
 import { CatalogTreeView } from '../view/tree/catalog.tree-view'
+import { HealthTreeView } from '../view/tree/health.tree-view'
 import { ProjectTreeView } from '../view/tree/project.tree-view'
 import { ServersTreeView } from '../view/tree/servers.tree-view'
 import { SyncTreeView } from '../view/tree/sync.tree-view'
@@ -30,6 +31,8 @@ export interface Views {
   readonly syncTree: TreeProvider
   /** The Local Server view (`warpengine.servers`) on a {@link ServersTreeView}. */
   readonly serversTree: TreeProvider
+  /** The Health view (`warpengine.health`) on a {@link HealthTreeView}. */
+  readonly healthTree: TreeProvider
   /** The metadata JSON schemas from the host's platform descriptions. */
   readonly schemas: MetadataSchemaProvider
   /** The publish check problems on the metadata file. */
@@ -61,6 +64,7 @@ export function createViews(context: vscode.ExtensionContext, services: Services
     catalogTree: new TreeProvider(new CatalogTreeView({ hosts: services.hosts, catalog: services.catalog, platforms: services.platforms, play: services.play, images: services.images, projects })),
     syncTree: new TreeProvider(new SyncTreeView(services.localEngine, services.sync)),
     serversTree: new TreeProvider(new ServersTreeView(services.servers)),
+    healthTree: new TreeProvider(new HealthTreeView(services.health, projects, states)),
     schemas: new MetadataSchemaProvider(services.hosts, services.connection, projects),
     diagnostics: new PublishDiagnostics(services.hosts, projects, services.publishCheck),
     reports: new ReportView(),

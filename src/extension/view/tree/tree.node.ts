@@ -18,6 +18,8 @@ export interface TreeNodeOptions {
   readonly tooltip?: string | vscode.MarkdownString
   /** A codicon id. */
   readonly icon?: string
+  /** A theme color id for the icon, such as `testing.iconPassed`. */
+  readonly color?: string
   /** The `contextValue` the menus of `package.json` match, space-separated words such as `link` or `release`. */
   readonly context?: string
   /** Run on click. */
@@ -47,7 +49,7 @@ export class TreeNode extends vscode.TreeItem {
     super(label, TreeNode.collapsible(options))
     if (options.description !== undefined) this.description = options.description
     if (options.tooltip !== undefined) this.tooltip = options.tooltip
-    if (options.icon) this.iconPath = new vscode.ThemeIcon(options.icon)
+    if (options.icon) this.iconPath = TreeNode.icon(options.icon, options.color)
     if (options.context) this.contextValue = options.context
     if (options.command) this.command = options.command
     this.load = options.load ?? null
@@ -85,6 +87,10 @@ export class TreeNode extends vscode.TreeItem {
   public static linkOf(node: TreeNode | undefined): string | undefined {
     const argument: unknown = node?.command?.arguments?.[0]
     return typeof argument === 'string' ? argument : undefined
+  }
+
+  private static icon(id: string, color: string | undefined): vscode.ThemeIcon {
+    return new vscode.ThemeIcon(id, color ? new vscode.ThemeColor(color) : undefined)
   }
 
   private static collapsible(options: TreeNodeOptions): vscode.TreeItemCollapsibleState {

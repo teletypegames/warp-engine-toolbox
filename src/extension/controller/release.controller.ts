@@ -13,6 +13,7 @@ import type { LocalEngineService } from '../../domain/service/local-engine.servi
 import type { Readiness, ReleaseService } from '../../domain/service/release.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t } from '../ui/l10n'
+import { Remedies } from '../ui/remedies'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
 
@@ -33,7 +34,7 @@ export class ReleaseController {
   /**
    * `warpengine.release`: releases the current project.
    *
-   * Checks readiness (offers Connect, or Set up local CI on the local engine, when the project has no remote; offers to commit a dirty working copy; shows an error when its version cannot be written), asks for the version in one list (the stable bumps, the beta pre-releases, or another), asks the host whether a publish would take it, asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
+   * Checks readiness (offers Connect, or Set up local CI on the local engine, when the project has no remote; offers to commit a dirty working copy; shows an error when its version cannot be written), asks for the version in one list (the stable bumps, the beta pre-releases, or another), asks the host whether a publish would take it (when not, puts the problems in the Problems view and offers the metadata form), asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
    *
    * @throws {@link "domain/model/message.model".DomainError} When there is no current project or a git step fails.
    */
@@ -109,7 +110,10 @@ export class ReleaseController {
   private async verified(project: Project, version: string): Promise<boolean> {
     const errors: PublishProblem[] = await this.service.verify(project, version)
     if (errors.length === 0) return true
-    Dialogs.error(t('The publish would fail: {0}', errors.map((problem: PublishProblem) => `${problem.field}: ${problem.message}`).join('; ')))
+    await vscode.commands.executeCommand('warpengine.checkPublish')
+    const edit: string = Remedies.label('editMetadata')
+    const answer: string | undefined = await Dialogs.alert(t('The publish would fail: {0}', errors.map((problem: PublishProblem) => `${problem.field}: ${problem.message}`).join('; ')), edit)
+    if (answer === edit) await vscode.commands.executeCommand('warpengine.editMetadata')
     return false
   }
 }

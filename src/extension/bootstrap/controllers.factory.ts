@@ -35,8 +35,8 @@ import type { Workspace } from './workspace.factory'
 export function createControllers(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Controllers {
   const { projects, states, hostController, auth } = workspace
   const localEngine: LocalEngineController = new LocalEngineController({ local: services.localEngine, hosts: services.hosts, connection: services.connection, state: context.globalState })
-  const refresh: RefreshController = new RefreshController({ platforms: services.platforms, projects, states, trees: [views.catalogTree, views.syncTree, views.projectTree, views.serversTree], localEngine })
-  const connect: ConnectController = new ConnectController(services.connect, projects, states)
+  const refresh: RefreshController = new RefreshController({ platforms: services.platforms, projects, states, trees: [views.catalogTree, views.syncTree, views.projectTree, views.serversTree, views.healthTree], localEngine })
+  const connect: ConnectController = new ConnectController(services.connect, projects, states, { memory: context.globalState, local: services.localEngine })
   const dialog: GameAnswersDialog = new GameAnswersDialog(services.platforms, services.catalog, services.scaffold)
   return {
     refresh, connect, localEngine, host: hostController, link: new LinkController(),

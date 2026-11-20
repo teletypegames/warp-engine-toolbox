@@ -1,5 +1,5 @@
 /**
- * The domain's user-facing messages and the error that carries one.
+ * The domain's user-facing messages, the error that carries one and the remedies the user can be offered.
  *
  * @module
  */
@@ -33,20 +33,30 @@ export function msg(text: string, ...args: MessageArgument[]): Message {
   return { text, args }
 }
 
+/**
+ * The step that puts a failure or a missing setup right; the extension turns it into a button that runs the command
+ * doing it.
+ */
+export type Remedy = 'selectHost' | 'signIn' | 'reauthorize' | 'installLocalEngine' | 'connect' | 'setupLocalCi' | 'editMetadata' | 'addToProject' | 'newGame'
+
 /** A domain failure carrying a {@link Message}; its `message` is the English text with the arguments filled in. */
 export class DomainError extends Error {
   /** The message, for the extension to translate. */
   public readonly detail: Message
+  /** The step that fixes it, or `null` when there is none to offer. */
+  public readonly remedy: Remedy | null
 
   /**
    * Creates the error.
    *
    * @param detail - What went wrong.
+   * @param remedy - The step that fixes it, offered to the user as a button.
    */
-  public constructor(detail: Message) {
+  public constructor(detail: Message, remedy: Remedy | null = null) {
     super(DomainError.format(detail))
     this.name = 'DomainError'
     this.detail = detail
+    this.remedy = remedy
   }
 
   private static format(message: Message): string {

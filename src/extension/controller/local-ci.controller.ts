@@ -10,7 +10,8 @@ import type { Project } from '../../domain/model/project.model'
 import type { RemoteState } from '../../domain/model/remote-state.model'
 import type { LocalCiService } from '../../domain/service/local-ci.service'
 import { Dialogs } from '../ui/dialogs'
-import { errorText, t } from '../ui/l10n'
+import { t } from '../ui/l10n'
+import { Remedies } from '../ui/remedies'
 import type { TreeProvider } from '../view/tree/tree.provider'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
@@ -58,7 +59,7 @@ export class LocalCiController {
     const answer: string | undefined = await Dialogs.ask(t('The local CI runs on this machine. Set {0} up on it: a repository on the local git server, built on every push?', state.project.title), setUp, never)
     if (answer === never) await this.deps.memory.update(DECLINED_KEY, [...this.declined(), name])
     if (answer !== setUp) return
-    await this.setUp().catch((error: unknown) => { Dialogs.error(errorText(error)) })
+    await this.setUp().catch(async (error: unknown) => { await Remedies.report(error) })
   }
 
   /**
