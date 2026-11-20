@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.0
 
 - **Catalog keeps up by itself**: after Connect, Set up local CI or a release, the Catalog
   view redraws as soon as the project's software, pipeline or releases change on the host
