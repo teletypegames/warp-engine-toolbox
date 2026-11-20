@@ -4,7 +4,7 @@
  * @module
  */
 import type { Principal } from '../model/catalog.model'
-import { Health, type HealthSection, type HostFacts } from '../model/health.model'
+import { HealthChecks, type HealthSection, type HostFacts } from '../model/health.model'
 import { HostError } from '../model/host-error.model'
 import type { Host } from '../model/host.model'
 import type { WellKnown } from '../model/local-engine.model'
@@ -60,11 +60,11 @@ export class HealthService {
     const isCurrentHost: boolean = this.deps.local.isCurrentHost()
     const host: HostFacts = await this.host()
     const containers: ServerContainer[] | null = await this.deps.servers.containers().catch((): null => null)
-    const local: HealthSection | null = Health.local({ isCurrentHost, containers })
+    const local: HealthSection | null = HealthChecks.local({ isCurrentHost, containers })
     const check: PublishCheck | null = host.host && project ? await this.check(project) : null
     const adminUrl: string | null = state?.software ? await this.deps.hostInfo.adminUrl(state.software).catch((): null => null) : null
-    const projectSection: HealthSection = Health.project({ project, check, state, local: isCurrentHost, adminUrl })
-    return [Health.host(host), ...(local ? [local] : []), projectSection]
+    const projectSection: HealthSection = HealthChecks.project({ project, check, state, local: isCurrentHost, adminUrl })
+    return [HealthChecks.host(host), ...(local ? [local] : []), projectSection]
   }
 
   private async host(): Promise<HostFacts> {

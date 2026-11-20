@@ -7,7 +7,7 @@
 import { WarpEngineAuthProvider } from '../auth/warp-engine.auth-provider'
 import { HostController } from '../controller/host.controller'
 import type * as vscode from 'vscode'
-import { KnownProjects } from '../workspace/known-projects'
+import { KnownProjectsStore } from '../workspace/known-projects.store'
 import { ProjectRegistry } from '../workspace/project.registry'
 import { RemoteStateStore } from '../workspace/remote-state.store'
 import type { Services } from './container'
@@ -23,7 +23,7 @@ export interface Workspace {
   /** The VS Code authentication provider of the WarpEngine hosts. */
   readonly auth: WarpEngineAuthProvider
   /** The folders of the projects ever opened, for the Dashboard's *Open* buttons. */
-  readonly known: KnownProjects
+  readonly known: KnownProjectsStore
 }
 
 /**
@@ -38,7 +38,7 @@ export function createWorkspace(context: vscode.ExtensionContext, services: Serv
   const projects: ProjectRegistry = new ProjectRegistry(services.projects)
   const hostController: HostController = new HostController(services.hosts)
   return {
-    projects, hostController, known: new KnownProjects(context.globalState),
+    projects, hostController, known: new KnownProjectsStore(context.globalState),
     states: new RemoteStateStore(services.remoteState, projects),
     auth: new WarpEngineAuthProvider(services.hosts, hostController, services.signIn, services.localEngine)
   }

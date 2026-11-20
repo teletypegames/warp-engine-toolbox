@@ -8,7 +8,7 @@ import * as vscode from 'vscode'
 import { HostError } from '../../../domain/model/host-error.model'
 import type { Remedy } from '../../../domain/model/message.model'
 import { errorText } from '../../ui/l10n'
-import { Remedies } from '../../ui/remedies'
+import { RemedyDialog } from '../../ui/remedy.dialog'
 import { TreeNode } from './tree.node'
 
 /** The content of a tree view: its root nodes. */
@@ -82,8 +82,8 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
       return await load()
     } catch (error: unknown) {
       if (HostError.isUnauthorized(error)) return [TreeNode.reauthorize()]
-      const remedy: Remedy | null = Remedies.of(error)
-      return [new TreeNode(errorText(error), { icon: 'warning', ...(remedy ? { description: Remedies.label(remedy), command: Remedies.command(remedy) } : {}) })]
+      const remedy: Remedy | null = RemedyDialog.of(error)
+      return [new TreeNode(errorText(error), { icon: 'warning', ...(remedy ? { description: RemedyDialog.label(remedy), command: RemedyDialog.command(remedy) } : {}) })]
     }
   }
 

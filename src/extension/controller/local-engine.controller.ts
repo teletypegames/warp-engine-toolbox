@@ -11,7 +11,7 @@ import type { HostService } from '../../domain/service/host.service'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import { Dialogs } from '../ui/dialogs'
 import { t } from '../ui/l10n'
-import { Remedies } from '../ui/remedies'
+import { RemedyDialog } from '../ui/remedy.dialog'
 
 const OFFERED_KEY = 'warpengine.localEngineOffered'
 const TERMINAL = 'WarpEngine Local'
@@ -80,7 +80,7 @@ export class LocalEngineController {
     try {
       await vscode.commands.executeCommand('warpengine.signIn')
     } catch (error: unknown) {
-      void Remedies.report(error)
+      void RemedyDialog.report(error)
     }
   }
 

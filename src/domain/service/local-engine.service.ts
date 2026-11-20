@@ -4,7 +4,7 @@
  * @module
  */
 import { LocalEngine, type WellKnown } from '../model/local-engine.model'
-import { DomainError, msg } from '../model/message.model'
+import { DomainError, msg, type Remedy } from '../model/message.model'
 import type { DiscoveryRepository } from '../repository/discovery.repository'
 import type { LocalEngineRepository } from '../repository/local-engine.repository'
 import type { HostService } from './host.service'
@@ -82,6 +82,15 @@ export class LocalEngineService {
     if (this.accepted) return this.accepted
     const [token] = await this.tokens()
     return token
+  }
+
+  /**
+   * Tells how a project gets onto the current host: on the local engine its local CI sets it up, elsewhere Connect does.
+   *
+   * @returns `setupLocalCi` on the local engine, `connect` elsewhere.
+   */
+  public setupRemedy(): Extract<Remedy, 'setupLocalCi' | 'connect'> {
+    return this.isCurrentHost() ? 'setupLocalCi' : 'connect'
   }
 
   /**

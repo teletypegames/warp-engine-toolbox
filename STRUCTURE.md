@@ -42,12 +42,14 @@ Nothing in the domain imports `vscode`, `node:*`, `fetch`, `infrastructure/` or
 
 | Sub-layer | Holds | May import |
 |---|---|---|
-| `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). The rules on plain data live in a class of static methods named for it in the plural (`Releases`, `PipelineRuns`, `RemoteStates`, `PublishChecks`, `Servers`), not in loose functions; `msg()`, the `Message` factory, is the one exception. | `model/` |
+| `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). The rules on plain data live in a class of static methods named for it in the plural (`Releases`, `PipelineRuns`, `RemoteStates`, `PublishChecks`, `Servers`, `HealthChecks`), not in loose functions; `msg()`, the `Message` factory, is the one exception. | `model/` |
 | `repository/` | Ports: interfaces only, for everything outside the process — the host API, git, the project's files, the template archives, the shell, the stored sessions, the settings, the preview server. | `model/` |
-| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
+| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, `HealthService` (the facts of the Health checks), … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
 
 A domain failure is a `DomainError` carrying a `Message` (an English text with `{0}`
-placeholders and its arguments); the extension translates it.
+placeholders and its arguments) and, when one step fixes it, a `Remedy` (`signIn`,
+`selectHost`, `installLocalEngine`, `connect`, `setupLocalCi`, …); the extension translates
+the message and turns the remedy into a button. The Health checks carry remedies the same way.
 
 ### `src/infrastructure/` — the ports implemented
 
@@ -70,10 +72,10 @@ Infrastructure imports `domain/model` and `domain/repository`, never `domain/ser
 | `bootstrap/` | `main.ts` (`activate`/`deactivate`, the registrations), `container.ts` (the composition root of the services: the only file that creates infrastructure objects), `workspace.factory.ts`, `views.factory.ts` and `controllers.factory.ts` (the extension objects, in that order), `events.wiring.ts` (which store event redraws which view or starts which controller flow), `disposer.ts` and `toolbox.api.ts` (what `activate` returns to the tests). |
 | `command/` | `command.table.ts`: command id → controller method; `command.registry.ts` registers the rows with one error handler. |
 | `controller/` | One class per user flow, thin: asks the user, calls services, reports. No decisions of its own — when a controller grows an `if` about the business, it moves into a service. |
-| `ui/` | Small helpers the controllers share: quick picks with values, progress, notifications with actions, the translation of a `Message`; and the multi-step questions a flow asks (`game-answers.dialog.ts`: the New Game answers). |
+| `ui/` | Small helpers the controllers share: quick picks with values, progress, notifications with actions (every error one also offers *Open Dashboard*), the translation of a `Message`, `remedy.dialog.ts` (a `Remedy` as a button and the command it runs); and the multi-step questions a flow asks (`game-answers.dialog.ts`: the New Game answers). |
 | `auth/` | The VS Code authentication provider on `SignInService`. |
-| `workspace/` | Living state of the window: `ProjectRegistry` (the projects of the workspace folders, the current one), `RemoteStateStore` (polling and events), `GitWatcher`. |
-| `view/` | What is drawn: the tree views and their nodes, the status bar, the Play panel, the metadata form, the diagnostics, the report documents, the platform description. |
+| `workspace/` | Living state of the window: `ProjectRegistry` (the projects of the workspace folders, the current one), `RemoteStateStore` (polling and events), `KnownProjectsStore` (the folders of the projects ever opened), `GitWatcher`. |
+| `view/` | What is drawn: the tree views and their nodes (and `ViewOpener`, which expands the collapsed ones when due), the status bar, the Dashboard (`dashboard.collector.ts` gathers, `dashboard.renderer.ts` writes the HTML, `dashboard.panel.ts` holds the tab), the Play panel, the metadata form, the diagnostics, the report documents, the platform description. |
 | `language/` | Editor features: marker completion, hover and lens, the metadata JSON schema, the Makefile task provider, the MCP server definition. |
 
 The extension may import every domain sub-layer. It does not import `infrastructure/`,
@@ -105,12 +107,15 @@ complexity 8, 4 parameters (more travel as one input object).
 2. `ReleaseController` takes the current project from `ProjectRegistry` and asks
    `ReleaseService.readiness()`: a repository with a remote, a clean working copy, a
    version the toolbox can write. It shows what is missing, or offers to commit first.
-3. It asks for the channel, then offers `ReleaseService.candidates()` (from the `Version`
-   model); `ReleaseService.verify()` asks the host through `BuildRepository.check()`.
+   A project without a remote gets the remedy `LocalEngineService.setupRemedy()` names
+   (*Connect*, or *Set up local CI* on the local engine).
+3. It offers the stable and the beta `ReleaseService.candidates()` (from the `Version`
+   model) in one list; `ReleaseService.verify()` asks the host through `BuildRepository.check()`.
 4. `ReleaseService.release()` writes the version with `Metadata` through `ProjectFiles`,
    builds the `Changelog` from the `SourceControl` commits, commits, tags and pushes.
 5. The controller reports; `RemoteStateStore.watch()` starts polling the pipeline, and the
-   tree view and the status bar redraw from its event.
+   tree views, the status bar and the Dashboard redraw from its events. When the run of
+   `HEAD` ends, `RemoteStates.runOutcome()` decides what the notification says.
 
 ## Adding things
 
@@ -121,6 +126,11 @@ complexity 8, 4 parameters (more travel as one input object).
   implementation in `infrastructure/http/`, then use it from a service.
 - **A tree node**: in the matching `view/tree/*.tree-view.ts`; it reads services or the
   stores, never the HTTP client.
+- **A fix for a failure**: a `Remedy` value in `message.model.ts`, its command and label in
+  `ui/remedy.dialog.ts`; then throw `new DomainError(msg(…), 'theRemedy')`, or set it on a
+  Health check.
+- **A Dashboard part**: the data in `DashboardCollector`, a card in `DashboardRenderer`
+  (escape every text, buttons as `data-command`), its style in `media/webview/dashboard.css`.
 
 ## i18n
 

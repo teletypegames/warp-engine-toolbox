@@ -13,7 +13,7 @@ import type { LocalEngineService } from '../../domain/service/local-engine.servi
 import type { ConnectService, RemoteOption } from '../../domain/service/connect.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t } from '../ui/l10n'
-import { Remedies } from '../ui/remedies'
+import { RemedyDialog } from '../ui/remedy.dialog'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
 
@@ -59,10 +59,10 @@ export class ConnectController {
   public async offer(state: RemoteState | null): Promise<void> {
     if (!state || state.error || state.project.folder !== this.offers.memory.get<string>(OFFER_KEY)) return
     await this.offers.memory.update(OFFER_KEY, undefined)
-    if (state.software || this.offers.local.isCurrentHost()) return
+    if (state.software || this.offers.local.setupRemedy() !== 'connect') return
     const connect: string = t('Connect')
     if ((await Dialogs.ask(t('{0} is not on WarpEngine yet. Connect it: a repository, the CI and a catalog entry?', state.project.title), connect)) !== connect) return
-    await this.connect().catch(async (error: unknown) => { await Remedies.report(error) })
+    await this.connect().catch(async (error: unknown) => { await RemedyDialog.report(error) })
   }
 
   /**

@@ -34,7 +34,7 @@ const LABELS: Readonly<Record<Remedy, () => string>> = {
 }
 
 /** Turns remedies into buttons and commands. */
-export class Remedies {
+export class RemedyDialog {
   /**
    * Gives the button text of a remedy, in the display language.
    *
@@ -49,10 +49,10 @@ export class Remedies {
    * Gives the VS Code command that performs a remedy.
    *
    * @param remedy - The remedy.
-   * @returns The command, titled with {@link Remedies.label}.
+   * @returns The command, titled with {@link RemedyDialog.label}.
    */
   public static command(remedy: Remedy): vscode.Command {
-    return { title: Remedies.label(remedy), command: COMMANDS[remedy] }
+    return { title: RemedyDialog.label(remedy), command: COMMANDS[remedy] }
   }
 
   /**
@@ -74,13 +74,13 @@ export class Remedies {
    * @param prefix - Put before the error text, such as `WarpEngine: `.
    */
   public static async report(error: unknown, prefix: string = ''): Promise<void> {
-    const remedy: Remedy | null = Remedies.of(error)
+    const remedy: Remedy | null = RemedyDialog.of(error)
     const text = `${prefix}${errorText(error)}`
     if (!remedy) {
       Dialogs.error(text)
       return
     }
-    const label: string = Remedies.label(remedy)
+    const label: string = RemedyDialog.label(remedy)
     if ((await Dialogs.alert(text, label)) === label) await vscode.commands.executeCommand(COMMANDS[remedy])
   }
 }

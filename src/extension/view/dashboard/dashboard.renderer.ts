@@ -1,16 +1,16 @@
 /**
- * The Dashboard page: the {@link extension/view/dashboard/dashboard.data!DashboardData} as HTML tables.
+ * The Dashboard page: the {@link extension/view/dashboard/dashboard.collector!DashboardData} as HTML tables.
  *
  * @packageDocumentation
  */
 
-import { Health, type HealthCheck, type HealthSection, type HealthStatus } from '../../../domain/model/health.model'
+import { HealthChecks, type HealthCheck, type HealthSection, type HealthStatus } from '../../../domain/model/health.model'
 import type { Message, Remedy } from '../../../domain/model/message.model'
 import { PipelineRuns, type PipelineRun } from '../../../domain/model/pipeline.model'
 import { Servers, type ServerContainer } from '../../../domain/model/server.model'
 import type { SyncLink } from '../../../domain/model/sync.model'
 import { WebviewHtml } from '../webview.html'
-import type { DashboardCatalog, DashboardData, DashboardRelease, DashboardSoftware } from './dashboard.data'
+import type { DashboardCatalog, DashboardData, DashboardRelease, DashboardSoftware } from './dashboard.collector'
 
 /** The button of a remedy on the page. */
 export interface RemedyButton {
@@ -112,7 +112,7 @@ export class DashboardRenderer {
     const rows: string = sections.flatMap((section: HealthSection) => section.checks.map((check: HealthCheck, index: number) =>
       `<tr><td>${index === 0 ? esc(this.text.message(section.title)) : ''}</td><td>${DashboardRenderer.dot(check.status)}${esc(this.text.message(check.title))}</td>
 <td>${check.detail ? esc(this.text.message(check.detail)) : ''}</td><td>${this.fix(check)}</td></tr>`)).join('')
-    const worst: HealthStatus = Health.worst(sections.flatMap((section: HealthSection) => section.checks))
+    const worst: HealthStatus = HealthChecks.worst(sections.flatMap((section: HealthSection) => section.checks))
     return this.card(`${DashboardRenderer.dot(worst)}${esc(this.text.t('Health'))}`, `<table>${rows}</table>`, 'wide')
   }
 

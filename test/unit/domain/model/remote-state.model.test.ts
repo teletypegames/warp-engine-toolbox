@@ -49,3 +49,15 @@ describe('RemoteStates.releaseOf', () => {
     assert.equal(RemoteStates.releaseOf(state({ releases: [tagged] }), push), null)
   })
 })
+
+describe('RemoteStates.runOutcome', () => {
+  const run = { number: 9, status: 'success', branch: 'master', message: null, createdAt: null, url: null, commit: 'abc', event: 'tag', ref: 'refs/tags/v1.0.0' }
+
+  it('tells a failure, a published release, a pass without one and a development build apart', () => {
+    assert.equal(RemoteStates.runOutcome(state())?.kind, undefined)
+    assert.equal(RemoteStates.runOutcome(state({ headRun: { ...run, status: 'failure' } }))?.kind, 'failed')
+    assert.equal(RemoteStates.runOutcome(state({ headRun: run, releases: [release] }))?.kind, 'published')
+    assert.equal(RemoteStates.runOutcome(state({ headRun: { ...run, ref: null, commit: 'zzz' }, releases: [release] }))?.kind, 'passed')
+    assert.equal(RemoteStates.runOutcome(state({ headRun: { ...run, ref: null }, releases: [{ ...release, version: 'dev-x-abc' }] }))?.kind, 'devBuild')
+  })
+})

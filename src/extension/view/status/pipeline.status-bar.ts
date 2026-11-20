@@ -70,7 +70,7 @@ export class PipelineStatusBar implements vscode.Disposable {
 
   private renderUnlinked(label: string, state: RemoteState): void {
     this.item.text = `$(rocket) ${label}`
-    if (this.local.isCurrentHost()) {
+    if (this.local.setupRemedy() === 'setupLocalCi') {
       this.item.tooltip = t('Not built here yet: Set up local CI puts it on the local git server and builds every push')
       this.item.command = 'warpengine.setupLocalCi'
     } else if (state.software) {

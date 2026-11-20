@@ -8,10 +8,10 @@ import * as vscode from 'vscode'
 import type { Message, Remedy } from '../../../domain/model/message.model'
 import { Dialogs } from '../../ui/dialogs'
 import { t, translate } from '../../ui/l10n'
-import { Remedies } from '../../ui/remedies'
-import type { KnownProjects } from '../../workspace/known-projects'
+import { RemedyDialog } from '../../ui/remedy.dialog'
+import type { KnownProjectsStore } from '../../workspace/known-projects.store'
 import { WebviewHtml } from '../webview.html'
-import type { DashboardCollector } from './dashboard.data'
+import type { DashboardCollector } from './dashboard.collector'
 import { DashboardRenderer, type DashboardText } from './dashboard.renderer'
 
 const VIEW_TYPE = 'warpengine.dashboard'
@@ -43,7 +43,7 @@ export class DashboardPanel implements vscode.Disposable {
    * @param known - Opens a catalog entry's project from the folder it was opened in before.
    * @param extensionUri - The extension's folder, whose `media/webview` holds the page's style and script.
    */
-  public constructor(private readonly collector: DashboardCollector, private readonly known: KnownProjects, private readonly extensionUri: vscode.Uri) {}
+  public constructor(private readonly collector: DashboardCollector, private readonly known: KnownProjectsStore, private readonly extensionUri: vscode.Uri) {}
 
   /** `warpengine.openDashboard`: opens the tab (or brings it to the front) and redraws it. */
   public async open(): Promise<void> {
@@ -107,19 +107,24 @@ export class DashboardPanel implements vscode.Disposable {
   }
 
   private async openProject(name: string): Promise<void> {
-    if (!(await this.known.open(name))) Dialogs.error(t('The folder of {0} is gone.', name))
+    const folder: string | null = await this.known.folderOf(name)
+    if (!folder) {
+      Dialogs.error(t('The folder of {0} is gone.', name))
+      return
+    }
+    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(folder), { forceNewWindow: false })
   }
 
   private static async run(command: string): Promise<void> {
     if (!command.startsWith(COMMAND_PREFIX)) return
-    await Promise.resolve(vscode.commands.executeCommand(command)).catch(async (error: unknown) => { await Remedies.report(error) })
+    await Promise.resolve(vscode.commands.executeCommand(command)).catch(async (error: unknown) => { await RemedyDialog.report(error) })
   }
 
   private static text(): DashboardText {
     return {
       t: (text: string, ...args: (string | number)[]): string => t(text, ...args),
       message: (message: Message): string => translate(message),
-      remedy: (remedy: Remedy) => ({ label: Remedies.label(remedy), command: Remedies.command(remedy).command }),
+      remedy: (remedy: Remedy) => ({ label: RemedyDialog.label(remedy), command: RemedyDialog.command(remedy).command }),
       time: (value: string | null): string => DashboardPanel.time(value)
     }
   }

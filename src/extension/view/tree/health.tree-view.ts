@@ -5,10 +5,10 @@
  */
 
 import type * as vscode from 'vscode'
-import { Health, type HealthCheck, type HealthSection, type HealthStatus } from '../../../domain/model/health.model'
+import { HealthChecks, type HealthCheck, type HealthSection, type HealthStatus } from '../../../domain/model/health.model'
 import type { HealthService } from '../../../domain/service/health.service'
 import { t, translate } from '../../ui/l10n'
-import { Remedies } from '../../ui/remedies'
+import { RemedyDialog } from '../../ui/remedy.dialog'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 import type { RemoteStateStore } from '../../workspace/remote-state.store'
 import { TreeNode } from './tree.node'
@@ -47,7 +47,7 @@ export class HealthTreeView implements TreeView {
   }
 
   private static sectionNode(section: HealthSection): TreeNode {
-    const worst: HealthStatus = Health.worst(section.checks)
+    const worst: HealthStatus = HealthChecks.worst(section.checks)
     const gaps: number = section.checks.filter((check: HealthCheck) => check.status === 'warning' || check.status === 'error').length
     return new TreeNode(translate(section.title), {
       ...LOOK[worst], description: gaps > 0 ? t('{0} to fix', gaps) : t('all good'), expanded: false,
@@ -57,7 +57,7 @@ export class HealthTreeView implements TreeView {
 
   private static checkNode(check: HealthCheck): TreeNode {
     const detail: string = check.detail ? translate(check.detail) : ''
-    const fix: string = check.remedy ? `→ ${Remedies.label(check.remedy)}` : ''
+    const fix: string = check.remedy ? `→ ${RemedyDialog.label(check.remedy)}` : ''
     const command: vscode.Command | undefined = HealthTreeView.command(check)
     return new TreeNode(translate(check.title), {
       ...LOOK[check.status], description: [fix, detail].filter(Boolean).join(' · '),
@@ -67,12 +67,12 @@ export class HealthTreeView implements TreeView {
   }
 
   private static command(check: HealthCheck): vscode.Command | undefined {
-    if (check.remedy) return Remedies.command(check.remedy)
+    if (check.remedy) return RemedyDialog.command(check.remedy)
     return check.url ? TreeNode.openUrl(check.url) : undefined
   }
 
   private static hint(check: HealthCheck): string {
-    if (check.remedy) return t('Click: {0}', Remedies.label(check.remedy))
+    if (check.remedy) return t('Click: {0}', RemedyDialog.label(check.remedy))
     return check.url ?? ''
   }
 }

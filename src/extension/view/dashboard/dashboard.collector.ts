@@ -20,7 +20,7 @@ import type { PlayService } from '../../../domain/service/play.service'
 import type { PlatformService } from '../../../domain/service/platform.service'
 import type { ServerService } from '../../../domain/service/server.service'
 import type { SyncService } from '../../../domain/service/sync.service'
-import type { KnownProjects } from '../../workspace/known-projects'
+import type { KnownProjectsStore } from '../../workspace/known-projects.store'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 import type { RemoteStateStore } from '../../workspace/remote-state.store'
 
@@ -117,7 +117,7 @@ export interface DashboardSources {
   /** The sync partners. */
   readonly sync: SyncService
   /** The folders of the projects opened before. */
-  readonly known: KnownProjects
+  readonly known: KnownProjectsStore
 }
 
 /** Gathers the {@link DashboardData}; each part that fails is left empty instead of failing the page. */

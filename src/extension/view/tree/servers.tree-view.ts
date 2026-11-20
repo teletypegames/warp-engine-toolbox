@@ -8,7 +8,7 @@ import { Servers, type ServerContainer, type ServerRole } from '../../../domain/
 import type { ServerService } from '../../../domain/service/server.service'
 import { Dialogs } from '../../ui/dialogs'
 import { t } from '../../ui/l10n'
-import { Remedies } from '../../ui/remedies'
+import { RemedyDialog } from '../../ui/remedy.dialog'
 import { TreeNode } from './tree.node'
 import type { TreeView } from './tree.provider'
 
@@ -40,7 +40,7 @@ export class ServersTreeView implements TreeView {
 
   private static installNode(): TreeNode {
     return new TreeNode(t('No WarpEngine container on this machine'), {
-      description: Remedies.label('installLocalEngine'), icon: 'cloud-download', command: Remedies.command('installLocalEngine')
+      description: RemedyDialog.label('installLocalEngine'), icon: 'cloud-download', command: RemedyDialog.command('installLocalEngine')
     })
   }
 

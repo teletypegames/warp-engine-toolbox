@@ -12,7 +12,7 @@ const KEY = 'warpengine.knownProjects'
  * Remembers, per software name, the folder of the last project opened with that name, in the global state, so the
  * Dashboard can offer to open a catalog entry's project.
  */
-export class KnownProjects {
+export class KnownProjectsStore {
   /**
    * Creates the store.
    *
@@ -41,19 +41,6 @@ export class KnownProjects {
     const folder: string | undefined = this.all()[name]
     if (!folder) return null
     return vscode.workspace.fs.stat(vscode.Uri.file(folder)).then(() => folder, () => null)
-  }
-
-  /**
-   * Opens the remembered project of a software in this window (`vscode.openFolder`).
-   *
-   * @param name - The software name.
-   * @returns `false` when no existing folder is remembered for it.
-   */
-  public async open(name: string): Promise<boolean> {
-    const folder: string | null = await this.folderOf(name)
-    if (!folder) return false
-    await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(folder), { forceNewWindow: false })
-    return true
   }
 
   private all(): Record<string, string> {

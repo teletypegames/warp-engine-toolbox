@@ -4,7 +4,7 @@
  * @module
  */
 import { Releases, type Release, type Software } from './catalog.model'
-import type { Pipeline, PipelineRun } from './pipeline.model'
+import { PipelineRuns, type Pipeline, type PipelineRun } from './pipeline.model'
 import type { Project } from './project.model'
 
 /** Where the local git checkout of a project stands. */
@@ -41,6 +41,19 @@ export interface RemoteState extends GitPosition {
   readonly unauthorized: boolean
 }
 
+/** What the end of a run of `HEAD` comes to, for the notification that announces it. */
+export interface RunOutcome {
+  /**
+   * `failed` when the run did not succeed, `published` when it published a listed release, `passed` when it published
+   * nothing, `devBuild` when it built a branch's development build (which the branch notice announces).
+   */
+  readonly kind: 'failed' | 'published' | 'passed' | 'devBuild'
+  /** The run. */
+  readonly run: PipelineRun
+  /** The release it published, or `null`. */
+  readonly release: Release | null
+}
+
 /** Rules on {@link RemoteState} values. */
 export class RemoteStates {
   /**
@@ -61,6 +74,20 @@ export class RemoteStates {
    */
   public static latestRun(state: RemoteState): PipelineRun | null {
     return state.headRun ?? state.runs[0] ?? null
+  }
+
+  /**
+   * Decides what the ended run of `HEAD` comes to.
+   * @param state - The state loaded after the run.
+   * @returns The outcome, or `null` without a run of `HEAD`.
+   */
+  public static runOutcome(state: RemoteState): RunOutcome | null {
+    const run: PipelineRun | null = state.headRun
+    if (!run) return null
+    if (!PipelineRuns.isSuccess(run)) return { kind: 'failed', run, release: null }
+    const release: Release | null = RemoteStates.releaseOf(state, run)
+    if (!release) return { kind: 'passed', run, release }
+    return { kind: Releases.isDev(release) ? 'devBuild' : 'published', run, release }
   }
 
   /**

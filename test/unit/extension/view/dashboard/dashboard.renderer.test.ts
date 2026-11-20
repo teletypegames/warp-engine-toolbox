@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
 import type { Software } from '../../../../../src/domain/model/catalog.model'
 import type { Message } from '../../../../../src/domain/model/message.model'
-import type { DashboardData } from '../../../../../src/extension/view/dashboard/dashboard.data'
+import type { DashboardData } from '../../../../../src/extension/view/dashboard/dashboard.collector'
 import { DashboardRenderer } from '../../../../../src/extension/view/dashboard/dashboard.renderer'
 
 const fill = (text: string, args: readonly (string | number)[]): string => text.replace(/\{(\d+)\}/g, (_: string, index: string) => String(args[Number(index)] ?? ''))

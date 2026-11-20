@@ -6,10 +6,10 @@
 
 import * as vscode from 'vscode'
 import { DomainError, msg } from '../../domain/model/message.model'
-import { Releases, type Release } from '../../domain/model/catalog.model'
-import { PipelineRuns, type PipelineRun } from '../../domain/model/pipeline.model'
+import type { Release } from '../../domain/model/catalog.model'
+import type { PipelineRun } from '../../domain/model/pipeline.model'
 import type { Project } from '../../domain/model/project.model'
-import { RemoteStates, type RemoteState } from '../../domain/model/remote-state.model'
+import { RemoteStates, type RemoteState, type RunOutcome } from '../../domain/model/remote-state.model'
 import type { PipelineService } from '../../domain/service/pipeline.service'
 import type { PlayService } from '../../domain/service/play.service'
 import type { MakeTaskProvider } from '../language/make.task-provider'
@@ -127,19 +127,13 @@ export class ProjectController {
    * @param state - The remote state loaded after the run ended.
    */
   public async announceRunEnd(state: RemoteState): Promise<void> {
-    const run: PipelineRun | null = state.headRun
-    if (!run) return
-    if (!PipelineRuns.isSuccess(run)) {
-      await ProjectController.announceFailure(state, run)
-      return
+    const outcome: RunOutcome | null = RemoteStates.runOutcome(state)
+    if (outcome?.kind === 'failed') await ProjectController.announceFailure(state, outcome.run)
+    if (outcome?.kind === 'passed') Dialogs.info(t('Pipeline #{0} of {1} passed; it published no release.', outcome.run.number, state.project.name))
+    if (outcome?.kind === 'published' && outcome.release) {
+      const { version } = outcome.release
+      await this.offerPlay(t('{0} {1} is published.', state.project.title, version), this.deps.play.playUrl(state.project.name, version))
     }
-    const release: Release | null = RemoteStates.releaseOf(state, run)
-    if (release && Releases.isDev(release)) return
-    if (!release) {
-      Dialogs.info(t('Pipeline #{0} of {1} passed; it published no release.', run.number, state.project.name))
-      return
-    }
-    await this.offerPlay(t('{0} {1} is published.', state.project.title, release.version), this.deps.play.playUrl(state.project.name, release.version))
   }
 
   /**

@@ -5,6 +5,7 @@
  */
 
 import * as vscode from 'vscode'
+import type { Remedy } from '../../domain/model/message.model'
 import { GitRemotes, type GitRemote } from '../../domain/model/git-remote.model'
 import { Version } from '../../domain/model/version.model'
 import type { Project } from '../../domain/model/project.model'
@@ -13,7 +14,7 @@ import type { LocalEngineService } from '../../domain/service/local-engine.servi
 import type { Readiness, ReleaseService } from '../../domain/service/release.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t } from '../ui/l10n'
-import { Remedies } from '../ui/remedies'
+import { RemedyDialog } from '../ui/remedy.dialog'
 import type { ProjectRegistry } from '../workspace/project.registry'
 import type { RemoteStateStore } from '../workspace/remote-state.store'
 
@@ -63,11 +64,11 @@ export class ReleaseController {
   }
 
   private async connectFirst(project: Project): Promise<Readiness> {
-    const local: boolean = this.local.isCurrentHost()
-    const action: string = local ? t('Set up local CI') : t('Connect')
-    const message: string = local ? t('A release is a tag the CI builds: set the project up on the local CI first.') : t('A release is a tag the CI builds: connect the project first.')
+    const remedy: Remedy = this.local.setupRemedy()
+    const action: string = RemedyDialog.label(remedy)
+    const message: string = remedy === 'setupLocalCi' ? t('A release is a tag the CI builds: set the project up on the local CI first.') : t('A release is a tag the CI builds: connect the project first.')
     if ((await Dialogs.alert(message, action)) !== action) return 'unconnected'
-    await vscode.commands.executeCommand(local ? 'warpengine.setupLocalCi' : 'warpengine.connect')
+    await vscode.commands.executeCommand(RemedyDialog.command(remedy).command)
     return this.service.readiness(project)
   }
 
@@ -111,7 +112,7 @@ export class ReleaseController {
     const errors: PublishProblem[] = await this.service.verify(project, version)
     if (errors.length === 0) return true
     await vscode.commands.executeCommand('warpengine.checkPublish')
-    const edit: string = Remedies.label('editMetadata')
+    const edit: string = RemedyDialog.label('editMetadata')
     const answer: string | undefined = await Dialogs.alert(t('The publish would fail: {0}', errors.map((problem: PublishProblem) => `${problem.field}: ${problem.message}`).join('; ')), edit)
     if (answer === edit) await vscode.commands.executeCommand('warpengine.editMetadata')
     return false
