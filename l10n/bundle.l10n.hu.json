@@ -112,6 +112,7 @@
   "no status": "nincs státusz",
   "no template on this host": "ezen a hoston nincs sablon",
   "no version": "nincs verzió",
+  "No WarpEngine container on this machine": "Ezen a gépen nincs WarpEngine-konténer",
   "No WarpEngine container, volume or image on this machine.": "Ezen a gépen nincs WarpEngine-konténer, -kötet vagy -image.",
   "No WarpEngine host is set: run \"WarpEngine: Set Host…\" or set warpengine.url.": "Nincs beállítva WarpEngine-host: futtasd a „WarpEngine: Set Host…” parancsot, vagy állítsd be a warpengine.url-t.",
   "No WarpEngine host yet. Install one on this machine (Docker), or set the address of one?": "Még nincs WarpEngine-host. Telepítesz egyet erre a gépre (Docker), vagy megadod egy meglévő címét?",

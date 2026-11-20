@@ -34,8 +34,11 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
    */
   public constructor(private readonly view: TreeView) {}
 
-  /** Redraws the whole tree. */
+  private roots: Promise<TreeNode[]> | null = null
+
+  /** Drops the loaded roots and redraws the whole tree. */
   public refresh(): void {
+    this.roots = null
     this.changed.fire(undefined)
   }
 
@@ -50,7 +53,17 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
   }
 
   /**
-   * Returns the roots of the view, or the loaded children of a node.
+   * Returns the parent of a node; only roots are revealed, so there is none.
+   *
+   * @returns `undefined`.
+   */
+  public getParent(): undefined {
+    return undefined
+  }
+
+  /**
+   * Returns the roots of the view (loaded once until {@link TreeProvider.refresh}, so a reveal finds the same nodes the
+   * view shows), or the loaded children of a node.
    *
    * A failure becomes a single node: *Not authorized* (click to sign in again) when the host refused the token, the error text otherwise —
    * with its remedy as the click when it has one.
@@ -59,8 +72,14 @@ export class TreeProvider implements vscode.TreeDataProvider<TreeNode>, vscode.D
    * @returns The nodes.
    */
   public async getChildren(node?: TreeNode): Promise<TreeNode[]> {
+    if (node) return TreeProvider.guarded(async () => Promise.resolve(node.load?.() ?? []))
+    this.roots ??= TreeProvider.guarded(async () => this.view.roots())
+    return this.roots
+  }
+
+  private static async guarded(load: () => Promise<TreeNode[]>): Promise<TreeNode[]> {
     try {
-      return node ? await Promise.resolve(node.load?.() ?? []) : await this.view.roots()
+      return await load()
     } catch (error: unknown) {
       if (HostError.isUnauthorized(error)) return [TreeNode.reauthorize()]
       const remedy: Remedy | null = Remedies.of(error)

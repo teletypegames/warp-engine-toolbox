@@ -8,6 +8,7 @@ import { Servers, type ServerContainer, type ServerRole } from '../../../domain/
 import type { ServerService } from '../../../domain/service/server.service'
 import { Dialogs } from '../../ui/dialogs'
 import { t } from '../../ui/l10n'
+import { Remedies } from '../../ui/remedies'
 import { TreeNode } from './tree.node'
 import type { TreeView } from './tree.provider'
 
@@ -25,14 +26,22 @@ export class ServersTreeView implements TreeView {
   public constructor(private readonly servers: ServerService) {}
 
   /**
-   * Returns one node per container; sets the `warpengine.hasServers` context key.
+   * Returns one node per container, or one that installs the local engine when there is none; sets the
+   * `warpengine.hasServers` context key.
    *
-   * @returns The container nodes.
+   * @returns The nodes.
    */
   public async roots(): Promise<TreeNode[]> {
     const containers: ServerContainer[] = await this.servers.containers()
     await Dialogs.setContext('warpengine.hasServers', containers.length > 0)
+    if (containers.length === 0) return [ServersTreeView.installNode()]
     return containers.map((container: ServerContainer) => ServersTreeView.node(container))
+  }
+
+  private static installNode(): TreeNode {
+    return new TreeNode(t('No WarpEngine container on this machine'), {
+      description: Remedies.label('installLocalEngine'), icon: 'cloud-download', command: Remedies.command('installLocalEngine')
+    })
   }
 
   private static node(container: ServerContainer): TreeNode {

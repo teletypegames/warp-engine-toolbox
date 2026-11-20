@@ -57,6 +57,5 @@
   "command.reauthorize": "Újra bejelentkezés",
   "command.purgeLocalEngine": "Helyi motor teljes eltávolítása…",
   "command.deleteSoftware": "Törlés a katalógusból…",
-  "command.deleteRelease": "Kiadás törlése…",
-  "welcome.servers": "Ezen a gépen nincs WarpEngine-konténer.\n[Helyi motor telepítése](command:warpengine.installLocalEngine)"
+  "command.deleteRelease": "Kiadás törlése…"
 }

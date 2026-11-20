@@ -136,6 +136,11 @@ engine or the git server. **Purge Local Engine…** (the trash button) asks once
 containers, the data folder (`~/.warpengine`: the catalog, the releases, the token), the volumes,
 the network and the images — the same as the installer's `--uninstall --purge`.
 
+The *Catalog* and *Local Server* views start collapsed. While the WarpEngine sidebar is open, the
+toolbox opens *Local Server* when no local engine is installed (its *Install Local Engine* line
+shows), and *Catalog* once, the first time it has something to show. It never closes a view: one
+you open or close yourself stays as you left it.
+
 ## Health
 
 The *Health* view checks everything the toolbox depends on, in three groups: the **host**

@@ -15,6 +15,9 @@ import { MARKER_SELECTOR } from '../language/marker.selector'
 import { Dialogs } from '../ui/dialogs'
 import { METADATA_VIEW, MetadataEditor } from '../view/metadata/metadata.editor'
 import { PipelineStatusBar } from '../view/status/pipeline.status-bar'
+import type { TreeNode } from '../view/tree/tree.node'
+import type { TreeProvider } from '../view/tree/tree.provider'
+import { ViewOpener } from '../view/tree/view.opener'
 import { HostWatcher } from '../workspace/host.watcher'
 import { createServices, type Controllers, type Services } from './container'
 import { createControllers } from './controllers.factory'
@@ -28,7 +31,8 @@ import { createWorkspace, type Workspace } from './workspace.factory'
  * Activates the toolbox.
  *
  * Creates the services, the workspace state, the views and the controllers; registers the tree views
- * (`warpengine.project`, `warpengine.catalog`, `warpengine.sync`, `warpengine.servers`), the metadata editor,
+ * (`warpengine.project`, `warpengine.catalog`, `warpengine.servers`, `warpengine.health`, `warpengine.sync`) with the
+ * {@link extension/view/tree/view.opener!ViewOpener} that opens the collapsed ones when due, the metadata editor,
  * the Makefile task provider, the marker completion, hover and lens, the MCP server definition, the pipeline
  * status bar, the commands and the event wiring, all as subscriptions of the context. Then reads the projects,
  * looks for a local engine and sets the `warpengine.signedIn` context key.
@@ -62,14 +66,23 @@ function disposables(views: Views): Disposer[] {
   return [views.projectTree, views.catalogTree, views.syncTree, views.serversTree, views.healthTree, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
 }
 
+function treeViews(context: vscode.ExtensionContext, services: Services, views: Views): Disposer[] {
+  const create = (id: string, provider: TreeProvider): vscode.TreeView<TreeNode> => vscode.window.createTreeView(id, { treeDataProvider: provider })
+  const catalog: vscode.TreeView<TreeNode> = create('warpengine.catalog', views.catalogTree)
+  const servers: vscode.TreeView<TreeNode> = create('warpengine.servers', views.serversTree)
+  const all: vscode.TreeView<TreeNode>[] = [create('warpengine.project', views.projectTree), catalog, servers, create('warpengine.health', views.healthTree), create('warpengine.sync', views.syncTree)]
+  const opener: ViewOpener = new ViewOpener({
+    views: all, catalog: { view: catalog, provider: views.catalogTree }, servers: { view: servers, provider: views.serversTree },
+    containers: services.servers, memory: context.globalState
+  })
+  void opener.open()
+  return [...all, ...opener.watch()]
+}
+
 function registrations(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Disposer[] {
   return [
     new PipelineStatusBar(workspace.states, services.localEngine, services.hostInfo),
-    vscode.window.registerTreeDataProvider('warpengine.project', views.projectTree),
-    vscode.window.registerTreeDataProvider('warpengine.catalog', views.catalogTree),
-    vscode.window.registerTreeDataProvider('warpengine.sync', views.syncTree),
-    vscode.window.registerTreeDataProvider('warpengine.servers', views.serversTree),
-    vscode.window.registerTreeDataProvider('warpengine.health', views.healthTree),
+    ...treeViews(context, services, views),
     vscode.window.registerCustomEditorProvider(METADATA_VIEW, new MetadataEditor(context.extensionUri, views.schemas, workspace.projects)),
     vscode.tasks.registerTaskProvider(TASK_TYPE, views.tasks),
     vscode.languages.registerCompletionItemProvider(MARKER_SELECTOR, new MarkerCompletionProvider(services.platforms), ':', ' '),

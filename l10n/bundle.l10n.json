@@ -140,6 +140,7 @@
   "no status": "no status",
   "no template on this host": "no template on this host",
   "no version": "no version",
+  "No WarpEngine container on this machine": "No WarpEngine container on this machine",
   "No WarpEngine container, volume or image on this machine.": "No WarpEngine container, volume or image on this machine.",
   "No WarpEngine host is set: run \"WarpEngine: Set Host…\" or set warpengine.url.": "No WarpEngine host is set: run \"WarpEngine: Set Host…\" or set warpengine.url.",
   "No WarpEngine host yet. Install one on this machine (Docker), or set the address of one?": "No WarpEngine host yet. Install one on this machine (Docker), or set the address of one?",

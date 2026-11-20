@@ -498,11 +498,13 @@
         },
         {
           "id": "warpengine.catalog",
-          "name": "%view.catalog%"
+          "name": "%view.catalog%",
+          "visibility": "collapsed"
         },
         {
           "id": "warpengine.servers",
-          "name": "%view.servers%"
+          "name": "%view.servers%",
+          "visibility": "collapsed"
         },
         {
           "id": "warpengine.health",
@@ -540,10 +542,6 @@
         "view": "warpengine.sync",
         "contents": "%welcome.sync.pair%",
         "when": "warpengine.localEngine && !warpengine.syncing"
-      },
-      {
-        "view": "warpengine.servers",
-        "contents": "%welcome.servers%"
       }
     ],
     "authentication": [
