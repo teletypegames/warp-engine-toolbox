@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.1
 
 - **The Dashboard and Health show the host's part from the start**: opened before the project's
   state had loaded, they kept showing no runs and no releases until something changed.
