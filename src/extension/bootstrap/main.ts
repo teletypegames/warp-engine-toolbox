@@ -35,7 +35,8 @@ import { createWorkspace, type Workspace } from './workspace.factory'
  * {@link extension/view/tree/view.opener!ViewOpener} that opens the collapsed ones when due, the metadata editor,
  * the Makefile task provider, the marker completion, hover and lens, the MCP server definition, the pipeline
  * status bar, the commands and the event wiring, all as subscriptions of the context. Then reads the projects,
- * looks for a local engine and sets the `warpengine.signedIn` context key.
+ * looks for a local engine, sets the `warpengine.signedIn` context key and, at the first start after the install, opens
+ * the Dashboard.
  *
  * @param context - The extension context that owns the subscriptions.
  * @returns The {@link ToolboxApi} the integration tests drive.
@@ -54,6 +55,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   await workspace.projects.refresh()
   await controllers.localEngine.discover().catch(() => null)
   await Dialogs.setContext('warpengine.signedIn', (await services.connection.token(false)) !== null)
+  void views.dashboard.openOnFirstStart(context.globalState)
   return { ...workspace, ...views, platforms: services.platforms, hosts: services.hosts, scaffold: services.scaffold, sync: services.sync, signIn: services.signIn, localCi: services.localCi, servers: services.servers }
 }
 

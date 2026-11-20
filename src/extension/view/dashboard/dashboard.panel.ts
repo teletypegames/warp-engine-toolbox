@@ -16,6 +16,7 @@ import { DashboardRenderer, type DashboardText } from './dashboard.renderer'
 
 const VIEW_TYPE = 'warpengine.dashboard'
 const COMMAND_PREFIX = 'warpengine.'
+const FIRST_START_KEY = 'warpengine.dashboardShown'
 
 interface PageMessage {
   readonly type?: unknown
@@ -49,6 +50,17 @@ export class DashboardPanel implements vscode.Disposable {
     if (this.panel) this.panel.reveal()
     else this.panel = this.create()
     await this.draw()
+  }
+
+  /**
+   * Opens the tab at the first start after the toolbox was installed (remembered in the global state).
+   *
+   * @param memory - The global state.
+   */
+  public async openOnFirstStart(memory: vscode.Memento): Promise<void> {
+    if (memory.get<boolean>(FIRST_START_KEY)) return
+    await memory.update(FIRST_START_KEY, true)
+    await this.open()
   }
 
   /** Redraws the tab when it is open and visible; does nothing otherwise. */

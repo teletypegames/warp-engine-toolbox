@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **The Dashboard opens by itself** at the first start after the install.
+- **Every error message offers *Open Dashboard***, next to the button that fixes it.
+
 ## 1.10.0
 
 - **Catalog keeps up by itself**: after Connect, Set up local CI or a release, the Catalog

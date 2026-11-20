@@ -5,7 +5,9 @@
  */
 import * as vscode from 'vscode'
 import type { Message } from '../../domain/model/message.model'
-import { translate } from './l10n'
+import { t, translate } from './l10n'
+
+const DASHBOARD_COMMAND = 'warpengine.openDashboard'
 
 /** A quick pick item that carries the value it stands for. */
 export interface PickItem<T> extends vscode.QuickPickItem {
@@ -71,23 +73,28 @@ export class Dialogs {
   }
 
   /**
-   * Shows an error message with actions and waits for the answer.
+   * Shows an error message with actions, and *Open Dashboard* after them, and waits for the answer; *Open Dashboard*
+   * opens the Dashboard (`warpengine.openDashboard`).
    *
    * @param message - The message.
    * @param actions - The button labels.
-   * @returns The label of the clicked action, or `undefined` when dismissed.
+   * @returns The label of the clicked action, or `undefined` when dismissed or *Open Dashboard* was clicked.
    */
   public static async alert(message: string, ...actions: string[]): Promise<string | undefined> {
-    return vscode.window.showErrorMessage(message, ...actions)
+    const dashboard: string = t('Open Dashboard')
+    const answer: string | undefined = await vscode.window.showErrorMessage(message, ...actions, dashboard)
+    if (answer !== dashboard) return answer
+    await vscode.commands.executeCommand(DASHBOARD_COMMAND)
+    return undefined
   }
 
   /**
-   * Shows an error message without waiting for it.
+   * Shows an error message with *Open Dashboard* without waiting for it.
    *
    * @param message - The message.
    */
   public static error(message: string): void {
-    void vscode.window.showErrorMessage(message)
+    void Dialogs.alert(message)
   }
 
   /**
