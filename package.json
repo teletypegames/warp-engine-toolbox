@@ -501,12 +501,13 @@
           "name": "%view.catalog%"
         },
         {
-          "id": "warpengine.sync",
-          "name": "%view.sync%"
-        },
-        {
           "id": "warpengine.servers",
           "name": "%view.servers%"
+        },
+        {
+          "id": "warpengine.sync",
+          "name": "%view.sync%",
+          "visibility": "collapsed"
         }
       ]
     },

@@ -21,6 +21,7 @@
 - **Set Host… signs in** to the chosen host when there is no session for it yet.
 - **Your own game first in the Catalog**: the current project's software stands right under the
   host, expanded and starred (*this project*), above the platform groups.
+- **The Sync view is the last one** in the WarpEngine sidebar and starts collapsed.
 
 ## 1.9.0
 
