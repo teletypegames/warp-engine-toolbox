@@ -33,7 +33,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
 | **Admin page** | The project panel links the software's page in the host's admin web UI. |
 | **Local CI** | When the local engine runs a git server and a CI, the toolbox offers to set the open project up on them (a `wplocal` remote); *Release…* asks which remote a tag goes to. |
-| **Servers** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports; **Purge Local Engine…** removes all of it: containers, data, volumes, network and images. |
+| **Local Server** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports; **Purge Local Engine…** removes all of it: containers, data, volumes, network and images. |
 | **Sync** | A local engine's releases go on to another WarpEngine instance (e.g. `https://games.example.org`): **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
@@ -126,9 +126,9 @@ offers to set up a project without a pipeline there (*Not for this project* stop
 one: `wplocal` builds it on the local Woodpecker with the pipeline the engine serves, publishes
 it on the local engine, and Sync sends it on; `origin` builds it where it always did.
 
-## Servers
+## Local Server
 
-The *Servers* view lists the containers the local engine's installer and the engine started
+The *Local Server* view lists the containers the local engine's installer and the engine started
 (label `org.teletypegames.warp-engine.local=1`): `warp-engine-local`, `warp-engine-local-gitea`,
 `warp-engine-local-woodpecker` and its agent, with their state and ports; a click opens the
 engine or the git server. **Purge Local Engine…** (the trash button) asks once, then removes the

@@ -1,5 +1,5 @@
 /**
- * Port to the local container runtime (Docker) behind the Servers view and the purge.
+ * Port to the local container runtime (Docker) behind the Local Server view and the purge.
  *
  * @module
  */

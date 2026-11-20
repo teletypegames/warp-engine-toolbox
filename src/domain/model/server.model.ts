@@ -6,7 +6,7 @@
 /** What a local WarpEngine container does: the engine, Gitea, the Woodpecker server, a Woodpecker agent, or something else. */
 export type ServerRole = 'engine' | 'git' | 'ci' | 'agent' | 'other'
 
-/** A Docker container of the local WarpEngine stack, as the Servers view lists it. */
+/** A Docker container of the local WarpEngine stack, as the Local Server view lists it. */
 export interface ServerContainer {
   /** The container id. */
   readonly id: string

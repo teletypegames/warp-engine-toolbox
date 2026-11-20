@@ -1,5 +1,5 @@
 /**
- * The local WarpEngine containers: the Servers view and Purge.
+ * The local WarpEngine containers: the Local Server view and Purge.
  *
  * @module
  */

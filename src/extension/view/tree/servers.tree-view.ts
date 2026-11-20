@@ -1,5 +1,5 @@
 /**
- * The Servers view: the WarpEngine containers on this machine.
+ * The Local Server view: the WarpEngine containers on this machine.
  *
  * @packageDocumentation
  */
@@ -14,7 +14,7 @@ import type { TreeView } from './tree.provider'
 const ROLE_ICONS: Readonly<Record<ServerRole, string>> = { engine: 'server', git: 'git-merge', ci: 'server-process', agent: 'run-all', other: 'package' }
 
 /**
- * The content of the Servers view (`warpengine.servers`): the engine, git server, CI and agent containers with their state and ports; a click opens a running server's web page.
+ * The content of the Local Server view (`warpengine.servers`): the engine, git server, CI and agent containers with their state and ports; a click opens a running server's web page.
  */
 export class ServersTreeView implements TreeView {
   /**

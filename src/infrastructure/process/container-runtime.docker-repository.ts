@@ -22,7 +22,7 @@ interface PsRow {
 const PS_FORMAT = '{"id":{{json .ID}},"name":{{json .Names}},"image":{{json .Image}},"state":{{json .State}},"status":{{json .Status}},"ports":{{json .Ports}}}'
 
 /**
- * Runs the Docker CLI, in the home folder, for the Servers view and the purge of WarpEngine Local.
+ * Runs the Docker CLI, in the home folder, for the Local Server view and the purge of WarpEngine Local.
  *
  * The queries throw an `Error` with docker's standard error when the command exits non-zero.
  */

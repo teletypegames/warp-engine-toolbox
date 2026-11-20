@@ -28,7 +28,7 @@ export interface Views {
   readonly catalogTree: TreeProvider
   /** The Sync view (`warpengine.sync`) on a {@link SyncTreeView}. */
   readonly syncTree: TreeProvider
-  /** The Servers view (`warpengine.servers`) on a {@link ServersTreeView}. */
+  /** The Local Server view (`warpengine.servers`) on a {@link ServersTreeView}. */
   readonly serversTree: TreeProvider
   /** The metadata JSON schemas from the host's platform descriptions. */
   readonly schemas: MetadataSchemaProvider

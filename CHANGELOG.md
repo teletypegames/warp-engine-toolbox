@@ -22,6 +22,7 @@
 - **Your own game first in the Catalog**: the current project's software stands right under the
   host, expanded and starred (*this project*), above the platform groups.
 - **The Sync view is the last one** in the WarpEngine sidebar and starts collapsed.
+- **Servers is called Local Server**: the view shows the containers of the local engine only.
 
 ## 1.9.0
 
