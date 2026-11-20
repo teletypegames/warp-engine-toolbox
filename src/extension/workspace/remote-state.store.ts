@@ -5,7 +5,7 @@
  */
 import * as vscode from 'vscode'
 import type { Release } from '../../domain/model/catalog.model'
-import { PipelineRuns } from '../../domain/model/pipeline.model'
+import { PipelineRuns, type PipelineRun } from '../../domain/model/pipeline.model'
 import type { Project } from '../../domain/model/project.model'
 import type { RemoteState } from '../../domain/model/remote-state.model'
 import type { RemoteStateService } from '../../domain/service/remote-state.service'
@@ -20,7 +20,8 @@ const POLL_LIMIT_MS: number = 20 * 60_000
  *
  * After {@link RemoteStateStore.watch}, or whenever a load finds the run of `HEAD` running (a push from a
  * terminal, a run started on the host), it polls every 10 seconds, for at most 20 minutes, while a run for
- * `HEAD` is running or, after a watch, has not appeared yet.
+ * `HEAD` is running or, after a watch, has not appeared yet. When a run of `HEAD` it saw running has ended, it
+ * fires {@link RemoteStateStore.onDidFinishRun}.
  */
 export class RemoteStateStore implements vscode.Disposable {
   private readonly changed: vscode.EventEmitter<RemoteState | null> = new vscode.EventEmitter<RemoteState | null>()
@@ -29,7 +30,11 @@ export class RemoteStateStore implements vscode.Disposable {
   private readonly built: vscode.EventEmitter<RemoteState> = new vscode.EventEmitter<RemoteState>()
   /** Fires once per new branch build that appears while polling. */
   public readonly onDidBuildBranch: vscode.Event<RemoteState> = this.built.event
+  private readonly ended: vscode.EventEmitter<RemoteState> = new vscode.EventEmitter<RemoteState>()
+  /** Fires once when the run of `HEAD`, seen running, has ended; the state is the one loaded after it. */
+  public readonly onDidFinishRun: vscode.Event<RemoteState> = this.ended.event
   private readonly announced: Set<string> = new Set<string>()
+  private following: string | null = null
   private state: RemoteState | null = null
   private timer: NodeJS.Timeout | undefined
   private pollingSince = 0
@@ -72,6 +77,7 @@ export class RemoteStateStore implements vscode.Disposable {
     if (this.timer) clearTimeout(this.timer)
     this.changed.dispose()
     this.built.dispose()
+    this.ended.dispose()
   }
 
   private async load(): Promise<void> {
@@ -81,6 +87,7 @@ export class RemoteStateStore implements vscode.Disposable {
     this.publish(state)
     if (!state?.signedIn || state.error) return
     this.announce(state)
+    this.follow(state)
     this.schedule(state)
   }
 
@@ -90,6 +97,18 @@ export class RemoteStateStore implements vscode.Disposable {
     const key = `${String(build.id)}@${build.updatedAt ?? build.createdAt ?? ''}`
     if (this.pollingSince > 0 && !this.announced.has(key)) this.built.fire(state)
     this.announced.add(key)
+  }
+
+  private follow(state: RemoteState): void {
+    const run: PipelineRun | null = state.headRun
+    if (!run) return
+    const key = `${state.project.folder}#${String(state.pipeline?.id ?? '')}#${String(run.number)}`
+    if (PipelineRuns.isRunning(run)) {
+      this.following = key
+      return
+    }
+    if (this.following === key) this.ended.fire(state)
+    this.following = null
   }
 
   private schedule(state: RemoteState): void {

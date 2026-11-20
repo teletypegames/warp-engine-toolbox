@@ -8,6 +8,14 @@
 - **A running build is followed wherever it was started**: when the toolbox sees the run of
   `HEAD` running (a push from a terminal, a run started on the host), it polls until it ends,
   not only after its own push.
+- **The end of a build is announced**: when the run of the current commit ends, a notification
+  says so — a failure with *Open the log*, a published release (`Rabbit 1.2.0 is published.`)
+  with *Play* and *Copy link*. Watching the status bar is no longer needed after a release.
+- **Release… asks one question less**: the stable bumps and the beta pre-releases are in one
+  list, under a *Stable* and a *Beta* heading; the separate channel question is gone.
+- **The status bar leads to what is missing**: on the local engine a project without a
+  pipeline opens *Set up local CI*; on another host a software without a linked pipeline opens
+  its admin page.
 
 ## 1.9.0
 

@@ -32,3 +32,20 @@ describe('RemoteStates.catalogKey', () => {
     assert.equal(RemoteStates.catalogKey(state({ software, runs: [run], headRun: run })), RemoteStates.catalogKey(state({ software })))
   })
 })
+
+describe('RemoteStates.releaseOf', () => {
+  const run = { number: 4, status: 'success', branch: 'master', message: null, createdAt: null, url: null, commit: 'abc', event: 'tag', ref: 'refs/tags/v1.1.0' }
+  const tagged: Release = { ...release, id: 4, version: '1.1.0', commitSha: 'def' }
+  const dev: Release = { ...release, id: 5, version: 'dev-feature-abc', commitSha: 'abc' }
+
+  it('takes the release of the tag first', () => {
+    assert.equal(RemoteStates.releaseOf(state({ releases: [release, tagged] }), run)?.version, '1.1.0')
+  })
+
+  it('falls back to a listed release of the commit, then to its development build', () => {
+    const push = { ...run, event: 'push', ref: 'refs/heads/master' }
+    assert.equal(RemoteStates.releaseOf(state({ releases: [dev, release] }), push)?.version, '1.0.0')
+    assert.equal(RemoteStates.releaseOf(state({ releases: [dev] }), push)?.version, 'dev-feature-abc')
+    assert.equal(RemoteStates.releaseOf(state({ releases: [tagged] }), push), null)
+  })
+})

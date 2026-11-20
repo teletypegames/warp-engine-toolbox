@@ -71,6 +71,17 @@ export class Dialogs {
   }
 
   /**
+   * Shows an error message with actions and waits for the answer.
+   *
+   * @param message - The message.
+   * @param actions - The button labels.
+   * @returns The label of the clicked action, or `undefined` when dismissed.
+   */
+  public static async alert(message: string, ...actions: string[]): Promise<string | undefined> {
+    return vscode.window.showErrorMessage(message, ...actions)
+  }
+
+  /**
    * Shows an error message without waiting for it.
    *
    * @param message - The message.

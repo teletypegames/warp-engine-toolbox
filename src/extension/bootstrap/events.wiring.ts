@@ -35,7 +35,8 @@ export interface Wiring {
  * state change redraws the project view, redraws the catalog view when the project's software, pipeline or
  * releases changed (such as after a connect or a finished build) and offers the local CI; a session change redraws the catalog and sync
  * views and announces the MCP server; a host change forgets the host data and refreshes everything; a focused
- * window and a git change refresh or poll the remote state; a built branch is announced.
+ * window and a git change refresh or poll the remote state; a built branch and the end of
+ * the `HEAD` run are announced.
  *
  * @param wiring - The objects to connect.
  * @returns The subscriptions, to dispose on deactivation.
@@ -55,6 +56,7 @@ export function wireEvents(wiring: Wiring): Disposer[] {
     hostWatcher.onDidChange(() => { wiring.hostInfo.forget(); views.schemas.forgetHost(); views.mcp.announce(); void controllers.refresh.refresh() }),
     vscode.window.onDidChangeWindowState((state: vscode.WindowState) => { if (state.focused) void states.refresh() }),
     new GitWatcher(() => { states.watch() }),
-    states.onDidBuildBranch((state: RemoteState) => { void controllers.project.announceBranchBuild(state) })
+    states.onDidBuildBranch((state: RemoteState) => { void controllers.project.announceBranchBuild(state) }),
+    states.onDidFinishRun((state: RemoteState) => { void controllers.project.announceRunEnd(state) })
   ]
 }

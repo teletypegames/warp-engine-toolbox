@@ -6,9 +6,10 @@
 
 import * as vscode from 'vscode'
 import { DomainError, msg } from '../../domain/model/message.model'
-import type { Release } from '../../domain/model/catalog.model'
+import { Releases, type Release } from '../../domain/model/catalog.model'
+import { PipelineRuns, type PipelineRun } from '../../domain/model/pipeline.model'
 import type { Project } from '../../domain/model/project.model'
-import type { RemoteState } from '../../domain/model/remote-state.model'
+import { RemoteStates, type RemoteState } from '../../domain/model/remote-state.model'
 import type { PipelineService } from '../../domain/service/pipeline.service'
 import type { PlayService } from '../../domain/service/play.service'
 import type { MakeTaskProvider } from '../language/make.task-provider'
@@ -112,17 +113,52 @@ export class ProjectController {
   }
 
   /**
+   * Announces the end of the run of `HEAD`: a failure with a button to its log; a success with the release it
+   * published, offering to play it or copy its link. A development build is left to {@link ProjectController.announceBranchBuild}.
+   *
+   * @param state - The remote state loaded after the run ended.
+   */
+  public async announceRunEnd(state: RemoteState): Promise<void> {
+    const run: PipelineRun | null = state.headRun
+    if (!run) return
+    if (!PipelineRuns.isSuccess(run)) {
+      await ProjectController.announceFailure(state, run)
+      return
+    }
+    const release: Release | null = RemoteStates.releaseOf(state, run)
+    if (release && Releases.isDev(release)) return
+    if (!release) {
+      Dialogs.info(t('Pipeline #{0} of {1} passed; it published no release.', run.number, state.project.name))
+      return
+    }
+    await this.offerPlay(t('{0} {1} is published.', state.project.title, release.version), this.deps.play.playUrl(state.project.name, release.version))
+  }
+
+  /**
    * Announces that a push to a side branch was built: a notification offers to play the build or copy its link.
    *
    * @param state - The remote state with the branch build; without a build or a play link nothing is shown.
    */
   public async announceBranchBuild(state: RemoteState): Promise<void> {
     const build: Release | null = state.branchBuild
-    const url: string | null = build ? this.deps.play.playUrl(state.project.name, build.version) : null
-    if (!build || !url) return
+    if (!build) return
+    await this.offerPlay(t('The build of {0} is ready: {1}', state.branch ?? t('this branch'), build.version), this.deps.play.playUrl(state.project.name, build.version))
+  }
+
+  private static async announceFailure(state: RemoteState, run: PipelineRun): Promise<void> {
+    const log: string = t('Open the log')
+    const answer: string | undefined = await Dialogs.alert(t('Pipeline #{0} of {1} ended: {2}.', run.number, state.project.name, run.status), ...(run.url ? [log] : []))
+    if (answer === log && run.url) await Dialogs.openExternal(run.url)
+  }
+
+  private async offerPlay(message: string, url: string | null): Promise<void> {
+    if (!url) {
+      Dialogs.info(message)
+      return
+    }
     const playAction: string = t('Play')
     const copy: string = t('Copy link')
-    const answer: string | undefined = await Dialogs.ask(t('The build of {0} is ready: {1}', state.branch ?? t('this branch'), build.version), playAction, copy)
+    const answer: string | undefined = await Dialogs.ask(message, playAction, copy)
     if (answer === playAction) await Dialogs.openExternal(url)
     if (answer === copy) await vscode.env.clipboard.writeText(url)
   }

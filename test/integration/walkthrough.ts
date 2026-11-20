@@ -42,8 +42,7 @@ function pickAnswer(title: string, items: readonly Item[]): Item | undefined {
   if (/category/i.test(title)) return items[0]
   if (/starting point/i.test(title)) return items.find((item: Item) => label(item) === START)
   if (/push to the new repository/i.test(title)) return items.find((item: Item) => label(item) === 'HTTPS')
-  if (title.endsWith(': channel')) return items.find((item: Item) => label(item) === 'Stable')
-  if (title.endsWith(': stable version')) return items[0]
+  if (/^Release .* \(now /.test(title)) return items.find((item: Item) => typeof item !== 'string' && item.kind !== vscode.QuickPickItemKind.Separator)
   return undefined
 }
 

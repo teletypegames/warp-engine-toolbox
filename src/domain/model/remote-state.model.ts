@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { Release, Software } from './catalog.model'
+import { Releases, type Release, type Software } from './catalog.model'
 import type { Pipeline, PipelineRun } from './pipeline.model'
 import type { Project } from './project.model'
 
@@ -61,6 +61,20 @@ export class RemoteStates {
    */
   public static latestRun(state: RemoteState): PipelineRun | null {
     return state.headRun ?? state.runs[0] ?? null
+  }
+
+  /**
+   * Finds the release a finished run published.
+   * @param state - The state loaded after the run.
+   * @param run - The run.
+   * @returns The release of the run's tag (`refs/tags/v1.2.0` → `1.2.0`), else a listed release, else a development build
+   * built from the run's commit; `null` when the run published none.
+   */
+  public static releaseOf(state: RemoteState, run: PipelineRun): Release | null {
+    const tag: string | undefined = /^refs\/tags\/v?(.+)$/.exec(run.ref ?? '')?.[1]
+    const tagged: Release | undefined = state.releases.find((release: Release) => tag !== undefined && release.version === tag)
+    const built: Release[] = state.releases.filter((release: Release) => run.commit !== null && release.commitSha === run.commit)
+    return tagged ?? built.find((release: Release) => !Releases.isDev(release)) ?? built[0] ?? null
   }
 
   /**

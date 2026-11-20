@@ -64,7 +64,7 @@ function disposables(views: Views): Disposer[] {
 
 function registrations(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Disposer[] {
   return [
-    new PipelineStatusBar(workspace.states),
+    new PipelineStatusBar(workspace.states, services.localEngine, services.hostInfo),
     vscode.window.registerTreeDataProvider('warpengine.project', views.projectTree),
     vscode.window.registerTreeDataProvider('warpengine.catalog', views.catalogTree),
     vscode.window.registerTreeDataProvider('warpengine.sync', views.syncTree),

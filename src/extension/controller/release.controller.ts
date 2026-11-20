@@ -4,11 +4,12 @@
  * @packageDocumentation
  */
 
+import * as vscode from 'vscode'
 import { GitRemotes, type GitRemote } from '../../domain/model/git-remote.model'
 import { Version } from '../../domain/model/version.model'
 import type { Project } from '../../domain/model/project.model'
 import type { PublishProblem } from '../../domain/model/publish-check.model'
-import type { Readiness, ReleaseKind, ReleaseService } from '../../domain/service/release.service'
+import type { Readiness, ReleaseService } from '../../domain/service/release.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t } from '../ui/l10n'
 import type { ProjectRegistry } from '../workspace/project.registry'
@@ -30,7 +31,7 @@ export class ReleaseController {
   /**
    * `warpengine.release`: releases the current project.
    *
-   * Checks readiness (offers to commit a dirty working copy; shows an error when the project is not connected or its version cannot be written), asks for the channel (stable or beta) and the version, asks the host whether a publish would take it, asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
+   * Checks readiness (offers to commit a dirty working copy; shows an error when the project is not connected or its version cannot be written), asks for the version in one list (the stable bumps, the beta pre-releases, or another), asks the host whether a publish would take it, asks for the git remote when there are several, then writes the version and the changelog, commits, tags and pushes with a progress notification. Polls the remote state so the status bar follows the pipeline.
    *
    * @throws {@link "domain/model/message.model".DomainError} When there is no current project or a git step fails.
    */
@@ -60,15 +61,24 @@ export class ReleaseController {
 
   private async askVersion(project: Project): Promise<string | null> {
     const current: string = await this.service.currentVersion(project)
-    const kind: ReleaseKind | undefined = await this.askKind(project, current)
-    if (!kind) return null
-    const candidates: string[] = this.service.candidates(current, kind)
-    const items: PickItem<string | null>[] = [...candidates.map((label: string) => ({ label, value: label })), { label: t('Another version…'), value: ANOTHER }]
-    const label: string = kind === 'beta' ? t('beta') : t('stable')
-    const picked: string | null | undefined = await Dialogs.pick(items, { title: t('Release {0}: {1} version', project.name, label) })
+    const stable: string[] = this.service.candidates(current, 'stable')
+    const beta: string[] = this.service.candidates(current, 'beta')
+    const items: PickItem<string | null>[] = [
+      ReleaseController.separator(t('Stable: everyone gets it')),
+      ...stable.map((label: string) => ({ label, value: label })),
+      ReleaseController.separator(t('Beta: offered only to those who ask for beta')),
+      ...beta.map((label: string) => ({ label, value: label })),
+      ReleaseController.separator(''),
+      { label: t('Another version…'), value: ANOTHER }
+    ]
+    const picked: string | null | undefined = await Dialogs.pick(items, { title: t('Release {0} (now {1})', project.name, current), placeHolder: t('The version to release') })
     if (picked === undefined) return null
-    const version: string | undefined = picked ?? await this.askCustom(candidates[0] ?? '1.0.0')
+    const version: string | undefined = picked ?? await this.askCustom(stable[0] ?? '1.0.0')
     return version ? new Version(version).text : null
+  }
+
+  private static separator(label: string): PickItem<string | null> {
+    return { label, kind: vscode.QuickPickItemKind.Separator, value: ANOTHER }
   }
 
   private async askRemote(project: Project, version: string): Promise<string | undefined> {
@@ -76,13 +86,6 @@ export class ReleaseController {
     if (remotes.length === 1) return remotes[0]?.name
     return Dialogs.pick(remotes.map((remote: GitRemote) => ({ label: remote.name, description: GitRemotes.display(remote.url), value: remote.name })),
                         { title: t('Release {0} {1} to', project.name, version), placeHolder: t('The git remote whose CI builds and publishes the tag') })
-  }
-
-  private async askKind(project: Project, current: string): Promise<ReleaseKind | undefined> {
-    return Dialogs.pick<ReleaseKind>([
-      { label: t('Stable'), description: t('everyone gets it: the catalog, the client, the store outlets'), value: 'stable' },
-      { label: t('Beta'), description: t('a pre-release (1.3.0-beta.1): listed, offered only to those who ask for beta'), value: 'beta' }
-    ], { title: t('Release {0} (now {1}): channel', project.name, current) })
   }
 
   private async askCustom(value: string): Promise<string | undefined> {
