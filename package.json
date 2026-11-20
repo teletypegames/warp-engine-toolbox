@@ -506,7 +506,8 @@
         },
         {
           "id": "warpengine.health",
-          "name": "%view.health%"
+          "name": "%view.health%",
+          "visibility": "collapsed"
         },
         {
           "id": "warpengine.sync",

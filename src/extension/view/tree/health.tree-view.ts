@@ -37,7 +37,7 @@ export class HealthTreeView implements TreeView {
   public constructor(private readonly health: HealthService, private readonly projects: ProjectRegistry, private readonly states: RemoteStateStore) {}
 
   /**
-   * Runs the checks (HTTP to the host, Docker, the publish check) and returns one expanded node per group.
+   * Runs the checks (HTTP to the host, Docker, the publish check) and returns one collapsed node per group; its mark and count tell how the group stands.
    *
    * @returns The group nodes.
    */
@@ -50,7 +50,7 @@ export class HealthTreeView implements TreeView {
     const worst: HealthStatus = Health.worst(section.checks)
     const gaps: number = section.checks.filter((check: HealthCheck) => check.status === 'warning' || check.status === 'error').length
     return new TreeNode(translate(section.title), {
-      ...LOOK[worst], description: gaps > 0 ? t('{0} to fix', gaps) : t('all good'), expanded: true,
+      ...LOOK[worst], description: gaps > 0 ? t('{0} to fix', gaps) : t('all good'), expanded: false,
       load: (): TreeNode[] => section.checks.map((check: HealthCheck) => HealthTreeView.checkNode(check))
     })
   }

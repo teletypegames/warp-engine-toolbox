@@ -23,7 +23,7 @@
   host, expanded and starred (*this project*), above the platform groups.
 - **The Sync view is the last one** in the WarpEngine sidebar and starts collapsed.
 - **Servers is called Local Server**: the view shows the containers of the local engine only.
-- **Health view** (above Sync): the host, the sign-in, the local engine and its CI, and the
+- **Health view** (above Sync, collapsed at first, its groups too, each showing how many gaps it has): the host, the sign-in, the local engine and its CI, and the
   project's platform, metadata, catalog entry, pipeline and last run, each green, blue, yellow or
   red; a click on a gap runs the step that fixes it or opens its page.
 - **Errors come with their fix**: *Sign in first*, *No host is set*, *No local engine*, *not a
