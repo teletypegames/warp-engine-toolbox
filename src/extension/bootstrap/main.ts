@@ -63,7 +63,7 @@ export function deactivate(): void {
 }
 
 function disposables(views: Views): Disposer[] {
-  return [views.projectTree, views.catalogTree, views.syncTree, views.serversTree, views.healthTree, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
+  return [views.projectTree, views.catalogTree, views.syncTree, views.serversTree, views.healthTree, views.dashboard, views.schemas, views.diagnostics, views.player, views.reports, views.mcp]
 }
 
 function treeViews(context: vscode.ExtensionContext, services: Services, views: Views): Disposer[] {

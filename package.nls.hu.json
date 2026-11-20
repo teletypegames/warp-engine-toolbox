@@ -5,6 +5,7 @@
   "command.connect": "Projekt bekötése (repó, CI, katalógus)",
   "command.signIn": "Bejelentkezés",
   "command.signOut": "Kijelentkezés",
+  "command.openDashboard": "Dashboard megnyitása",
   "command.selectHost": "Host beállítása…",
   "command.previewPipeline": "Pipeline előnézete",
   "command.play": "Játék a webes futtatókörnyezetben",

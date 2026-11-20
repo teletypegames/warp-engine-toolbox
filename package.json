@@ -77,6 +77,12 @@
         "category": "WarpEngine"
       },
       {
+        "command": "warpengine.openDashboard",
+        "title": "%command.openDashboard%",
+        "category": "WarpEngine",
+        "icon": "$(dashboard)"
+      },
+      {
         "command": "warpengine.selectHost",
         "title": "%command.selectHost%",
         "category": "WarpEngine",
@@ -263,6 +269,11 @@
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "warpengine.openDashboard",
+          "when": "view == warpengine.project",
+          "group": "navigation@2"
+        },
         {
           "command": "warpengine.newGame",
           "when": "view == warpengine.project",

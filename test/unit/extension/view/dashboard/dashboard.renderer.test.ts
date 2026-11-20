@@ -1,0 +1,49 @@
+import { strict as assert } from 'node:assert'
+import { describe, it } from 'node:test'
+import type { Message } from '../../../../../src/domain/model/message.model'
+import type { DashboardData } from '../../../../../src/extension/view/dashboard/dashboard.data'
+import { DashboardRenderer } from '../../../../../src/extension/view/dashboard/dashboard.renderer'
+
+const fill = (text: string, args: readonly (string | number)[]): string => text.replace(/\{(\d+)\}/g, (_: string, index: string) => String(args[Number(index)] ?? ''))
+const RENDERER: DashboardRenderer = new DashboardRenderer({
+  t: (text: string, ...args: (string | number)[]) => fill(text, args),
+  message: (message: Message) => fill(message.text, message.args),
+  remedy: (remedy) => ({ label: `fix ${remedy}`, command: `warpengine.${remedy}` }),
+  time: (value: string | null) => value ?? ''
+})
+const PAGE = { cspSource: 'vscode-resource:', nonce: 'NONCE', style: 'style.css', script: 'script.js' }
+
+const DATA: DashboardData = {
+  host: { name: 'Local', url: 'http://127.0.0.1:7470' },
+  project: { title: 'Rabbit <b>', name: 'rabbit', platform: 'TIC-80', version: '1.2.0', branch: 'master' },
+  health: [{ title: { text: 'Host', args: [] }, checks: [{ title: { text: 'Not signed in', args: [] }, status: 'warning', detail: null, remedy: 'signIn', url: null }] }],
+  runs: [{ number: 7, status: 'failure', branch: 'master', message: null, createdAt: null, url: 'http://ci/7', commit: 'abcdef123', event: 'push', ref: null }],
+  head: 'abcdef123',
+  releases: [{ release: { id: 1, softwareId: 1, version: '1.2.0', commitSha: 'abcdef123', assets: [], createdAt: null }, playUrl: 'http://127.0.0.1:7470/play/rabbit/1.2.0' }],
+  branchBuild: null, catalog: null, containers: [], sync: null
+}
+
+describe('DashboardRenderer', () => {
+  it('locks the page down with a CSP and a nonced script', () => {
+    const page: string = RENDERER.render(DATA, PAGE)
+    assert.match(page, /default-src 'none'; style-src vscode-resource:; script-src 'nonce-NONCE'/)
+    assert.ok(page.includes('<script nonce="NONCE" src="script.js"></script>'))
+  })
+
+  it('escapes the project texts and lists the runs, releases and the fixes as commands and links', () => {
+    const page: string = RENDERER.render(DATA, PAGE)
+    assert.ok(page.includes('Rabbit &lt;b&gt;'))
+    assert.ok(page.includes('data-command="warpengine.signIn">fix signIn</button>'))
+    assert.ok(page.includes('<tr class="head">'))
+    assert.ok(page.includes('data-url="http://ci/7">#7</a>'))
+    assert.ok(page.includes('data-url="http://127.0.0.1:7470/play/rabbit/1.2.0"'))
+    assert.ok(page.includes('data-command="warpengine.installLocalEngine"'))
+    assert.ok(!page.includes('>Sync<'))
+  })
+
+  it('offers a new game without a project', () => {
+    const page: string = RENDERER.render({ ...DATA, project: null, runs: [], releases: [] }, PAGE)
+    assert.ok(page.includes('data-command="warpengine.newGame"'))
+    assert.ok(!page.includes('>Pipeline<'))
+  })
+})

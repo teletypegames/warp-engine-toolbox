@@ -23,6 +23,10 @@
   host, expanded and starred (*this project*), above the platform groups.
 - **The Sync view is the last one** in the WarpEngine sidebar and starts collapsed.
 - **Servers is called Local Server**: the view shows the containers of the local engine only.
+- **Dashboard**: *Open Dashboard* (a button on the project panel, or the Command Palette) opens
+  a tab with the sidebar in tables — health with its fixes, the latest runs (the one of `HEAD`
+  marked), the releases with *Play*, the catalog per platform, the local containers, the sync
+  partners — and the project's actions; it redraws when shown and when the state changes.
 - **Catalog and Local Server start collapsed**: Local Server opens by itself while no local
   engine is installed (an *Install Local Engine* line in place of the welcome text), Catalog once,
   at its first load with content. A view you open or close stays as you left it.

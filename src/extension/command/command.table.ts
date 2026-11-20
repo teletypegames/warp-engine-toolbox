@@ -29,6 +29,7 @@ function projectCommands({ newGame, connect, project, release }: Controllers): C
     ['warpengine.connect', async (): Promise<void> => { await connect.connect() }],
     ['warpengine.previewPipeline', async (): Promise<void> => { await project.previewPipeline() }],
     ['warpengine.play', async (): Promise<void> => { await project.play() }],
+    ['warpengine.openDashboard', async (): Promise<void> => { await project.openDashboard() }],
     ['warpengine.buildLikeCi', async (): Promise<void> => { await project.buildLikeCi() }],
     ['warpengine.checkPublish', async (): Promise<void> => { await project.checkPublish() }],
     ['warpengine.release', async (): Promise<void> => { await release.run() }],

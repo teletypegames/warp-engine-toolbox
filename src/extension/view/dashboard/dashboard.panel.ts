@@ -1,0 +1,108 @@
+/**
+ * The Dashboard tab: a summary of everything the WarpEngine sidebar shows, as tables.
+ *
+ * @packageDocumentation
+ */
+
+import * as vscode from 'vscode'
+import type { Message, Remedy } from '../../../domain/model/message.model'
+import { Dialogs } from '../../ui/dialogs'
+import { t, translate } from '../../ui/l10n'
+import { Remedies } from '../../ui/remedies'
+import { WebviewHtml } from '../webview.html'
+import type { DashboardCollector } from './dashboard.data'
+import { DashboardRenderer, type DashboardText } from './dashboard.renderer'
+
+const VIEW_TYPE = 'warpengine.dashboard'
+const COMMAND_PREFIX = 'warpengine.'
+
+interface PageMessage {
+  readonly type?: unknown
+  readonly command?: unknown
+  readonly url?: unknown
+}
+
+/**
+ * Serves `warpengine.openDashboard`: one editor tab with the project's health, pipeline runs, releases, the catalog
+ * summary, the local containers and the sync partners. It redraws when it is shown again and on
+ * {@link DashboardPanel.refresh}; its buttons run WarpEngine commands and its links open in the browser.
+ */
+export class DashboardPanel implements vscode.Disposable {
+  private panel: vscode.WebviewPanel | null = null
+  private readonly renderer: DashboardRenderer = new DashboardRenderer(DashboardPanel.text())
+  private drawing: Promise<void> | null = null
+
+  /**
+   * Creates the panel; nothing is shown until {@link DashboardPanel.open}.
+   *
+   * @param collector - Gathers what the page shows.
+   * @param extensionUri - The extension's folder, whose `media/webview` holds the page's style and script.
+   */
+  public constructor(private readonly collector: DashboardCollector, private readonly extensionUri: vscode.Uri) {}
+
+  /** `warpengine.openDashboard`: opens the tab (or brings it to the front) and redraws it. */
+  public async open(): Promise<void> {
+    if (this.panel) this.panel.reveal()
+    else this.panel = this.create()
+    await this.draw()
+  }
+
+  /** Redraws the tab when it is open and visible; does nothing otherwise. */
+  public async refresh(): Promise<void> {
+    if (this.panel?.visible) await this.draw()
+  }
+
+  /** Closes the tab. */
+  public dispose(): void {
+    this.panel?.dispose()
+  }
+
+  private create(): vscode.WebviewPanel {
+    const media: vscode.Uri = vscode.Uri.joinPath(this.extensionUri, 'media', 'webview')
+    const panel: vscode.WebviewPanel = vscode.window.createWebviewPanel(VIEW_TYPE, t('WarpEngine Dashboard'), vscode.ViewColumn.Active,
+      { enableScripts: true, localResourceRoots: [media], retainContextWhenHidden: false })
+    panel.iconPath = vscode.Uri.joinPath(this.extensionUri, 'media', 'warp.svg')
+    panel.onDidDispose(() => { this.panel = null })
+    panel.onDidChangeViewState(() => { if (panel.visible) void this.draw() })
+    panel.webview.onDidReceiveMessage((message: PageMessage) => { void DashboardPanel.handle(message) })
+    return panel
+  }
+
+  private async draw(): Promise<void> {
+    this.drawing ??= this.render().finally(() => { this.drawing = null })
+    return this.drawing
+  }
+
+  private async render(): Promise<void> {
+    const panel: vscode.WebviewPanel | null = this.panel
+    if (!panel) return
+    const media: vscode.Uri = vscode.Uri.joinPath(this.extensionUri, 'media', 'webview')
+    const asset = (name: string): string => panel.webview.asWebviewUri(vscode.Uri.joinPath(media, name)).toString()
+    const html: string = this.renderer.render(await this.collector.collect(), {
+      cspSource: panel.webview.cspSource, nonce: WebviewHtml.nonce(), style: asset('dashboard.css'), script: asset('dashboard.js')
+    })
+    if (this.panel === panel) panel.webview.html = html
+  }
+
+  private static async handle(message: PageMessage): Promise<void> {
+    if (message.type === 'command' && typeof message.command === 'string' && message.command.startsWith(COMMAND_PREFIX)) {
+      await Promise.resolve(vscode.commands.executeCommand(message.command)).catch(async (error: unknown) => { await Remedies.report(error) })
+    }
+    if (message.type === 'open' && typeof message.url === 'string' && /^https?:\/\//.test(message.url)) await Dialogs.openExternal(message.url)
+  }
+
+  private static text(): DashboardText {
+    return {
+      t: (text: string, ...args: (string | number)[]): string => t(text, ...args),
+      message: (message: Message): string => translate(message),
+      remedy: (remedy: Remedy) => ({ label: Remedies.label(remedy), command: Remedies.command(remedy).command }),
+      time: (value: string | null): string => DashboardPanel.time(value)
+    }
+  }
+
+  private static time(value: string | null): string {
+    if (!value) return ''
+    const date: Date = new Date(value)
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+  }
+}

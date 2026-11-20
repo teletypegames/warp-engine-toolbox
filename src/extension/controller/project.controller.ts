@@ -15,6 +15,7 @@ import type { PlayService } from '../../domain/service/play.service'
 import type { MakeTaskProvider } from '../language/make.task-provider'
 import { Dialogs } from '../ui/dialogs'
 import { t } from '../ui/l10n'
+import type { DashboardPanel } from '../view/dashboard/dashboard.panel'
 import type { PublishDiagnostics } from '../view/diagnostics/publish.diagnostics'
 import { METADATA_VIEW } from '../view/metadata/metadata.editor'
 import type { PlayPanel } from '../view/play/play.panel'
@@ -38,6 +39,8 @@ export interface ProjectDependencies {
   readonly player: PlayPanel
   /** Shows the pipeline preview. */
   readonly reports: ReportView
+  /** The Dashboard tab. */
+  readonly dashboard: DashboardPanel
 }
 
 /**
@@ -110,6 +113,11 @@ export class ProjectController {
     const url: string | null = typeof node?.data === 'string' ? node.data : this.deps.projects.current()?.platform?.docsUrl ?? null
     if (!url) throw new DomainError(msg('The host links no documentation for this platform.'))
     await Dialogs.openExternal(url)
+  }
+
+  /** `warpengine.openDashboard`: opens the Dashboard tab, or brings it to the front and redraws it. */
+  public async openDashboard(): Promise<void> {
+    await this.deps.dashboard.open()
   }
 
   /**

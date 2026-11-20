@@ -35,7 +35,7 @@ import type { Workspace } from './workspace.factory'
 export function createControllers(context: vscode.ExtensionContext, services: Services, workspace: Workspace, views: Views): Controllers {
   const { projects, states, hostController, auth } = workspace
   const localEngine: LocalEngineController = new LocalEngineController({ local: services.localEngine, hosts: services.hosts, connection: services.connection, state: context.globalState })
-  const refresh: RefreshController = new RefreshController({ platforms: services.platforms, projects, states, trees: [views.catalogTree, views.syncTree, views.projectTree, views.serversTree, views.healthTree], localEngine })
+  const refresh: RefreshController = new RefreshController({ platforms: services.platforms, projects, states, trees: [views.catalogTree, views.syncTree, views.projectTree, views.serversTree, views.healthTree], localEngine, dashboard: views.dashboard })
   const connect: ConnectController = new ConnectController(services.connect, projects, states, { memory: context.globalState, local: services.localEngine })
   const dialog: GameAnswersDialog = new GameAnswersDialog(services.platforms, services.catalog, services.scaffold)
   return {
@@ -47,7 +47,7 @@ export function createControllers(context: vscode.ExtensionContext, services: Se
     signIn: new SignInController(services.connection, auth, refresh),
     release: new ReleaseController(services.release, projects, states, services.localEngine),
     newGame: new NewGameController({ hosts: services.hosts, hostController, dialog, scaffold: services.scaffold, projects, connect }),
-    project: new ProjectController({ projects, pipelines: services.pipelines, play: services.play, tasks: views.tasks, diagnostics: views.diagnostics, player: views.player, reports: views.reports }),
+    project: new ProjectController({ projects, pipelines: services.pipelines, play: services.play, tasks: views.tasks, diagnostics: views.diagnostics, player: views.player, reports: views.reports, dashboard: views.dashboard }),
     catalog: new CatalogController({ catalog: services.catalog, pipelines: services.pipelines, projects, states, reports: views.reports, tree: views.catalogTree })
   }
 }

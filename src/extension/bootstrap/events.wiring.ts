@@ -33,8 +33,8 @@ export interface Wiring {
  *
  * A project change redraws the project, catalog and health views, announces the schemas and refreshes the remote state; a remote
  * state change redraws the project view, redraws the catalog view when the project's software, pipeline or
- * releases changed (such as after a connect or a finished build), the health view when those, the latest run or
- * the authorization changed, and offers the local CI or, to a new game, Connect; a session change redraws the catalog, sync and health
+ * releases changed (such as after a connect or a finished build), the health view and the Dashboard when those, the
+ * latest run or the authorization changed, and offers the local CI or, to a new game, Connect; a session change redraws the catalog, sync and health
  * views and announces the MCP server; a host change forgets the host data and refreshes everything; a focused
  * window and a git change refresh or poll the remote state; a built branch and the end of
  * the `HEAD` run are announced.
@@ -45,11 +45,11 @@ export interface Wiring {
 export function wireEvents(wiring: Wiring): Disposer[] {
   const { workspace: { projects, states, auth }, views, controllers, hostWatcher } = wiring
   const redrawCatalog: (state: RemoteState | null) => void = onKeyChange((state: RemoteState | null) => RemoteStates.catalogKey(state), () => { views.catalogTree.refresh() })
-  const redrawHealth: (state: RemoteState | null) => void = onKeyChange((state: RemoteState | null) => RemoteStates.healthKey(state), () => { views.healthTree.refresh() })
+  const redrawHealth: (state: RemoteState | null) => void = onKeyChange((state: RemoteState | null) => RemoteStates.healthKey(state), () => { views.healthTree.refresh(); void views.dashboard.refresh() })
   return [
-    projects.onDidChange(() => { views.projectTree.refresh(); views.catalogTree.refresh(); views.healthTree.refresh(); views.schemas.announce(); void states.refresh() }),
+    projects.onDidChange(() => { views.projectTree.refresh(); views.catalogTree.refresh(); views.healthTree.refresh(); void views.dashboard.refresh(); views.schemas.announce(); void states.refresh() }),
     states.onDidChange((state: RemoteState | null) => { views.projectTree.refresh(); redrawCatalog(state); redrawHealth(state); void controllers.localCi.offer(state); void controllers.connect.offer(state) }),
-    auth.onDidChangeSessions(() => { views.catalogTree.refresh(); views.syncTree.refresh(); views.healthTree.refresh(); views.mcp.announce(); void states.refresh() }),
+    auth.onDidChangeSessions(() => { views.catalogTree.refresh(); views.syncTree.refresh(); views.healthTree.refresh(); void views.dashboard.refresh(); views.mcp.announce(); void states.refresh() }),
     hostWatcher.onDidChange(() => { wiring.hostInfo.forget(); views.schemas.forgetHost(); views.mcp.announce(); void controllers.refresh.refresh() }),
     vscode.window.onDidChangeWindowState((state: vscode.WindowState) => { if (state.focused) void states.refresh() }),
     new GitWatcher(() => { states.watch() }),

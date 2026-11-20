@@ -5,6 +5,7 @@
   "command.connect": "Connect Project (Repository, CI, Catalog)",
   "command.signIn": "Sign In",
   "command.signOut": "Sign Out",
+  "command.openDashboard": "Open Dashboard",
   "command.selectHost": "Set Host…",
   "command.previewPipeline": "Preview Pipeline",
   "command.play": "Play in the Web Runtime",
