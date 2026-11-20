@@ -340,5 +340,10 @@
   "{0}: platform": "{0}: platform",
   "Close": "Bezárás",
   "More ({0})": "Továbbiak ({0})",
-  "Name: {0}": "Név: {0}"
+  "Name: {0}": "Név: {0}",
+  "latest": "legújabb",
+  "OK": "OK",
+  "Info": "Infó",
+  "Warning": "Figyelem",
+  "Error": "Hiba"
 }

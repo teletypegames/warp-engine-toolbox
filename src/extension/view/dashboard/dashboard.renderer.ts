@@ -51,6 +51,13 @@ export interface DashboardText {
    * @returns The local date and time, or an empty text.
    */
   readonly time: (value: string | null) => string
+  /**
+   * Formats an ISO 8601 time relative to now, such as *3 hours ago*.
+   *
+   * @param value - The time, or `null`.
+   * @returns The relative time, or an empty text.
+   */
+  readonly ago: (value: string | null) => string
 }
 
 /** Where the page loads its style and script from, and the nonce of its script. */
@@ -101,19 +108,20 @@ export class DashboardRenderer {
     const { t } = this.text
     const project = data.project
     const title: string = project ? esc(project.title) : esc(t('No WarpEngine project in this workspace'))
-    const facts: string[] = project ? [project.platform, project.version ?? t('no version'), project.branch ?? ''] : []
-    const host: string = data.host ? `<a data-url="${esc(data.host.url)}">${esc(data.host.name)}</a>` : esc(t('No host is set'))
+    const facts: [string, string][] = project ? [[t('Platform'), project.platform], [t('Version'), project.version ?? t('no version')], [t('Branch'), project.branch ?? '']] : []
+    const chips: string = facts.filter(([, value]) => value).map(([label, value]) => `<span class="chip"><span>${esc(label)}</span>${esc(value)}</span>`).join('')
+    const host: string = data.host ? `<a class="chip" data-url="${esc(data.host.url)}"><span>${esc(t('Host'))}</span>${esc(data.host.name)}</a>` : `<span class="chip">${esc(t('No host is set'))}</span>`
     const actions: [string, string][] = project
       ? [['warpengine.play', t('Play')], ['warpengine.checkPublish', t('Check publish')], ['warpengine.release', t('Release…')], ['warpengine.triggerPipeline', t('Run Pipeline')]]
       : [['warpengine.newGame', t('New Game…')], ['warpengine.addToProject', t('Add WarpEngine to This Project')]]
-    return `<header><div><h1>${title}</h1><p>${facts.filter(Boolean).map(esc).join(' · ')}${facts.length > 0 ? ' · ' : ''}${host}</p></div>
+    return `<header><div><h1>${title}</h1><p class="chips">${chips}${host}</p></div>
 <nav>${actions.map(([command, label]) => DashboardRenderer.button(command, label)).join('')}${DashboardRenderer.button('warpengine.openDashboard', t('Refresh'), 'secondary')}</nav></header>`
   }
 
   private health(sections: readonly HealthSection[]): string {
     if (sections.length === 0) return ''
-    const rows: string = sections.flatMap((section: HealthSection) => section.checks.map((check: HealthCheck, index: number) =>
-      `<tr><td>${index === 0 ? esc(this.text.message(section.title)) : ''}</td><td>${DashboardRenderer.dot(check.status)}${esc(this.text.message(check.title))}</td>
+    const rows: string = sections.flatMap((section: HealthSection, group: number) => section.checks.map((check: HealthCheck, index: number) =>
+      `<tr${index === 0 && group > 0 ? ' class="group"' : ''}><td class="section">${index === 0 ? esc(this.text.message(section.title)) : ''}</td><td>${this.pill(check.status)}</td><td>${esc(this.text.message(check.title))}</td>
 <td>${check.detail ? esc(this.text.message(check.detail)) : ''}</td><td>${this.fix(check)}</td></tr>`)).join('')
     const worst: HealthStatus = HealthChecks.worst(sections.flatMap((section: HealthSection) => section.checks))
     return this.card(`${DashboardRenderer.dot(worst)}${esc(this.text.t('Health'))}`, `<table>${rows}</table>`, 'wide')
@@ -131,12 +139,12 @@ export class DashboardRenderer {
     if (!data.project) return ''
     const { t } = this.text
     if (data.runs.length === 0) return this.card(esc(t('Pipeline')), `<p class="muted">${esc(t('No run yet'))}</p>`)
-    const head = `<thead><tr><th>#</th><th>${esc(t('Status'))}</th><th>${esc(t('Event'))}</th><th>${esc(t('Branch'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Started'))}</th></tr></thead>`
+    const head = `<thead><tr><th class="num">#</th><th>${esc(t('Status'))}</th><th>${esc(t('Event'))}</th><th>${esc(t('Branch'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Started'))}</th></tr></thead>`
     const row = (run: PipelineRun): string => `<tr${run.commit === data.head ? ' class="head"' : ''}>
-<td>${run.url ? `<a data-url="${esc(run.url)}">#${String(run.number)}</a>` : `#${String(run.number)}`}</td><td>${DashboardRenderer.dot(DashboardRenderer.runStatus(run))}${esc(run.status)}</td>
+<td class="num">${run.url ? `<a data-url="${esc(run.url)}">#${String(run.number)}</a>` : `#${String(run.number)}`}</td><td>${DashboardRenderer.pill(DashboardRenderer.runStatus(run), run.status)}</td>
 <td>${esc(run.event ?? '')}</td><td>${esc(run.branch ?? '')}</td><td><code>${esc(run.commit?.slice(0, 7) ?? '')}</code>${run.commit === data.head ? ` <span class="tag">HEAD</span>` : ''}</td>
-<td>${esc(this.text.time(run.createdAt))}</td></tr>`
-    return this.card(esc(t('Pipeline')), this.limited('runs', t('Pipeline'), head, data.runs.map(row)), 'wide')
+<td>${this.when(run.createdAt)}</td></tr>`
+    return this.card(DashboardRenderer.counted(t('Pipeline'), data.runs.length), this.limited('runs', t('Pipeline'), head, data.runs.map(row)), 'wide')
   }
 
   private releases(data: DashboardData): string {
@@ -144,11 +152,13 @@ export class DashboardRenderer {
     const { t } = this.text
     const all: DashboardRelease[] = [...(data.branchBuild ? [data.branchBuild] : []), ...data.releases]
     if (all.length === 0) return this.card(esc(t('Releases')), `<p class="muted">${esc(t('No release yet'))}</p>`)
-    const head = `<thead><tr><th>${esc(t('Version'))}</th><th>${esc(t('Channel'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Files'))}</th><th>${esc(t('Created'))}</th><th></th></tr></thead>`
-    const row = (item: DashboardRelease): string => `<tr><td><b>${esc(item.release.version)}</b></td><td>${esc(item.release.channel ?? '')}</td>
-<td><code>${esc(item.release.commitSha?.slice(0, 7) ?? '')}</code></td><td>${String(item.release.assets.length)}</td><td>${esc(this.text.time(item.release.createdAt))}</td>
+    const head = `<thead><tr><th>${esc(t('Version'))}</th><th>${esc(t('Channel'))}</th><th>${esc(t('Commit'))}</th><th class="num">${esc(t('Files'))}</th><th>${esc(t('Created'))}</th><th></th></tr></thead>`
+    const latest: DashboardRelease | undefined = data.releases[0]
+    const row = (item: DashboardRelease): string => `<tr${item === latest ? ' class="latest"' : ''}><td><b>${esc(item.release.version)}</b>${item === latest ? ` <span class="tag">${esc(t('latest'))}</span>` : ''}</td>
+<td>${item.release.channel ? `<span class="chip small">${esc(item.release.channel)}</span>` : ''}</td>
+<td><code>${esc(item.release.commitSha?.slice(0, 7) ?? '')}</code></td><td class="num">${String(item.release.assets.length)}</td><td>${this.when(item.release.createdAt)}</td>
 <td>${item.playUrl ? `<a data-url="${esc(item.playUrl)}">${esc(t('Play'))}</a>` : ''}</td></tr>`
-    return this.card(esc(t('Releases')), this.limited('releases', t('Releases'), head, all.map(row)), 'wide')
+    return this.card(DashboardRenderer.counted(t('Releases'), all.length), this.limited('releases', t('Releases'), head, all.map(row)), 'wide')
   }
 
   private limited(id: string, title: string, head: string, rows: readonly string[]): string {
@@ -162,7 +172,7 @@ export class DashboardRenderer {
 
   private catalog(catalog: DashboardCatalog | null): string {
     const { t } = this.text
-    if (!catalog) return this.card(esc(t('Catalog')), `<p class="muted">${esc(t('Sign in to see the catalog.'))}</p>${DashboardRenderer.button('warpengine.signIn', t('Sign in'), 'small')}`)
+    if (!catalog) return this.card(esc(t('Catalog')), `<p class="muted">${esc(t('Sign in to see the catalog.'))}</p>${DashboardRenderer.button('warpengine.signIn', t('Sign in'), 'small')}`, 'wide strip')
     const who: string = catalog.principal ? `<p class="muted">${esc(t('Signed in as {0}', catalog.principal))}</p>` : ''
     const head = `<thead><tr><th>${esc(t('Title'))}</th><th>${esc(t('Name'))}</th><th>${esc(t('Platform'))}</th><th>${esc(t('Status'))}</th><th>${esc(t('Category'))}</th><th>${esc(t('Project'))}</th></tr></thead>`
     const rows: string = catalog.softwares.map((row: DashboardSoftware) => `<tr${row.local === 'here' ? ' class="head"' : ''}><td>${row.software.highlighted ? '★ ' : ''}${esc(row.software.title)}</td>
@@ -199,6 +209,25 @@ export class DashboardRenderer {
 
   private card(title: string, body: string, size: string = ''): string {
     return `<section class="card ${size}"><h2>${title}</h2>${body}</section>`
+  }
+
+  private when(value: string | null): string {
+    if (!value) return ''
+    return `<span title="${esc(this.text.time(value))}">${esc(this.text.ago(value))}</span>`
+  }
+
+  private pill(status: HealthStatus): string {
+    const { t } = this.text
+    const labels: Record<HealthStatus, string> = { ok: t('OK'), info: t('Info'), warning: t('Warning'), error: t('Error') }
+    return DashboardRenderer.pill(status, labels[status])
+  }
+
+  private static pill(status: HealthStatus, label: string): string {
+    return `<span class="pill ${status}">${esc(label)}</span>`
+  }
+
+  private static counted(title: string, count: number): string {
+    return `${esc(title)} <span class="count">${String(count)}</span>`
   }
 
   private static runStatus(run: PipelineRun): HealthStatus {

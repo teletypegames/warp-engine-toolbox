@@ -125,7 +125,8 @@ export class DashboardPanel implements vscode.Disposable {
       t: (text: string, ...args: (string | number)[]): string => t(text, ...args),
       message: (message: Message): string => translate(message),
       remedy: (remedy: Remedy) => ({ label: RemedyDialog.label(remedy), command: RemedyDialog.command(remedy).command }),
-      time: (value: string | null): string => DashboardPanel.time(value)
+      time: (value: string | null): string => DashboardPanel.time(value),
+      ago: (value: string | null): string => DashboardPanel.ago(value)
     }
   }
 
@@ -133,5 +134,15 @@ export class DashboardPanel implements vscode.Disposable {
     if (!value) return ''
     const date: Date = new Date(value)
     return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
+  }
+
+  private static ago(value: string | null): string {
+    if (!value) return ''
+    const seconds: number = (new Date(value).getTime() - Date.now()) / 1000
+    if (Number.isNaN(seconds)) return value
+    const format: Intl.RelativeTimeFormat = new Intl.RelativeTimeFormat(vscode.env.language, { numeric: 'auto' })
+    const units: [Intl.RelativeTimeFormatUnit, number][] = [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]]
+    const [unit, size] = units.find(([, length]) => Math.abs(seconds) >= length) ?? ['second', 1]
+    return format.format(Math.round(seconds / size), unit)
   }
 }

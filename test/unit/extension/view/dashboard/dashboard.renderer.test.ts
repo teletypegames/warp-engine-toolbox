@@ -10,7 +10,8 @@ const RENDERER: DashboardRenderer = new DashboardRenderer({
   t: (text: string, ...args: (string | number)[]) => fill(text, args),
   message: (message: Message) => fill(message.text, message.args),
   remedy: (remedy) => ({ label: `fix ${remedy}`, command: `warpengine.${remedy}` }),
-  time: (value: string | null) => value ?? ''
+  time: (value: string | null) => value ?? '',
+  ago: (value: string | null) => (value ? `ago ${value}` : '')
 })
 const PAGE = { cspSource: 'vscode-resource:', nonce: 'NONCE', style: 'style.css', script: 'script.js' }
 
@@ -55,6 +56,22 @@ describe('DashboardRenderer', () => {
     assert.ok(page.includes('<button class="small" data-open="fox">Open</button>'))
     assert.ok(!page.includes('data-open="owl"'))
     assert.ok(page.includes('<span class="tag">open</span>'))
+  })
+
+  it('shows the five newest runs and releases, and all of them behind More', () => {
+    const [run] = DATA.runs
+    const [release] = DATA.releases
+    assert.ok(run && release)
+    const runs = Array.from({ length: 7 }, (_: unknown, index: number) => ({ ...run, number: 20 - index, url: `http://ci/${String(20 - index)}` }))
+    const releases = Array.from({ length: 3 }, (_: unknown, index: number) => ({ ...release, release: { ...release.release, version: `1.${String(index)}`, createdAt: '2026-11-20T10:00:00Z' } }))
+    const page: string = RENDERER.render({ ...DATA, runs, releases }, PAGE)
+    assert.ok(page.includes('Pipeline <span class="count">7</span>'))
+    assert.ok(page.includes('data-dialog="runs">More (2)</button>'))
+    assert.ok(page.includes('<dialog id="runs">'))
+    assert.equal(page.split('data-url="http://ci/14"').length - 1, 1)
+    assert.ok(!page.includes('data-dialog="releases"'))
+    assert.ok(page.includes('<tr class="latest"><td><b>1.0</b> <span class="tag">latest</span>'))
+    assert.ok(page.includes('<span title="2026-11-20T10:00:00Z">ago 2026-11-20T10:00:00Z</span>'))
   })
 
   it('offers a new game without a project', () => {
