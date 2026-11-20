@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.0
 
 - **The Dashboard opens by itself** at the first start after the install.
 - **Every error message offers *Open Dashboard***, next to the button that fixes it.
