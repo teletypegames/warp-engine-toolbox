@@ -24,9 +24,6 @@ import type { KnownProjectsStore } from '../../workspace/known-projects.store'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 import type { RemoteStateStore } from '../../workspace/remote-state.store'
 
-const RUN_LIMIT = 10
-const RELEASE_LIMIT = 15
-
 /** The current project as the Dashboard heads it. */
 export interface DashboardProject {
   /** The game's title. */
@@ -151,8 +148,8 @@ export class DashboardCollector {
     const head: DashboardProject = await this.project(project, state)
     if (!state) return { project: head, ...empty }
     return {
-      project: head, runs: state.runs.slice(0, RUN_LIMIT), head: state.head,
-      releases: Releases.listed(state.releases).slice(0, RELEASE_LIMIT).map((release: Release) => this.release(project, release)),
+      project: head, runs: state.runs, head: state.head,
+      releases: Releases.listed(state.releases).map((release: Release) => this.release(project, release)),
       branchBuild: state.branchBuild ? this.release(project, state.branchBuild) : null
     }
   }

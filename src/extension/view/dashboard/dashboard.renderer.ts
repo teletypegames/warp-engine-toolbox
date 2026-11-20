@@ -67,6 +67,8 @@ export interface DashboardPage {
 
 const esc = (text: string): string => WebviewHtml.escape(text)
 
+const SHOWN_ROWS = 5
+
 /** Renders the Dashboard page; every text from the host or the project is escaped. */
 export class DashboardRenderer {
   /**
@@ -78,8 +80,9 @@ export class DashboardRenderer {
 
   /**
    * Renders the whole page: the header with the project's actions, then one card per part — Health, Pipeline,
-   * Releases, Local Server, Sync, Catalog. Buttons carry a `data-command` (a catalog entry's *Open* a `data-open` with
-   * the software name), links a `data-url`; the script posts them.
+   * Releases, Local Server, Sync, Catalog. Pipeline and Releases list their newest five rows, and a *More* button
+   * (`data-dialog`) opens all of them in a dialog. Buttons carry a `data-command` (a catalog entry's *Open* a
+   * `data-open` with the software name), links a `data-url`; the script posts them.
    *
    * @param data - What to show.
    * @param page - The CSP source, the nonce and the asset URIs.
@@ -128,11 +131,12 @@ export class DashboardRenderer {
     if (!data.project) return ''
     const { t } = this.text
     if (data.runs.length === 0) return this.card(esc(t('Pipeline')), `<p class="muted">${esc(t('No run yet'))}</p>`)
-    const rows: string = data.runs.map((run: PipelineRun) => `<tr${run.commit === data.head ? ' class="head"' : ''}>
+    const head = `<thead><tr><th>#</th><th>${esc(t('Status'))}</th><th>${esc(t('Event'))}</th><th>${esc(t('Branch'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Started'))}</th></tr></thead>`
+    const row = (run: PipelineRun): string => `<tr${run.commit === data.head ? ' class="head"' : ''}>
 <td>${run.url ? `<a data-url="${esc(run.url)}">#${String(run.number)}</a>` : `#${String(run.number)}`}</td><td>${DashboardRenderer.dot(DashboardRenderer.runStatus(run))}${esc(run.status)}</td>
 <td>${esc(run.event ?? '')}</td><td>${esc(run.branch ?? '')}</td><td><code>${esc(run.commit?.slice(0, 7) ?? '')}</code>${run.commit === data.head ? ` <span class="tag">HEAD</span>` : ''}</td>
-<td>${esc(this.text.time(run.createdAt))}</td></tr>`).join('')
-    return this.card(esc(t('Pipeline')), `<table><thead><tr><th>#</th><th>${esc(t('Status'))}</th><th>${esc(t('Event'))}</th><th>${esc(t('Branch'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Started'))}</th></tr></thead>${rows}</table>`, 'wide')
+<td>${esc(this.text.time(run.createdAt))}</td></tr>`
+    return this.card(esc(t('Pipeline')), this.limited('runs', t('Pipeline'), head, data.runs.map(row)), 'wide')
   }
 
   private releases(data: DashboardData): string {
@@ -140,10 +144,20 @@ export class DashboardRenderer {
     const { t } = this.text
     const all: DashboardRelease[] = [...(data.branchBuild ? [data.branchBuild] : []), ...data.releases]
     if (all.length === 0) return this.card(esc(t('Releases')), `<p class="muted">${esc(t('No release yet'))}</p>`)
-    const rows: string = all.map((item: DashboardRelease) => `<tr><td><b>${esc(item.release.version)}</b></td><td>${esc(item.release.channel ?? '')}</td>
+    const head = `<thead><tr><th>${esc(t('Version'))}</th><th>${esc(t('Channel'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Files'))}</th><th>${esc(t('Created'))}</th><th></th></tr></thead>`
+    const row = (item: DashboardRelease): string => `<tr><td><b>${esc(item.release.version)}</b></td><td>${esc(item.release.channel ?? '')}</td>
 <td><code>${esc(item.release.commitSha?.slice(0, 7) ?? '')}</code></td><td>${String(item.release.assets.length)}</td><td>${esc(this.text.time(item.release.createdAt))}</td>
-<td>${item.playUrl ? `<a data-url="${esc(item.playUrl)}">${esc(t('Play'))}</a>` : ''}</td></tr>`).join('')
-    return this.card(esc(t('Releases')), `<table><thead><tr><th>${esc(t('Version'))}</th><th>${esc(t('Channel'))}</th><th>${esc(t('Commit'))}</th><th>${esc(t('Files'))}</th><th>${esc(t('Created'))}</th><th></th></tr></thead>${rows}</table>`, 'wide')
+<td>${item.playUrl ? `<a data-url="${esc(item.playUrl)}">${esc(t('Play'))}</a>` : ''}</td></tr>`
+    return this.card(esc(t('Releases')), this.limited('releases', t('Releases'), head, all.map(row)), 'wide')
+  }
+
+  private limited(id: string, title: string, head: string, rows: readonly string[]): string {
+    const table = `<table>${head}${rows.slice(0, SHOWN_ROWS).join('')}</table>`
+    if (rows.length <= SHOWN_ROWS) return table
+    const { t } = this.text
+    return `${table}<p class="more"><button class="small" data-dialog="${id}">${esc(t('More ({0})', rows.length - SHOWN_ROWS))}</button></p>
+<dialog id="${id}"><div class="dialog-head"><h2>${esc(title)} <span class="count">${String(rows.length)}</span></h2><button class="small" data-close>${esc(t('Close'))}</button></div>
+<div class="dialog-body"><table>${head}${rows.join('')}</table></div></dialog>`
   }
 
   private catalog(catalog: DashboardCatalog | null): string {

@@ -1,6 +1,14 @@
 (function () {
   const vscode = acquireVsCodeApi()
   document.addEventListener('click', (event) => {
+    if (event.target instanceof HTMLDialogElement) { event.target.close(); return }
+    const toggle = event.target instanceof Element ? event.target.closest('[data-dialog],[data-close]') : null
+    if (toggle) {
+      const id = toggle.getAttribute('data-dialog')
+      if (id) document.getElementById(id)?.showModal()
+      else toggle.closest('dialog')?.close()
+      return
+    }
     const target = event.target instanceof Element ? event.target.closest('[data-command],[data-open],[data-url]') : null
     if (!target) return
     event.preventDefault()

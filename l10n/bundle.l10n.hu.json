@@ -169,7 +169,6 @@
   "Press Enter to close": "Enterrel bezárod",
   "Preview the pipeline WarpEngine serves": "A WarpEngine által adott pipeline előnézete",
   "Project": "Projekt",
-  "Project {0}": "Projekt: {0}",
   "Publishes": "Publikál",
   "Purge": "Eltávolítás",
   "Purging the local WarpEngine": "A helyi WarpEngine eltávolítása",
@@ -338,5 +337,8 @@
   "{0} volumes": "{0} kötet",
   "{0} {1}": "{0} {1}",
   "{0} {1} is published.": "Megjelent: {0} {1}.",
-  "{0}: platform": "{0}: platform"
+  "{0}: platform": "{0}: platform",
+  "Close": "Bezárás",
+  "More ({0})": "Továbbiak ({0})",
+  "Name: {0}": "Név: {0}"
 }

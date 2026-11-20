@@ -118,17 +118,17 @@ export class HealthChecks {
   }
 
   /**
-   * Checks the project: found, its platform, its metadata, and on the host its catalog entry, pipeline and last run.
+   * Checks the project: found, its name, its platform, its metadata, and on the host its catalog entry, pipeline and last run.
    * @param facts - What is known about the project.
    * @returns The section.
    */
   public static project(facts: ProjectFacts): HealthSection {
     const project: Project | null = facts.project
     if (!project) return { title: msg('Project'), checks: [HealthChecks.check(msg('No WarpEngine project in this workspace'), 'info', { remedy: 'addToProject' })] }
-    const checks: HealthCheck[] = [HealthChecks.platform(project), HealthChecks.metadata(project, facts.check)]
+    const checks: HealthCheck[] = [HealthChecks.check(msg('Name: {0}', project.title), 'ok', { detail: msg('{0}', project.name) }), HealthChecks.platform(project), HealthChecks.metadata(project, facts.check)]
     const state: RemoteState | null = facts.state
     if (state?.signedIn && !state.error) checks.push(...HealthChecks.remote(state, facts))
-    return { title: msg('Project {0}', project.title), checks }
+    return { title: msg('Project'), checks }
   }
 
   private static session(facts: HostFacts): HealthCheck {
