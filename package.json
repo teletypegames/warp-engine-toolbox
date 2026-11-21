@@ -65,6 +65,12 @@
         "category": "WarpEngine"
       },
       {
+        "command": "warpengine.startDevContainer",
+        "title": "%command.startDevContainer%",
+        "category": "WarpEngine",
+        "icon": "$(debug-start)"
+      },
+      {
         "command": "warpengine.stopDevContainer",
         "title": "%command.stopDevContainer%",
         "category": "WarpEngine",
@@ -323,6 +329,11 @@
       ],
       "view/item/context": [
         {
+          "command": "warpengine.startDevContainer",
+          "when": "view == warpengine.servers && viewItem == devcontainer",
+          "group": "inline"
+        },
+        {
           "command": "warpengine.stopDevContainer",
           "when": "view == warpengine.servers && viewItem =~ /devcontainer running/",
           "group": "inline"
@@ -419,6 +430,10 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "warpengine.startDevContainer",
+          "when": "false"
+        },
         {
           "command": "warpengine.stopDevContainer",
           "when": "false"

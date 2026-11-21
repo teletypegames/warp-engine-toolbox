@@ -39,6 +39,17 @@ export class ServersController {
   public constructor(private readonly deps: ServersDependencies) {}
 
   /**
+   * `warpengine.startDevContainer`: starts the stopped dev container of a Local Server node and redraws the views.
+   *
+   * @param node - The dev container's node; its data is the container id. Without one nothing happens.
+   */
+  public async startDevContainer(node?: TreeNode): Promise<void> {
+    if (typeof node?.data !== 'string') return
+    await this.deps.servers.startDevContainer(node.data)
+    await this.deps.refresh.refresh()
+  }
+
+  /**
    * `warpengine.stopDevContainer`: stops the dev container of a Local Server node (it is kept for the next start) and redraws the views.
    *
    * @param node - The dev container's node; its data is the container id. Without one nothing happens.

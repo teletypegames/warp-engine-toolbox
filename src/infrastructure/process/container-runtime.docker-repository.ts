@@ -90,6 +90,15 @@ export class DockerContainerRuntime implements ContainerRuntime {
   }
 
   /**
+   * Starts containers one by one (`docker start`); a name that fails is skipped silently.
+   *
+   * @param names - The container names or ids; empty does nothing.
+   */
+  public async start(names: readonly string[]): Promise<void> {
+    for (const name of names) await ProcessRunner.run(this.binary(), ['start', name], homedir())
+  }
+
+  /**
    * Stops containers one by one (`docker stop`); a name that fails is skipped silently.
    *
    * @param names - The container names or ids; empty does nothing.

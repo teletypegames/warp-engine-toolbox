@@ -3,6 +3,7 @@
   "command.newGame": "New Game…",
   "command.addToProject": "Add WarpEngine to This Project",
   "command.addDevContainer": "Add Dev Container",
+  "command.startDevContainer": "Start Dev Container",
   "command.stopDevContainer": "Stop Dev Container",
   "command.connect": "Connect Project (Repository, CI, Catalog)",
   "command.signIn": "Sign In",

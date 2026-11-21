@@ -52,6 +52,12 @@ export interface ContainerRuntime {
    */
   mountSource(container: string, destination: string): Promise<string | null>
   /**
+   * Starts stopped containers; a name that fails is skipped silently.
+   *
+   * @param names - The container names or ids; empty does nothing.
+   */
+  start(names: readonly string[]): Promise<void>
+  /**
    * Stops containers, keeping them; a name that fails is skipped silently.
    *
    * @param names - The container names or ids; empty does nothing.

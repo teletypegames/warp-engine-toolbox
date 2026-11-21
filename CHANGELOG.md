@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Start a stopped dev container** from *Local Server*: a stopped one has a start button
+  (`docker start`, as it was created); it runs until it is stopped.
+
 ## 1.13.0
 
 - **Develop with only Docker**: a template's `devcontainer` gives a new project `.devcontainer/` on

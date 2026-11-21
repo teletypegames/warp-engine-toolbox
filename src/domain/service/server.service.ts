@@ -41,6 +41,15 @@ export class ServerService {
   }
 
   /**
+   * Starts a stopped dev container as it was created; it keeps running until it is stopped.
+   *
+   * @param container - The container name or id.
+   */
+  public async startDevContainer(container: string): Promise<void> {
+    await this.runtime.start([container])
+  }
+
+  /**
    * Stops a dev container (such as one left running after the editor closed); it is kept for the next start.
    *
    * @param container - The container name or id.

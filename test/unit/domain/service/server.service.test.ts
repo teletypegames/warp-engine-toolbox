@@ -22,6 +22,7 @@ class FakeRuntime implements ContainerRuntime {
   ]
   public labels: string[] = []
   public async containers(label: string): Promise<ServerContainer[]> { this.labels.push(label); return Promise.resolve(label === Servers.DEV_CONTAINER_LABEL ? DEV : this.list) }
+  public async start(names: readonly string[]): Promise<void> { this.calls.push(`start ${names.join(' ')}`); return Promise.resolve() }
   public async stop(names: readonly string[]): Promise<void> { this.calls.push(`stop ${names.join(' ')}`); return Promise.resolve() }
   public async volumes(): Promise<string[]> { return Promise.resolve(['warp-engine-local-gitea-data']) }
   public async networks(): Promise<string[]> { return Promise.resolve(['warp-engine-local']) }
@@ -38,7 +39,8 @@ describe('ServerService', () => {
     assert.deepEqual((await service.devContainers()).map((item: ServerContainer) => item.folder), ['/games/b', '/games/a'])
     assert.deepEqual(runtime.labels, [Servers.DEV_CONTAINER_LABEL])
     await service.stopDevContainer('b')
-    assert.deepEqual(runtime.calls, ['stop b'])
+    await service.startDevContainer('a')
+    assert.deepEqual(runtime.calls, ['stop b', 'start a'])
   })
 
   it('lists the engine first, then the git server and the CI', async () => {

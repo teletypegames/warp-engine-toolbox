@@ -3,6 +3,7 @@
   "command.newGame": "Új játék…",
   "command.addToProject": "WarpEngine hozzáadása ehhez a projekthez",
   "command.addDevContainer": "Dev container hozzáadása",
+  "command.startDevContainer": "Dev container indítása",
   "command.stopDevContainer": "Dev container leállítása",
   "command.connect": "Projekt bekötése (repó, CI, katalógus)",
   "command.signIn": "Bejelentkezés",
