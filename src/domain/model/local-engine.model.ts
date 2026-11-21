@@ -73,6 +73,20 @@ export class LocalEngine {
   }
 
   /**
+   * Tells whether a host address is on this machine's loopback (`127.0.0.1`, `localhost`, `[::1]`): a local engine's.
+   *
+   * @param url - The host address.
+   * @returns `true` for a loopback address; `false` for any other or an invalid one.
+   */
+  public static isLoopback(url: string): boolean {
+    try {
+      return ['127.0.0.1', 'localhost', '[::1]'].includes(new URL(url).hostname)
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * Whether a parsed JSON body is a WarpEngine's well-known document
    * (`engine` is `warp-engine`, `version` and `profile` are strings).
    *

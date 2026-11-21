@@ -19,6 +19,7 @@ import type { TreeNode } from '../view/tree/tree.node'
 import type { TreeProvider } from '../view/tree/tree.provider'
 import { ViewOpener } from '../view/tree/view.opener'
 import { HostWatcher } from '../workspace/host.watcher'
+import { LateInstallHint } from '../workspace/late-install.hint'
 import { createServices, type Controllers, type Services } from './container'
 import { createControllers } from './controllers.factory'
 import type { Disposer } from './disposer'
@@ -38,7 +39,7 @@ let stopDevContainers: () => Promise<void> = async (): Promise<void> => Promise.
  * the Makefile task provider, the marker completion, hover and lens, the MCP server definition, the pipeline
  * status bar, the commands and the event wiring, all as subscriptions of the context. Then reads the projects,
  * looks for a local engine, sets the `warpengine.signedIn` context key and, at the first start after the install, opens
- * the Dashboard.
+ * the Dashboard; in a dev container the toolbox was installed into after the window opened, it offers to reload the window.
  *
  * @param context - The extension context that owns the subscriptions.
  * @returns The {@link ToolboxApi} the integration tests drive.
@@ -59,6 +60,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   await controllers.localEngine.discover().catch(() => null)
   await Dialogs.setContext('warpengine.signedIn', (await services.connection.token(false)) !== null)
   void views.dashboard.openOnFirstStart(context.globalState)
+  void LateInstallHint.offer(context.extensionPath, services.devContainers.inside())
   return { ...workspace, ...views, platforms: services.platforms, hosts: services.hosts, scaffold: services.scaffold, sync: services.sync, signIn: services.signIn, localCi: services.localCi, servers: services.servers }
 }
 

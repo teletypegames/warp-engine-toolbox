@@ -5,6 +5,9 @@
  */
 import type { ServerContainer } from '../model/server.model'
 
+/** Whether Docker can be used: `ok`, `missing` (no Docker command) or `down` (the command runs, the daemon does not answer). */
+export type DockerAvailability = 'ok' | 'missing' | 'down'
+
 /** The kinds of Docker object {@link ContainerRuntime.remove} can delete. */
 export type DockerObject = 'container' | 'volume' | 'network' | 'image'
 
@@ -15,6 +18,19 @@ export type DockerObject = 'container' | 'volume' | 'network' | 'image'
  * The members that query reject with an `Error` carrying the runtime's message when its command fails.
  */
 export interface ContainerRuntime {
+  /**
+   * Tells whether Docker can be used, without rejecting.
+   *
+   * @returns `ok`, `missing` or `down`.
+   */
+  availability(): Promise<DockerAvailability>
+  /**
+   * Opens the Docker desktop application of this computer (OrbStack or Docker Desktop on macOS, Docker Desktop on
+   * Windows), which starts the daemon.
+   *
+   * @returns `true` when one was opened; `false` when there is none to open (Linux: the service is started in a terminal).
+   */
+  launchDesktop(): Promise<boolean>
   /**
    * Lists all containers, running or not, that carry a label.
    *
@@ -64,6 +80,12 @@ export interface ContainerRuntime {
    */
   stop(names: readonly string[]): Promise<void>
   /**
+   * Restarts containers; a name that fails is skipped silently.
+   *
+   * @param names - The container names or ids; empty does nothing.
+   */
+  restart(names: readonly string[]): Promise<void>
+  /**
    * Removes Docker objects one by one, containers and volumes forcibly; a name that fails is skipped silently.
    *
    * @param kind - What the names are.
@@ -71,12 +93,13 @@ export interface ContainerRuntime {
    */
   remove(kind: DockerObject, names: readonly string[]): Promise<void>
   /**
-   * Empties a host folder through a throwaway container (so files owned by the container user go too), then deletes the folder.
+   * Empties a host folder through a throwaway container (so files owned by the container user go too), then deletes
+   * the folder; without an image it deletes the folder directly.
    *
    * @throws When the container cannot run.
    *
    * @param hostPath - The folder on the host.
-   * @param image - An image with a shell to run the deletion in.
+   * @param image - An image with a shell to run the deletion in, or `null` to delete without a container.
    */
-  wipeFolder(hostPath: string, image: string): Promise<void>
+  wipeFolder(hostPath: string, image: string | null): Promise<void>
 }

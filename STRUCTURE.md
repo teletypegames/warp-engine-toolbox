@@ -44,11 +44,11 @@ Nothing in the domain imports `vscode`, `node:*`, `fetch`, `infrastructure/` or
 |---|---|---|
 | `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). The rules on plain data live in a class of static methods named for it in the plural (`Releases`, `PipelineRuns`, `RemoteStates`, `PublishChecks`, `Servers`, `HealthChecks`), not in loose functions; `msg()`, the `Message` factory, is the one exception. | `model/` |
 | `repository/` | Ports: interfaces only, for everything outside the process — the host API, git, the project's files, the template archives, the shell, the stored sessions, the settings, the preview server. | `model/` |
-| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, `HealthService` (the facts of the Health checks), `DevContainerService` (where a project's commands run and running them in its dev container), … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
+| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, `HealthService` (the facts of the Health checks), `DevContainerService` (where a project's commands run and running them in its dev container), `RepairService` (why the host does not answer: Docker, the local containers, the address), … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
 
 A domain failure is a `DomainError` carrying a `Message` (an English text with `{0}`
 placeholders and its arguments) and, when one step fixes it, a `Remedy` (`signIn`,
-`selectHost`, `installLocalEngine`, `connect`, `setupLocalCi`, …); the extension translates
+`selectHost`, `installLocalEngine`, `connect`, `setupLocalCi`, `repairHost`, `startDocker`, …); the extension translates
 the message and turns the remedy into a button. The Health checks carry remedies the same way.
 
 ### `src/infrastructure/` — the ports implemented

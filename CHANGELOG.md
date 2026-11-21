@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **Fix…** on every "cannot be reached" (views, notifications, *Health*), also as **WarpEngine: Fix Host
+  Connection…**: it finds why the host does not answer and offers the step — *Start Docker*, *Start*, *Restart*,
+  *Reinstall* (the installer with `--yes`, the data stays), *Remove…*, *Use* the address the engine answers at,
+  *Show Log*, *Set Host…*. The toolbox offers it by itself once per window when the local engine set as the host
+  does not answer, and after an installer that left it silent.
+- *Local Server*: a stopped engine or CI container has a start button; a Docker error comes with *Start Docker*.
+- *Purge Local Engine…* removes the data folder also when the containers are gone already.
+- *Health*: every red or yellow line has a step (Docker, a stopped CI, an unknown platform, a missing metadata file).
+- A sign-in that was denied or expired offers to sign in again; *Run Pipeline* without a pipeline offers *Connect*
+  or *Set up local CI*.
+- In a dev container the toolbox was installed into after the window opened, it offers *Reload Window* (until then
+  VS Code does not know the `warpengine` task type).
 - *Local Server* in a window reopened in a dev container says that the containers are listed in a
   window on the computer, instead of a `spawn docker ENOENT` error.
 

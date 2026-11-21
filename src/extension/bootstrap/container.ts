@@ -25,6 +25,7 @@ import { PlayService } from '../../domain/service/play.service'
 import { ProjectService } from '../../domain/service/project.service'
 import { PublishCheckService } from '../../domain/service/publish-check.service'
 import { ReleaseService } from '../../domain/service/release.service'
+import { RepairService } from '../../domain/service/repair.service'
 import { RemoteStateService } from '../../domain/service/remote-state.service'
 import { ScaffoldService } from '../../domain/service/scaffold.service'
 import { ServerService } from '../../domain/service/server.service'
@@ -57,6 +58,7 @@ import type { ProjectController } from '../controller/project.controller'
 import type { RefreshController } from '../controller/refresh.controller'
 import type { ServersController } from '../controller/servers.controller'
 import type { ReleaseController } from '../controller/release.controller'
+import type { RepairController } from '../controller/repair.controller'
 import type { SignInController } from '../controller/sign-in.controller'
 import type { SyncController } from '../controller/sync.controller'
 
@@ -108,6 +110,8 @@ export interface Services {
   readonly health: HealthService
   /** The dev containers of the projects: where their commands run, and running them there. */
   readonly devContainers: DevContainerService
+  /** Why the current host does not answer, and waiting for Docker or the engine. */
+  readonly repair: RepairService
 }
 
 /** One controller per user flow, built by {@link "extension/bootstrap/controllers.factory".createControllers}; the command table maps the command ids to their methods. */
@@ -138,8 +142,10 @@ export interface Controllers {
   readonly images: ImageController
   /** Set Up Local CI and its offer. */
   readonly localCi: LocalCiController
-  /** Purge Local Engine…. */
+  /** Purge Local Engine…, and starting and stopping the dev containers. */
   readonly servers: ServersController
+  /** Fix…, Start Docker and Start the Local Engine. */
+  readonly repair: RepairController
 }
 
 interface Infrastructure {
@@ -164,13 +170,15 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const remote: Pick<Services, 'remoteState' | 'play' | 'signIn' | 'catalog' | 'pipelines' | 'preview'> = remoteServices(context, infrastructure, connection)
   const sync: SyncService = new SyncService({ gateway: new WarpEngineHttpGateway(), discovery: new HttpDiscoveryRepository(), hosts, local: localEngine, signIn: remote.signIn })
   const localCi: LocalCiService = new LocalCiService({ gateway: new WarpEngineHttpGateway(), local: localEngine, sourceControl: infrastructure.git })
-  const servers: ServerService = new ServerService(new DockerContainerRuntime(dockerBinary))
+  const runtime: DockerContainerRuntime = new DockerContainerRuntime(dockerBinary)
+  const servers: ServerService = new ServerService(runtime)
   const hostInfo: HostInfoService = new HostInfoService(new HttpDiscoveryRepository(), hosts)
   const project: Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> = projectServices(infrastructure, connection, projects)
+  const devContainers: DevContainerService = new DevContainerService(new CliDevContainerRepository({ cli: context.asAbsolutePath(DEV_CONTAINER_CLI), node: process.execPath, docker: dockerBinary }), infrastructure.files)
   return {
     hosts, localEngine, connection, platforms, projects, ...project, ...remote,
-    images: new ImageService(connection), sync, localCi, servers, hostInfo,
-    devContainers: new DevContainerService(new CliDevContainerRepository({ cli: context.asAbsolutePath(DEV_CONTAINER_CLI), node: process.execPath, docker: dockerBinary }), infrastructure.files),
+    images: new ImageService(connection), sync, localCi, servers, hostInfo, devContainers,
+    repair: new RepairService({ hosts, discovery: new HttpDiscoveryRepository(), local: new VsCodeLocalEngineRepository(), runtime, inside: () => devContainers.inside() }),
     health: new HealthService({ hosts, hostInfo, connection, local: localEngine, servers, publishCheck: project.publishCheck, files: infrastructure.files })
   }
 }

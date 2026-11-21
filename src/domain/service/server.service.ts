@@ -3,9 +3,9 @@
  *
  * @module
  */
-import { msg, type Message } from '../model/message.model'
+import { DomainError, msg, type Message } from '../model/message.model'
 import { Servers, type PurgePlan, type ServerContainer } from '../model/server.model'
-import type { ContainerRuntime } from '../repository/container-runtime.repository'
+import type { ContainerRuntime, DockerAvailability } from '../repository/container-runtime.repository'
 
 /** Receives each step of a purge, for the progress notification. */
 export type PurgeReport = (message: Message) => void
@@ -23,10 +23,50 @@ export class ServerService {
    * Lists the containers labelled as WarpEngine Local components, running or not.
    *
    * @returns The containers in display order.
-   * @throws When the container runtime fails.
+   * @throws {@link "domain/model/message.model".DomainError} With *Start Docker* when Docker cannot be asked.
    */
   public async containers(): Promise<ServerContainer[]> {
-    return Servers.sorted(await this.runtime.containers(Servers.LABEL))
+    try {
+      return Servers.sorted(await this.runtime.containers(Servers.LABEL))
+    } catch (error: unknown) {
+      throw new DomainError(msg('Docker does not answer: {0}', error instanceof Error ? error.message : String(error)), 'startDocker')
+    }
+  }
+
+  /**
+   * Tells whether Docker can be used.
+   *
+   * @returns `ok`, `missing` (no Docker command) or `down` (the daemon does not answer).
+   */
+  public async docker(): Promise<DockerAvailability> {
+    return this.runtime.availability()
+  }
+
+  /**
+   * Opens the Docker desktop application of this computer, which starts the daemon.
+   *
+   * @returns `true` when one was opened; `false` when there is none (Linux).
+   */
+  public async launchDocker(): Promise<boolean> {
+    return this.runtime.launchDesktop()
+  }
+
+  /**
+   * Starts the stopped WarpEngine containers (the engine, its git server and CI), as they were created.
+   *
+   * @returns The names started; empty when every one runs already.
+   */
+  public async startLocal(): Promise<string[]> {
+    const stopped: string[] = Servers.stopped(await this.containers())
+    await this.runtime.start(stopped)
+    return stopped
+  }
+
+  /**
+   * Restarts the engine container.
+   */
+  public async restartEngine(): Promise<void> {
+    await this.runtime.restart([Servers.ENGINE])
   }
 
   /**
@@ -61,10 +101,11 @@ export class ServerService {
   /**
    * Collects what a purge would remove: the containers, their volumes, network and images (the engine image included), and the engine's data folder when it may be wiped. Removes nothing.
    *
+   * @param installed - The installation's data folder, purged when no engine container names its own (the containers are gone, the data stayed).
    * @returns The plan to show the user.
    * @throws When the container runtime fails.
    */
-  public async purgePlan(): Promise<PurgePlan> {
+  public async purgePlan(installed: string | null = null): Promise<PurgePlan> {
     const containers: ServerContainer[] = await this.containers()
     const engine: ServerContainer | undefined = containers.find((container: ServerContainer) => Servers.role(container) === 'engine')
     const images: string[] = [...containers.map((container: ServerContainer) => container.image), ...(await this.runtime.images(Servers.ENGINE_IMAGE))]
@@ -72,13 +113,13 @@ export class ServerService {
       containers, volumes: await this.runtime.volumes(Servers.LABEL),
       networks: await this.runtime.networks(Servers.LABEL),
       images: [...new Set(images)],
-      dataFolder: engine ? Servers.wipeable(await this.runtime.mountSource(engine.name, Servers.DATA_MOUNT)) : null
+      dataFolder: Servers.wipeable(engine ? await this.runtime.mountSource(engine.name, Servers.DATA_MOUNT) : installed)
     }
   }
 
   /**
    * Removes everything in a plan: the containers, the data folder (emptied through the engine
-   * image), then the volumes, networks and images. Objects that fail to go are skipped.
+   * image, or deleted directly when there is no engine container), then the volumes, networks and images. Objects that fail to go are skipped.
    *
    * @param plan - The plan from {@link ServerService.purgePlan}.
    * @param report - Receives the steps.
@@ -88,9 +129,9 @@ export class ServerService {
     report(msg('removing {0} containers…', plan.containers.length))
     await this.runtime.remove('container', plan.containers.map((container: ServerContainer) => container.name))
     const engineImage: string | undefined = plan.containers.find((container: ServerContainer) => Servers.role(container) === 'engine')?.image
-    if (plan.dataFolder && engineImage) {
+    if (plan.dataFolder) {
       report(msg('removing the data folder {0}…', plan.dataFolder))
-      await this.runtime.wipeFolder(plan.dataFolder, engineImage)
+      await this.runtime.wipeFolder(plan.dataFolder, engineImage ?? null)
     }
     report(msg('removing the volumes, the network and the images…'))
     await this.runtime.remove('volume', plan.volumes)

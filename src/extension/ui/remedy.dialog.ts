@@ -18,7 +18,10 @@ const COMMANDS: Readonly<Record<Remedy, string>> = {
   setupLocalCi: 'warpengine.setupLocalCi',
   editMetadata: 'warpengine.editMetadata',
   addToProject: 'warpengine.addToProject',
-  newGame: 'warpengine.newGame'
+  newGame: 'warpengine.newGame',
+  repairHost: 'warpengine.repairHost',
+  startDocker: 'warpengine.startDocker',
+  startLocalEngine: 'warpengine.startLocalEngine'
 }
 
 const LABELS: Readonly<Record<Remedy, () => string>> = {
@@ -30,7 +33,10 @@ const LABELS: Readonly<Record<Remedy, () => string>> = {
   setupLocalCi: () => t('Set up local CI'),
   editMetadata: () => t('Edit Metadata'),
   addToProject: () => t('Add WarpEngine to This Project'),
-  newGame: () => t('New Game…')
+  newGame: () => t('New Game…'),
+  repairHost: () => t('Fix…'),
+  startDocker: () => t('Start Docker'),
+  startLocalEngine: () => t('Start the Local Engine')
 }
 
 /** Turns remedies into buttons and commands. */
@@ -56,15 +62,16 @@ export class RemedyDialog {
   }
 
   /**
-   * Finds the remedy of a failure: the one a {@link domain/model/message.model!DomainError} carries, or signing in
-   * again when the host refused the token.
+   * Finds the remedy of a failure: the one a {@link domain/model/message.model!DomainError} carries, signing in
+   * again when the host refused the token, or *Fix…* when the host could not be reached.
    *
    * @param error - The failure.
    * @returns The remedy, or `null` when there is none.
    */
   public static of(error: unknown): Remedy | null {
     if (error instanceof DomainError) return error.remedy
-    return HostError.isUnauthorized(error) ? 'reauthorize' : null
+    if (HostError.isUnauthorized(error)) return 'reauthorize'
+    return HostError.isUnreachable(error) ? 'repairHost' : null
   }
 
   /**

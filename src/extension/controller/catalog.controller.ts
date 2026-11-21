@@ -10,6 +10,7 @@ import type { Category, Software } from '../../domain/model/catalog.model'
 import { DomainError, msg } from '../../domain/model/message.model'
 import type { Pipeline } from '../../domain/model/pipeline.model'
 import type { CatalogService } from '../../domain/service/catalog.service'
+import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { PipelineService } from '../../domain/service/pipeline.service'
 import { Dialogs, type PickItem } from '../ui/dialogs'
 import { t, translate } from '../ui/l10n'
@@ -35,6 +36,8 @@ export interface CatalogDependencies {
   readonly reports: ReportView
   /** The catalog view, redrawn after a change. */
   readonly tree: TreeProvider
+  /** Tells how a project gets onto the current host (local CI or Connect), offered when it has no pipeline. */
+  readonly local: LocalEngineService
 }
 
 /**
@@ -129,7 +132,7 @@ export class CatalogController {
    */
   public async triggerPipeline(node?: TreeNode): Promise<void> {
     const pipeline: Pipeline | null = (node?.data as Pipeline | undefined) ?? this.deps.states.current()?.pipeline ?? null
-    if (!pipeline) throw new DomainError(msg('This project has no pipeline on the host yet.'))
+    if (!pipeline) throw new DomainError(msg('This project has no pipeline on the host yet.'), this.deps.local.setupRemedy())
     const started = await this.deps.pipelines.trigger(pipeline, this.deps.projects.current())
     if (!started) return
     Dialogs.info(t('Pipeline #{0} started on {1}.', started.run.number, started.branch))

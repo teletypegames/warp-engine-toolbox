@@ -27,11 +27,11 @@ describe('Health', () => {
   it('shows the local engine only when it is there or it is the host, and Docker when it does not answer', () => {
     assert.equal(HealthChecks.local({ isCurrentHost: false, containers: [] }), null)
     assert.equal(HealthChecks.local({ isCurrentHost: false, containers: null }), null)
-    assert.deepEqual(titles(HealthChecks.local({ isCurrentHost: true, containers: null })), ['error:Docker does not answer:'])
+    assert.deepEqual(titles(HealthChecks.local({ isCurrentHost: true, containers: null })), ['error:Docker does not answer:startDocker'])
     assert.deepEqual(titles(HealthChecks.local({ isCurrentHost: true, containers: [container('warp-engine-local')] })),
       ['ok:The local engine runs:', 'info:The local CI is not installed:installLocalEngine'])
     assert.deepEqual(titles(HealthChecks.local({ isCurrentHost: true, containers: [container('warp-engine-local'), container('warp-engine-local-gitea', 'exited')] }))[1],
-      'error:The local CI is partly stopped:')
+      'error:The local CI is partly stopped:startLocalEngine')
   })
 
   it('offers Connect elsewhere and Set up local CI on the local engine for a project not on the host', () => {

@@ -75,6 +75,15 @@ export class Servers {
   }
 
   /**
+   * Picks the containers that do not run.
+   * @param containers - The containers.
+   * @returns Their names.
+   */
+  public static stopped(containers: readonly ServerContainer[]): string[] {
+    return containers.filter((container: ServerContainer) => container.state !== 'running').map((container: ServerContainer) => container.name)
+  }
+
+  /**
    * Orders containers by role: engine, git, CI, agent, other.
    * @param containers - The containers.
    * @returns A new sorted array.

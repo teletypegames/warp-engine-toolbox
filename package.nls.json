@@ -65,5 +65,8 @@
   "command.reauthorize": "Sign In Again",
   "command.purgeLocalEngine": "Purge Local Engine…",
   "command.deleteSoftware": "Delete from Catalog…",
-  "command.deleteRelease": "Delete Release…"
+  "command.deleteRelease": "Delete Release…",
+  "command.repairHost": "Fix Host Connection…",
+  "command.startDocker": "Start Docker",
+  "command.startLocalEngine": "Start the Local Engine"
 }

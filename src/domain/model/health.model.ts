@@ -98,7 +98,7 @@ export class HealthChecks {
     if (!facts.host) return { title, checks: [HealthChecks.check(msg('No host is set'), 'error', { remedy: 'selectHost' })] }
     const answer: HealthCheck = facts.info
       ? HealthChecks.check(msg('{0} answers', facts.host.name), 'ok', { detail: msg('WarpEngine {0} ({1})', facts.info.version, facts.info.profile), url: facts.host.url })
-      : HealthChecks.check(msg('{0} does not answer', facts.host.name), 'error', { detail: msg('{0}', facts.host.url) })
+      : HealthChecks.check(msg('{0} does not answer', facts.host.name), 'error', { detail: msg('{0}', facts.host.url), remedy: 'repairHost' })
     return { title, checks: [answer, HealthChecks.session(facts)] }
   }
 
@@ -110,7 +110,7 @@ export class HealthChecks {
   public static local(facts: LocalFacts): HealthSection | null {
     const title: Message = msg('Local engine')
     if (facts.containers === null) {
-      return facts.isCurrentHost ? { title, checks: [HealthChecks.check(msg('Docker does not answer'), 'error', { detail: msg('The local engine runs in Docker: start Docker Desktop (or the Docker service).') })] } : null
+      return facts.isCurrentHost ? { title, checks: [HealthChecks.check(msg('Docker does not answer'), 'error', { detail: msg('The local engine runs in Docker: start Docker Desktop (or the Docker service).'), remedy: 'startDocker' })] } : null
     }
     const engine: ServerContainer | undefined = facts.containers.find((container: ServerContainer) => Servers.role(container) === 'engine')
     if (!engine && !facts.isCurrentHost) return null
@@ -140,25 +140,25 @@ export class HealthChecks {
 
   private static engine(engine: ServerContainer | undefined): HealthCheck {
     if (!engine) return HealthChecks.check(msg('The local engine is not installed'), 'error', { remedy: 'installLocalEngine' })
-    if (engine.state !== 'running') return HealthChecks.check(msg('The local engine is stopped'), 'error', { detail: msg('{0}', engine.status), remedy: 'installLocalEngine' })
+    if (engine.state !== 'running') return HealthChecks.check(msg('The local engine is stopped'), 'error', { detail: msg('{0}', engine.status), remedy: 'repairHost' })
     return HealthChecks.check(msg('The local engine runs'), 'ok', { detail: msg('{0}', engine.status), url: Servers.url(engine) })
   }
 
   private static ci(containers: readonly ServerContainer[]): HealthCheck {
     const parts: ServerContainer[] = containers.filter((container: ServerContainer) => CI_ROLES.includes(Servers.role(container)))
     if (parts.length === 0) return HealthChecks.check(msg('The local CI is not installed'), 'info', { detail: msg('Run the installer again and answer yes to "Local CI" to build on this machine.'), remedy: 'installLocalEngine' })
-    const stopped: string[] = parts.filter((container: ServerContainer) => container.state !== 'running').map((container: ServerContainer) => container.name)
-    if (stopped.length > 0) return HealthChecks.check(msg('The local CI is partly stopped'), 'error', { detail: msg('{0}', stopped.join(', ')) })
+    const stopped: string[] = Servers.stopped(parts)
+    if (stopped.length > 0) return HealthChecks.check(msg('The local CI is partly stopped'), 'error', { detail: msg('{0}', stopped.join(', ')), remedy: 'startLocalEngine' })
     return HealthChecks.check(msg('The local CI runs'), 'ok', { detail: msg('{0}', parts.map((container: ServerContainer) => container.name).join(', ')) })
   }
 
   private static platform(project: Project): HealthCheck {
-    if (!project.platform) return HealthChecks.check(msg('The host does not know the platform {0}', project.platformName), 'error', {})
+    if (!project.platform) return HealthChecks.check(msg('The host does not know the platform {0}', project.platformName), 'error', { remedy: 'selectHost' })
     return HealthChecks.check(msg('Platform: {0}', project.platform.label), 'ok', { url: project.platform.docsUrl ?? null })
   }
 
   private static metadata(project: Project, check: PublishCheck | null): HealthCheck {
-    if (!project.metadataPath) return HealthChecks.check(msg('No metadata file'), 'warning', { detail: msg('The catalog entry is made from it.') })
+    if (!project.metadataPath) return HealthChecks.check(msg('No metadata file'), 'warning', { detail: msg('The catalog entry is made from it.'), remedy: 'addToProject' })
     if (!check) return HealthChecks.check(msg('Metadata not checked'), 'info', { remedy: 'editMetadata' })
     const errors: number = check.problems.filter((problem: PublishProblem) => problem.level === 'error').length
     const warnings: number = check.problems.length - errors

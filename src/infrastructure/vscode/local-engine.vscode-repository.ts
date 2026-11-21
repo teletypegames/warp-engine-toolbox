@@ -3,7 +3,7 @@
  *
  * @module
  */
-import { readFile } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import * as vscode from 'vscode'
@@ -60,6 +60,25 @@ export class VsCodeLocalEngineRepository implements LocalEngineRepository {
     const result: ShellResult = await ProcessRunner.run(docker, ['exec', CONTAINER, 'bin/warp-engine', 'token'], homedir())
     const token: string = result.code === 0 ? result.stdout.trim() : ''
     return token.length > 0 ? token : null
+  }
+
+  /**
+   * Finds the data folder (the `warpengine.localData` setting, else `~/.warpengine`) when it exists.
+   *
+   * @returns The folder, or `null` when it does not exist.
+   */
+  public async dataFolder(): Promise<string | null> {
+    const folder: string = this.path('')
+    return access(folder).then(() => folder.replace(/[\\/]+$/, ''), () => null)
+  }
+
+  /**
+   * Tells whether the installer saved its answers: `config.json` in the data folder.
+   *
+   * @returns `true` when the file exists.
+   */
+  public async configured(): Promise<boolean> {
+    return access(this.path('config.json')).then(() => true, () => false)
   }
 
   private path(file: string): string {

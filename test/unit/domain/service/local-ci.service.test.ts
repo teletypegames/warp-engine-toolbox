@@ -56,7 +56,7 @@ async function world(known: Software | null): Promise<{ service: LocalCiService,
   const host: { url: string } = { url: LOCAL }
   const hosts: HostService = new HostService({ configuredUrl: () => host.url, configuredHosts: () => [], saveUrl: async () => Promise.resolve(), saveHosts: async () => Promise.resolve() })
   const local: LocalEngineService = new LocalEngineService({ probe: async (url: string) => Promise.resolve(url === LOCAL ? wellKnown : null) },
-                                                           { port: async () => Promise.resolve(null), tokenFile: async () => Promise.resolve('tok'), tokenFromContainer: async () => Promise.resolve(null) }, hosts)
+                                                           { port: async () => Promise.resolve(null), tokenFile: async () => Promise.resolve('tok'), tokenFromContainer: async () => Promise.resolve(null), dataFolder: async () => Promise.resolve(null), configured: async () => Promise.resolve(false) }, hosts)
   await local.discover()
   const components: Components = new Components()
   const scaffolded: string[] = []

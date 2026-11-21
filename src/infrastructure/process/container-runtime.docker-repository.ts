@@ -3,10 +3,10 @@
  *
  * @module
  */
-import { rm } from 'node:fs/promises'
+import { access, rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import type { ServerContainer } from '../../domain/model/server.model'
-import type { ContainerRuntime, DockerObject } from '../../domain/repository/container-runtime.repository'
+import type { ContainerRuntime, DockerAvailability, DockerObject } from '../../domain/repository/container-runtime.repository'
 import type { ShellResult } from '../../domain/repository/shell.repository'
 import { ProcessRunner } from './process.runner'
 
@@ -19,6 +19,9 @@ interface PsRow {
   readonly ports: string
   readonly folder: string
 }
+
+const MAC_APPS: readonly (readonly [string, string])[] = [['/Applications/OrbStack.app', 'OrbStack'], ['/Applications/Docker.app', 'Docker']]
+const WINDOWS_DESKTOP = 'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe'
 
 const PS_FORMAT = '{"id":{{json .ID}},"name":{{json .Names}},"image":{{json .Image}},"state":{{json .State}},"status":{{json .Status}},"ports":{{json .Ports}},"folder":{{json (.Label "devcontainer.local_folder")}}}'
 
@@ -34,6 +37,36 @@ export class DockerContainerRuntime implements ContainerRuntime {
    * @param binary - Gives the docker executable to run (the `warpengine.docker` setting), read on every call.
    */
   public constructor(private readonly binary: () => string) {}
+
+  /**
+   * Tells whether Docker can be used: `docker version` answers (`ok`), the command cannot start (`missing`), or it
+   * runs but the daemon does not answer (`down`).
+   *
+   * @returns The availability.
+   */
+  public async availability(): Promise<DockerAvailability> {
+    const result: ShellResult = await ProcessRunner.run(this.binary(), ['version', '--format', '{{.Server.Version}}'], homedir())
+    if (result.code === 0) return 'ok'
+    return /ENOENT|not found|is not recognized/i.test(result.stderr) ? 'missing' : 'down'
+  }
+
+  /**
+   * Opens OrbStack or Docker Desktop (`open -a` on macOS, the first installed), or Docker Desktop on Windows.
+   *
+   * @returns `true` when one was opened; `false` on Linux or when none is installed.
+   */
+  public async launchDesktop(): Promise<boolean> {
+    if (process.platform === 'darwin') {
+      for (const [path, name] of MAC_APPS) {
+        if (await DockerContainerRuntime.exists(path)) return (await ProcessRunner.run('open', ['-a', name], homedir())).code === 0
+      }
+      return false
+    }
+    if (process.platform === 'win32' && (await DockerContainerRuntime.exists(WINDOWS_DESKTOP))) {
+      return (await ProcessRunner.shell(`start "" "${WINDOWS_DESKTOP}"`, homedir())).code === 0
+    }
+    return false
+  }
 
   /**
    * Lists the containers with a label, running or not (`docker ps -a --filter label=…`).
@@ -108,6 +141,15 @@ export class DockerContainerRuntime implements ContainerRuntime {
   }
 
   /**
+   * Restarts containers one by one (`docker restart`); a name that fails is skipped silently.
+   *
+   * @param names - The container names or ids; empty does nothing.
+   */
+  public async restart(names: readonly string[]): Promise<void> {
+    for (const name of names) await ProcessRunner.run(this.binary(), ['restart', name], homedir())
+  }
+
+  /**
    * Removes Docker objects one by one (`docker rm -f`, `docker volume rm -f`, `docker network rm`,
    * `docker image rm`); a name that fails is skipped silently.
    *
@@ -122,14 +164,14 @@ export class DockerContainerRuntime implements ContainerRuntime {
 
   /**
    * Empties a host folder with `rm -rf` in a throwaway container that mounts it (so files
-   * owned by the container's user go too), then deletes the folder itself.
+   * owned by the container's user go too), then deletes the folder itself; without an image only the latter.
    *
    * @param hostPath - The folder on the host.
-   * @param image - An image with `sh` to run the deletion in.
+   * @param image - An image with `sh` to run the deletion in, or `null`.
    * @throws `Error` when the container cannot run.
    */
-  public async wipeFolder(hostPath: string, image: string): Promise<void> {
-    await this.docker(['run', '--rm', '-v', `${hostPath}:/wipe`, '--entrypoint', 'sh', image, '-c', 'rm -rf /wipe/* /wipe/.[!.]* /wipe/..?*'])
+  public async wipeFolder(hostPath: string, image: string | null): Promise<void> {
+    if (image) await this.docker(['run', '--rm', '-v', `${hostPath}:/wipe`, '--entrypoint', 'sh', image, '-c', 'rm -rf /wipe/* /wipe/.[!.]* /wipe/..?*'])
     await rm(hostPath, { recursive: true, force: true })
   }
 
@@ -141,6 +183,10 @@ export class DockerContainerRuntime implements ContainerRuntime {
     const result: ShellResult = await ProcessRunner.run(this.binary(), args, homedir())
     if (result.code !== 0) throw new Error(`docker ${args[0] ?? ''}: ${result.stderr.trim() || `exit ${String(result.code)}`}`)
     return result.stdout
+  }
+
+  private static async exists(path: string): Promise<boolean> {
+    return access(path).then(() => true, () => false)
   }
 
   private static container(row: PsRow): ServerContainer {

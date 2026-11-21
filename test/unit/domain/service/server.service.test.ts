@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
-import type { Message } from '../../../../src/domain/model/message.model'
+import { DomainError, type Message } from '../../../../src/domain/model/message.model'
 import { Servers, type ServerContainer } from '../../../../src/domain/model/server.model'
 import type { ContainerRuntime, DockerObject } from '../../../../src/domain/repository/container-runtime.repository'
 import { ServerService } from '../../../../src/domain/service/server.service'
@@ -21,7 +21,15 @@ class FakeRuntime implements ContainerRuntime {
     container('warp-engine-local-gitea', 'gitea', [7471])
   ]
   public labels: string[] = []
-  public async containers(label: string): Promise<ServerContainer[]> { this.labels.push(label); return Promise.resolve(label === Servers.DEV_CONTAINER_LABEL ? DEV : this.list) }
+  public failing = false
+  public async availability(): Promise<'ok'> { return Promise.resolve('ok') }
+  public async launchDesktop(): Promise<boolean> { return Promise.resolve(false) }
+  public async restart(names: readonly string[]): Promise<void> { this.calls.push(`restart ${names.join(' ')}`); return Promise.resolve() }
+  public async containers(label: string): Promise<ServerContainer[]> {
+    this.labels.push(label)
+    if (this.failing) return Promise.reject(new Error('spawn docker ENOENT'))
+    return Promise.resolve(label === Servers.DEV_CONTAINER_LABEL ? DEV : this.list)
+  }
   public async start(names: readonly string[]): Promise<void> { this.calls.push(`start ${names.join(' ')}`); return Promise.resolve() }
   public async stop(names: readonly string[]): Promise<void> { this.calls.push(`stop ${names.join(' ')}`); return Promise.resolve() }
   public async volumes(): Promise<string[]> { return Promise.resolve(['warp-engine-local-gitea-data']) }
@@ -29,7 +37,7 @@ class FakeRuntime implements ContainerRuntime {
   public async images(): Promise<string[]> { return Promise.resolve(['warp-engine-local:1.4.0', 'warp-engine-local:1.3.0']) }
   public async mountSource(): Promise<string | null> { return Promise.resolve('/home/dev/.warpengine') }
   public async remove(kind: DockerObject, names: readonly string[]): Promise<void> { this.calls.push(`${kind} ${names.join(' ')}`); return Promise.resolve() }
-  public async wipeFolder(path: string, image: string): Promise<void> { this.calls.push(`wipe ${path} with ${image}`); return Promise.resolve() }
+  public async wipeFolder(path: string, image: string | null): Promise<void> { this.calls.push(`wipe ${path} with ${image ?? 'no image'}`); return Promise.resolve() }
 }
 
 describe('ServerService', () => {
@@ -63,6 +71,33 @@ describe('ServerService', () => {
       'image warp-engine-local:1.4.0 gitea woodpecker-server warp-engine-local:1.3.0'
     ])
     assert.equal(reported.length, 3)
+  })
+
+  it('purges the data folder of an installation whose containers are gone', async () => {
+    const runtime: FakeRuntime = new FakeRuntime()
+    runtime.list = []
+    const service: ServerService = new ServerService(runtime)
+    const plan = await service.purgePlan('/home/dev/.warpengine')
+
+    assert.equal(plan.dataFolder, '/home/dev/.warpengine')
+    assert.equal(Servers.isEmpty(plan), false)
+    await service.purge(plan, () => undefined)
+    assert.ok(runtime.calls.includes('wipe /home/dev/.warpengine with no image'))
+  })
+
+  it('starts only the stopped WarpEngine containers', async () => {
+    const runtime: FakeRuntime = new FakeRuntime()
+    runtime.list = [container('warp-engine-local', 'e'), { ...container('warp-engine-local-gitea', 'g'), state: 'exited' }]
+
+    assert.deepEqual(await new ServerService(runtime).startLocal(), ['warp-engine-local-gitea'])
+    assert.deepEqual(runtime.calls, ['start warp-engine-local-gitea'])
+  })
+
+  it('offers Start Docker when Docker cannot be asked', async () => {
+    const runtime: FakeRuntime = new FakeRuntime()
+    runtime.failing = true
+
+    await assert.rejects(new ServerService(runtime).containers(), (error: unknown) => error instanceof DomainError && error.remedy === 'startDocker')
   })
 
   it('never wipes a folder at the root', () => {

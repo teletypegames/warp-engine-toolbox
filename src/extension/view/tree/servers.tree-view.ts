@@ -17,7 +17,7 @@ import type { TreeView } from './tree.provider'
 const ROLE_ICONS: Readonly<Record<ServerRole, string>> = { engine: 'server', git: 'git-merge', ci: 'server-process', agent: 'run-all', other: 'package' }
 
 /**
- * The content of the Local Server view (`warpengine.servers`): the engine, git server, CI and agent containers with their state and ports (a click opens a running server's web page), then the dev containers of the projects, a running one with *Stop*, a stopped one with *Start*.
+ * The content of the Local Server view (`warpengine.servers`): the engine, git server, CI and agent containers with their state and ports (a click opens a running server's web page, a stopped one has *Start*), then the dev containers of the projects, a running one with *Stop*, a stopped one with *Start*.
  */
 export class ServersTreeView implements TreeView {
   /**
@@ -68,7 +68,7 @@ export class ServersTreeView implements TreeView {
     return new TreeNode(container.name, {
       description: [ServersTreeView.role(Servers.role(container)), container.status, ports].filter(Boolean).join(' · '),
       tooltip: `${container.image}\n${container.status}`, icon: container.state === 'running' ? ROLE_ICONS[Servers.role(container)] : 'debug-stop',
-      ...(url ? { command: TreeNode.openUrl(url), context: 'link server' } : { context: 'server' })
+      ...(url ? { command: TreeNode.openUrl(url), context: 'link server' } : { context: container.state === 'running' ? 'server' : 'server stopped' })
     })
   }
 

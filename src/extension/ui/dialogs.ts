@@ -64,6 +64,18 @@ export class Dialogs {
   }
 
   /**
+   * Shows a modal warning with a detail line and actions, and waits for the answer.
+   *
+   * @param message - The message.
+   * @param detail - The line under it.
+   * @param actions - The button labels.
+   * @returns The label pressed, or `undefined` when cancelled.
+   */
+  public static async choose(message: string, detail: string, ...actions: string[]): Promise<string | undefined> {
+    return vscode.window.showWarningMessage(message, { modal: true, detail }, ...actions)
+  }
+
+  /**
    * Shows an information message without waiting for it.
    *
    * @param message - The message.

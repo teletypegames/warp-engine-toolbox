@@ -127,6 +127,26 @@ Connecting signs in with the engine's token file (`~/.warpengine/local-token`;
 `warpengine.localData` names another folder) — no device code, no approval. A local engine
 needs WarpEngine 5.2 or later.
 
+### When the host does not answer
+
+Every "cannot be reached" — a view, a notification, the *Health* line — comes with **Fix…**
+(**WarpEngine: Fix Host Connection…**). It looks at why and offers the step that puts it right:
+
+| What it finds | The steps |
+|---|---|
+| a host on another machine does not answer | *Try Again*, *Open in Browser*, *Set Host…* |
+| Docker is not installed | *Get Docker*, *Docker Command Setting* (`warpengine.docker`) |
+| Docker does not run | *Start Docker*: opens OrbStack or Docker Desktop (macOS, Windows), runs `sudo systemctl start docker` in a terminal (Linux), and waits for it |
+| the engine is not installed (its data may still be in `~/.warpengine`) | *Reinstall* (the installer with `--yes`: the saved answers and the data stay), *Remove Its Data…*, *Set Host…* |
+| the engine or its CI is stopped | *Start*, *Reinstall*, *Remove…*, *Set Host…* |
+| the engine answers at another port than the host set | *Use* that address |
+| the engine runs but does not answer | *Restart*, *Show Log*, *Reinstall* |
+
+When the host set is a local engine that does not answer, the toolbox offers **Fix…** by itself,
+once per window, and again whenever the installer closes without the engine answering. From a
+window in a dev container Docker cannot be reached: *Fix…* says so, and the engine is repaired
+from a window on the computer.
+
 ## Local CI
 
 The local engine's installer asks whether you want a local CI: a git server (Gitea,
@@ -149,9 +169,13 @@ it on the local engine, and Sync sends it on; `origin` builds it where it always
 The *Local Server* view lists the containers the local engine's installer and the engine started
 (label `org.teletypegames.warp-engine.local=1`): `warp-engine-local`, `warp-engine-local-gitea`,
 `warp-engine-local-woodpecker` and its agent, with their state and ports; a click opens the
-engine or the git server. **Purge Local Engine…** (the trash button) asks once, then removes the
-containers, the data folder (`~/.warpengine`: the catalog, the releases, the token), the volumes,
-the network and the images — the same as the installer's `--uninstall --purge`.
+engine or the git server, a stopped one has a start button (**Start the Local Engine** starts
+every stopped one). **Purge Local Engine…** (the trash button) asks once, then removes the
+containers, the data folder (`~/.warpengine`: the catalog, the releases, the token — also when
+the containers are gone already), the volumes, the network and the images — the same as the
+installer's `--uninstall --purge`. When Docker does not answer, the view says so with *Start
+Docker*; in a window reopened in a dev container it says that the containers are listed in a
+window on the computer.
 
 The *Catalog* and *Local Server* views start collapsed. While the WarpEngine sidebar is open, the
 toolbox opens *Local Server* when no local engine is installed (its *Install Local Engine* line
@@ -164,9 +188,10 @@ The *Health* view checks everything the toolbox depends on, in three groups: the
 (set, answering, signed in, the token taken), the **local engine** (shown when it is installed
 or it is the host: its container, its git server and CI) and the **project** (its platform, the
 host's publish check of its metadata, its catalog entry, pipeline and last run). A click on a
-yellow or red line runs the step that fixes it — *Set Host…*, *Sign in*, *Sign In Again*,
-*Install Local Engine*, *Connect*, *Set up local CI*, *Edit Metadata* — or opens the page that
-tells more (a run's log, the admin page). The same buttons come with the error messages.
+yellow or red line runs the step that fixes it — *Fix…*, *Start Docker*, *Start the Local
+Engine*, *Set Host…*, *Sign in*, *Sign In Again*, *Install Local Engine*, *Connect*, *Set up local
+CI*, *Edit Metadata*, *Add WarpEngine to This Project* — or opens the page that tells more (a
+run's log, the admin page). The same buttons come with the error messages.
 
 When a host refuses the stored token, the status bar, the views and Health offer *Sign In
 Again*. On the local engine the sign-in tries the token file and then the token the running

@@ -74,10 +74,10 @@ export class SignInService {
       await new Promise((done: (value: unknown) => void) => setTimeout(done, interval))
       const answer: TokenPoll = await repository.pollDeviceGrant(approval.grant.deviceCode)
       if (answer.state === 'approved' && answer.token) return answer.token
-      if (answer.state === 'denied') throw new DomainError(msg('The sign-in was denied.'))
+      if (answer.state === 'denied') throw new DomainError(msg('The sign-in was denied.'), 'signIn')
       if (answer.state === 'expired') break
     }
-    throw new DomainError(msg('The sign-in code expired.'))
+    throw new DomainError(msg('The sign-in code expired.'), 'signIn')
   }
 
   /**

@@ -126,7 +126,7 @@ export class ScaffoldService {
    */
   public async addDevContainer(input: DevContainerInput): Promise<WriteResult> {
     const { project } = input
-    if (!project.platform) throw new DomainError(msg('The host does not know the {0} platform of {1}.', project.platformName, project.name))
+    if (!project.platform) throw new DomainError(msg('The host does not know the {0} platform of {1}.', project.platformName, project.name), 'selectHost')
     const answers: GameAnswers = { name: project.name, title: project.title, author: '', license: '', category: null, description: '', version: '' }
     return this.write({ folder: project.folder, platform: project.platform, answers, host: input.host, report: input.report, withDemo: false, overwrite: false, only: 'devcontainer' })
   }

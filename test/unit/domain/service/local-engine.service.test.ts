@@ -27,7 +27,9 @@ function local(port: number | null, file: string | null, container: string | nul
   return {
     port: async () => Promise.resolve(port),
     tokenFile: async () => Promise.resolve(file),
-    tokenFromContainer: async () => Promise.resolve(container)
+    tokenFromContainer: async () => Promise.resolve(container),
+    dataFolder: async () => Promise.resolve(null),
+    configured: async () => Promise.resolve(false)
   }
 }
 

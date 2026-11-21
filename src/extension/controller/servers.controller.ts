@@ -7,6 +7,7 @@
 import type { PurgePlan } from '../../domain/model/server.model'
 import { Servers } from '../../domain/model/server.model'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
+import type { RepairService } from '../../domain/service/repair.service'
 import type { ServerService } from '../../domain/service/server.service'
 import type { WarpEngineAuthProvider } from '../auth/warp-engine.auth-provider'
 import type { TreeNode } from '../view/tree/tree.node'
@@ -21,6 +22,8 @@ export interface ServersDependencies {
   readonly servers: ServerService
   /** Tells whether the local engine is the current host. */
   readonly local: LocalEngineService
+  /** Finds the installation's data folder, purged when its containers are gone already. */
+  readonly repair: RepairService
   /** Signs out of the purged engine. */
   readonly auth: WarpEngineAuthProvider
   /** Looks for the local engine again after the purge. */
@@ -61,12 +64,12 @@ export class ServersController {
   }
 
   /**
-   * `warpengine.purgeLocalEngine`: after a confirmation that lists what goes, removes the WarpEngine containers, volumes, networks, images and data folder from this machine, with a progress notification.
+   * `warpengine.purgeLocalEngine`: after a confirmation that lists what goes, removes the WarpEngine containers, volumes, networks, images and data folder from this machine (the data folder also when the containers are gone already), with a progress notification.
    *
    * Signs out when the local engine was the current host, looks for it again, refreshes everything and reports. With nothing to remove it only says so.
    */
   public async purge(): Promise<void> {
-    const plan: PurgePlan = await this.deps.servers.purgePlan()
+    const plan: PurgePlan = await this.deps.servers.purgePlan(await this.deps.repair.dataFolder())
     if (Servers.isEmpty(plan)) {
       Dialogs.info(t('No WarpEngine container, volume or image on this machine.'))
       return

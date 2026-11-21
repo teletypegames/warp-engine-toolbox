@@ -52,8 +52,11 @@ function accountCommands({ signIn, host, refresh, link, localEngine }: Controlle
   ]
 }
 
-function syncCommands({ sync, images, localCi, servers }: Controllers): CommandRow[] {
+function syncCommands({ sync, images, localCi, servers, repair }: Controllers): CommandRow[] {
   return [
+    ['warpengine.repairHost', async (): Promise<void> => { await repair.repair() }],
+    ['warpengine.startDocker', async (): Promise<void> => { await repair.startDocker() }],
+    ['warpengine.startLocalEngine', async (): Promise<void> => { await repair.startLocalEngine() }],
     ['warpengine.purgeLocalEngine', async (): Promise<void> => { await servers.purge() }],
     ['warpengine.startDevContainer', async (node?: TreeNode): Promise<void> => { await servers.startDevContainer(node) }],
     ['warpengine.stopDevContainer', async (node?: TreeNode): Promise<void> => { await servers.stopDevContainer(node) }],

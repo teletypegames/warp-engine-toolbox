@@ -99,7 +99,7 @@ export class ProjectController {
    */
   public async editMetadata(uri?: vscode.Uri): Promise<void> {
     const target: vscode.Uri | null = uri ?? vscode.window.activeTextEditor?.document.uri ?? this.metadataUri()
-    if (!target) throw new DomainError(msg('This project has no metadata file.'))
+    if (!target) throw new DomainError(msg('This project has no metadata file.'), 'addToProject')
     await vscode.commands.executeCommand('vscode.openWith', target, target.path.endsWith('.json') ? METADATA_VIEW : 'default')
   }
 

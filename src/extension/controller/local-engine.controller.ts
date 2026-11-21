@@ -28,9 +28,14 @@ export interface LocalEngineDependencies {
   readonly state: vscode.Memento
 }
 
+/** Receives a local engine that does not answer: `afterInstall` when the installer has just closed. */
+export type MissingHandler = (afterInstall: boolean) => void
+
 /** Serves `warpengine.installLocalEngine` and looks for a local engine on activation and refresh. */
 export class LocalEngineController {
   private announced: string | null = null
+
+  private missing: MissingHandler = () => undefined
 
   /**
    * Creates the controller.
@@ -50,21 +55,33 @@ export class LocalEngineController {
     const found: LocalEngine | null = await this.deps.local.discover()
     await Dialogs.setContext('warpengine.localEngine', found !== null)
     if (found) void this.connect(found)
+    else if (LocalEngine.isLoopback(this.deps.hosts.current()?.url ?? '')) this.missing(false)
     else void this.offerInstall()
     return found
   }
 
   /**
+   * Sets what happens when the host set is a local engine that does not answer (on a discovery, and after the installer).
+   *
+   * @param handler - Receives whether the installer has just closed.
+   */
+  public whenMissing(handler: MissingHandler): void {
+    this.missing = handler
+  }
+
+  /**
    * `warpengine.installLocalEngine`: runs the WarpEngine Local installer in a terminal (`sh` on macOS and Linux, PowerShell on Windows).
    *
-   * When the terminal closes, looks for the local engine again.
+   * When the terminal closes, looks for the local engine again; when it still does not answer, the missing handler gets it.
+   *
+   * @param reuse - `true` runs it with `--yes`: the saved answers and the data stay, nothing is asked.
    */
-  public install(): void {
-    const terminal: vscode.Terminal = vscode.window.createTerminal(LocalEngineController.installer())
+  public install(reuse: boolean = false): void {
+    const terminal: vscode.Terminal = vscode.window.createTerminal(LocalEngineController.installer(reuse))
     const closed: vscode.Disposable = vscode.window.onDidCloseTerminal((done: vscode.Terminal) => {
       if (done !== terminal) return
       closed.dispose()
-      void this.discover()
+      void this.discover().then((found: LocalEngine | null) => { if (!found) this.missing(true) })
     })
     terminal.show()
   }
@@ -94,10 +111,11 @@ export class LocalEngineController {
     if (answer === host) await vscode.commands.executeCommand('warpengine.selectHost')
   }
 
-  private static installer(): vscode.TerminalOptions {
+  private static installer(reuse: boolean): vscode.TerminalOptions {
     if (process.platform === 'win32') {
-      return { name: TERMINAL, shellPath: 'powershell.exe', shellArgs: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', `irm ${LocalEngine.INSTALL_PS1} | iex; Read-Host '${t('Press Enter to close')}'`] }
+      const run: string = reuse ? `& ([scriptblock]::Create((irm ${LocalEngine.INSTALL_PS1}))) -Yes` : `irm ${LocalEngine.INSTALL_PS1} | iex`
+      return { name: TERMINAL, shellPath: 'powershell.exe', shellArgs: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', `${run}; Read-Host '${t('Press Enter to close')}'`] }
     }
-    return { name: TERMINAL, shellPath: '/bin/sh', shellArgs: ['-c', `curl -fsSL ${LocalEngine.INSTALL_SH} | sh; printf '\\n%s ' '${t('Press Enter to close')}'; read _`] }
+    return { name: TERMINAL, shellPath: '/bin/sh', shellArgs: ['-c', `curl -fsSL ${LocalEngine.INSTALL_SH} | sh${reuse ? ' -s -- --yes' : ''}; printf '\\n%s ' '${t('Press Enter to close')}'; read _`] }
   }
 }

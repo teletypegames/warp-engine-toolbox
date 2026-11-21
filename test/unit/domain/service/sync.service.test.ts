@@ -76,7 +76,7 @@ async function world(sessions: Session[] = [{ id: 's', host: REMOTE, token: 'rem
   const answers: Record<string, WellKnown> = { [LOCAL]: wellKnown('local', false), [REMOTE]: wellKnown('server', true), [SANDBOX]: wellKnown('server', true),
                                                'https://old.example': wellKnown('server', true, []) }
   const discovery = { probe: async (url: string): Promise<WellKnown | null> => Promise.resolve(answers[url] ?? null) }
-  const local: LocalEngineService = new LocalEngineService(discovery, { port: async () => Promise.resolve(null), tokenFile: async () => Promise.resolve('local-token'), tokenFromContainer: async () => Promise.resolve(null) }, hosts)
+  const local: LocalEngineService = new LocalEngineService(discovery, { port: async () => Promise.resolve(null), tokenFile: async () => Promise.resolve('local-token'), tokenFromContainer: async () => Promise.resolve(null), dataFolder: async () => Promise.resolve(null), configured: async () => Promise.resolve(false) }, hosts)
   await local.discover()
   const peers: LocalPeers = new LocalPeers()
   const pairings: RemotePairings = new RemotePairings()

@@ -37,7 +37,9 @@ export function msg(text: string, ...args: MessageArgument[]): Message {
  * The step that puts a failure or a missing setup right; the extension turns it into a button that runs the command
  * doing it.
  */
-export type Remedy = 'selectHost' | 'signIn' | 'reauthorize' | 'installLocalEngine' | 'connect' | 'setupLocalCi' | 'editMetadata' | 'addToProject' | 'newGame'
+export type Remedy =
+  | 'selectHost' | 'signIn' | 'reauthorize' | 'installLocalEngine' | 'connect' | 'setupLocalCi' | 'editMetadata' | 'addToProject' | 'newGame'
+  | 'repairHost' | 'startDocker' | 'startLocalEngine'
 
 /** A domain failure carrying a {@link Message}; its `message` is the English text with the arguments filled in. */
 export class DomainError extends Error {

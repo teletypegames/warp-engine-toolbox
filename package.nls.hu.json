@@ -65,5 +65,8 @@
   "command.reauthorize": "Újra bejelentkezés",
   "command.purgeLocalEngine": "Helyi motor teljes eltávolítása…",
   "command.deleteSoftware": "Törlés a katalógusból…",
-  "command.deleteRelease": "Kiadás törlése…"
+  "command.deleteRelease": "Kiadás törlése…",
+  "command.repairHost": "Host-kapcsolat javítása…",
+  "command.startDocker": "Docker indítása",
+  "command.startLocalEngine": "Helyi motor indítása"
 }

@@ -28,4 +28,14 @@ export class HostError extends Error {
   public static isUnauthorized(error: unknown): boolean {
     return error instanceof HostError && error.status === HostError.UNAUTHORIZED
   }
+
+  /**
+   * Whether an error is a {@link HostError} with status 0: the host could not be reached at all.
+   *
+   * @param error - Any caught value.
+   * @returns `true` for an unreachable host.
+   */
+  public static isUnreachable(error: unknown): boolean {
+    return error instanceof HostError && error.status === 0
+  }
 }

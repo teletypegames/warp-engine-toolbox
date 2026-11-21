@@ -266,6 +266,23 @@
         "icon": "$(key)"
       },
       {
+        "command": "warpengine.repairHost",
+        "title": "%command.repairHost%",
+        "category": "WarpEngine",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "warpengine.startDocker",
+        "title": "%command.startDocker%",
+        "category": "WarpEngine"
+      },
+      {
+        "command": "warpengine.startLocalEngine",
+        "title": "%command.startLocalEngine%",
+        "category": "WarpEngine",
+        "icon": "$(debug-start)"
+      },
+      {
         "command": "warpengine.purgeLocalEngine",
         "title": "%command.purgeLocalEngine%",
         "category": "WarpEngine",
@@ -328,6 +345,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "warpengine.startLocalEngine",
+          "when": "view == warpengine.servers && viewItem =~ /server stopped/",
+          "group": "inline"
+        },
         {
           "command": "warpengine.startDevContainer",
           "when": "view == warpengine.servers && viewItem == devcontainer",
