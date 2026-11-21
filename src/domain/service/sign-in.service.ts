@@ -132,6 +132,15 @@ export class SignInService {
   }
 
   /**
+   * Lists every stored session, of every host.
+   *
+   * @returns The sessions.
+   */
+  public async all(): Promise<Session[]> {
+    return this.sessions.all()
+  }
+
+  /**
    * Deletes a stored session.
    *
    * @param id - The session id.

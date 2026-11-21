@@ -68,5 +68,6 @@
   "command.deleteRelease": "Kiadás törlése…",
   "command.repairHost": "Host-kapcsolat javítása…",
   "command.startDocker": "Docker indítása",
-  "command.startLocalEngine": "Helyi motor indítása"
+  "command.startLocalEngine": "Helyi motor indítása",
+  "command.reset": "Visszaállítás…"
 }

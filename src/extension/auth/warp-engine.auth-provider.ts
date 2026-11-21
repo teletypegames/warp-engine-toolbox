@@ -107,6 +107,13 @@ export class WarpEngineAuthProvider implements vscode.AuthenticationProvider, vs
   }
 
   /**
+   * Removes every stored session of every host and announces the removals.
+   */
+  public async signOutEverywhere(): Promise<void> {
+    for (const session of await this.signIn.all()) await this.removeSession(session.id)
+  }
+
+  /**
    * Unregisters the provider and releases its event emitter.
    */
   public dispose(): void {

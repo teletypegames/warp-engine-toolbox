@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Reset…** (command and Dashboard button): removes the local engine with every Docker part and `~/.warpengine`, the
+  VS Code dev containers with their images and volumes, the toolbox with its settings, sign-ins and state — chosen
+  parts or everything, after one confirmation.
 - **A theme per platform**: *Teletype Games - C64, Plus/4, TIC-80, LÖVE, Phaser, Ebitengine, Bevy, Godot, DOS, Electron*,
   each in its platform's own colors (the C64 and Plus/4 boot screens, TIC-80's Sweetie 16, the Godot editor, a DOS IDE…),
   contrast-checked like the others.

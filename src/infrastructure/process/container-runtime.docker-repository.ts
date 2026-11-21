@@ -123,6 +123,18 @@ export class DockerContainerRuntime implements ContainerRuntime {
   }
 
   /**
+   * Lists the named volumes a container mounts (`docker inspect` on its mounts of type `volume`).
+   *
+   * @param container - The container name or id.
+   * @returns The volume names; empty when there are none or docker fails.
+   */
+  public async namedVolumes(container: string): Promise<string[]> {
+    const format = '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}} {{end}}{{end}}'
+    const result: ShellResult = await ProcessRunner.run(this.binary(), ['inspect', '-f', format, container], homedir())
+    return result.code === 0 ? result.stdout.split(/\s+/).filter(Boolean) : []
+  }
+
+  /**
    * Starts containers one by one (`docker start`); a name that fails is skipped silently.
    *
    * @param names - The container names or ids; empty does nothing.

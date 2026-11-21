@@ -38,6 +38,16 @@ export interface PurgePlan {
   readonly dataFolder: string | null
 }
 
+/** What removing the projects' dev containers removes. */
+export interface DevContainerPlan {
+  /** The dev containers, running or not. */
+  readonly containers: readonly ServerContainer[]
+  /** The images they were built from. */
+  readonly images: readonly string[]
+  /** The named volumes they mount (such as a `node_modules` volume). */
+  readonly volumes: readonly string[]
+}
+
 /** Rules and names for the containers of the local WarpEngine. */
 export class Servers {
   /** The Docker label every local WarpEngine container, volume and network carries. */

@@ -36,6 +36,7 @@ class FakeRuntime implements ContainerRuntime {
   public async networks(): Promise<string[]> { return Promise.resolve(['warp-engine-local']) }
   public async images(): Promise<string[]> { return Promise.resolve(['warp-engine-local:1.4.0', 'warp-engine-local:1.3.0']) }
   public async mountSource(): Promise<string | null> { return Promise.resolve('/home/dev/.warpengine') }
+  public async namedVolumes(container: string): Promise<string[]> { return Promise.resolve(container === 'a' ? ['a-node-modules'] : []) }
   public async remove(kind: DockerObject, names: readonly string[]): Promise<void> { this.calls.push(`${kind} ${names.join(' ')}`); return Promise.resolve() }
   public async wipeFolder(path: string, image: string | null): Promise<void> { this.calls.push(`wipe ${path} with ${image ?? 'no image'}`); return Promise.resolve() }
 }
@@ -83,6 +84,17 @@ describe('ServerService', () => {
     assert.equal(Servers.isEmpty(plan), false)
     await service.purge(plan, () => undefined)
     assert.ok(runtime.calls.includes('wipe /home/dev/.warpengine with no image'))
+  })
+
+  it('removes the dev containers with their images and named volumes', async () => {
+    const runtime: FakeRuntime = new FakeRuntime()
+    const service: ServerService = new ServerService(runtime)
+    const plan = await service.devContainerPlan()
+
+    assert.deepEqual([...plan.images].sort(), ['vsc-a', 'vsc-b'])
+    assert.deepEqual(plan.volumes, ['a-node-modules'])
+    await service.removeDevContainers(plan, () => undefined)
+    assert.deepEqual(runtime.calls.map((call: string) => call.split(' ').slice(0, 1).concat(call.split(' ').slice(1).sort()).join(' ')), ['container a b', 'volume a-node-modules', 'image vsc-a vsc-b'])
   })
 
   it('starts only the stopped WarpEngine containers', async () => {

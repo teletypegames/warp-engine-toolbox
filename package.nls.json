@@ -68,5 +68,6 @@
   "command.deleteRelease": "Delete Release…",
   "command.repairHost": "Fix Host Connection…",
   "command.startDocker": "Start Docker",
-  "command.startLocalEngine": "Start the Local Engine"
+  "command.startLocalEngine": "Start the Local Engine",
+  "command.reset": "Reset…"
 }

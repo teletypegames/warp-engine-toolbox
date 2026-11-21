@@ -115,7 +115,7 @@ export class DashboardRenderer {
       ? [['warpengine.play', t('Play')], ['warpengine.checkPublish', t('Check publish')], ['warpengine.release', t('Release…')], ['warpengine.triggerPipeline', t('Run Pipeline')]]
       : [['warpengine.newGame', t('New Game…')], ['warpengine.addToProject', t('Add WarpEngine to This Project')]]
     return `<header><div><h1>${title}</h1><p class="chips">${chips}${host}</p></div>
-<nav>${actions.map(([command, label]) => DashboardRenderer.button(command, label)).join('')}${DashboardRenderer.button('warpengine.openDashboard', t('Refresh'), 'secondary')}</nav></header>`
+<nav>${actions.map(([command, label]) => DashboardRenderer.button(command, label)).join('')}${DashboardRenderer.button('warpengine.openDashboard', t('Refresh'), 'secondary')}${DashboardRenderer.button('warpengine.reset', t('Reset…'), 'secondary')}</nav></header>`
   }
 
   private health(sections: readonly HealthSection[]): string {

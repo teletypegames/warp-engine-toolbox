@@ -59,6 +59,7 @@ import type { RefreshController } from '../controller/refresh.controller'
 import type { ServersController } from '../controller/servers.controller'
 import type { ReleaseController } from '../controller/release.controller'
 import type { RepairController } from '../controller/repair.controller'
+import type { ResetController } from '../controller/reset.controller'
 import type { SignInController } from '../controller/sign-in.controller'
 import type { SyncController } from '../controller/sync.controller'
 
@@ -146,6 +147,8 @@ export interface Controllers {
   readonly servers: ServersController
   /** Fix…, Start Docker and Start the Local Engine. */
   readonly repair: RepairController
+  /** Reset…. */
+  readonly reset: ResetController
 }
 
 interface Infrastructure {

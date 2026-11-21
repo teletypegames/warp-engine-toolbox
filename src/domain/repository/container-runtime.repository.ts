@@ -68,6 +68,13 @@ export interface ContainerRuntime {
    */
   mountSource(container: string, destination: string): Promise<string | null>
   /**
+   * Lists the named volumes a container mounts.
+   *
+   * @param container - The container name or id.
+   * @returns The volume names; empty when there are none or the container is gone.
+   */
+  namedVolumes(container: string): Promise<string[]>
+  /**
    * Starts stopped containers; a name that fails is skipped silently.
    *
    * @param names - The container names or ids; empty does nothing.

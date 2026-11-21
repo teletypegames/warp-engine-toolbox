@@ -351,6 +351,12 @@
         "icon": "$(debug-start)"
       },
       {
+        "command": "warpengine.reset",
+        "title": "%command.reset%",
+        "category": "WarpEngine",
+        "icon": "$(discard)"
+      },
+      {
         "command": "warpengine.purgeLocalEngine",
         "title": "%command.purgeLocalEngine%",
         "category": "WarpEngine",

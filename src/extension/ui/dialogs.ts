@@ -32,6 +32,17 @@ export class Dialogs {
   }
 
   /**
+   * Shows a quick pick where several items can be chosen.
+   *
+   * @param items - The items with their values.
+   * @param options - The quick pick options, such as the title.
+   * @returns The values of the chosen items, or `undefined` when the pick is dismissed.
+   */
+  public static async pickMany<T>(items: readonly PickItem<T>[], options: vscode.QuickPickOptions): Promise<T[] | undefined> {
+    return (await vscode.window.showQuickPick(items, { ...options, canPickMany: true }))?.map((item: PickItem<T>) => item.value)
+  }
+
+  /**
    * Shows an input box.
    *
    * @param options - The input box options, such as the title, value and validation.

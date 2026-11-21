@@ -16,10 +16,12 @@ import { ProjectController } from '../controller/project.controller'
 import { RefreshController } from '../controller/refresh.controller'
 import { ReleaseController } from '../controller/release.controller'
 import { RepairController } from '../controller/repair.controller'
+import { ResetController } from '../controller/reset.controller'
 import { ServersController } from '../controller/servers.controller'
 import { SignInController } from '../controller/sign-in.controller'
 import { SyncController } from '../controller/sync.controller'
 import { GameAnswersDialog } from '../ui/game-answers.dialog'
+import { ToolboxState } from '../workspace/toolbox.state'
 import type { Controllers, Services } from './container'
 import type { Views } from './views.factory'
 import type { Workspace } from './workspace.factory'
@@ -42,8 +44,12 @@ export function createControllers(context: vscode.ExtensionContext, services: Se
   const servers: ServersController = new ServersController({ servers: services.servers, local: services.localEngine, repair: services.repair, auth, localEngine, refresh, inside: () => services.devContainers.inside() })
   const repair: RepairController = new RepairController({ repair: services.repair, servers: services.servers, hosts: services.hosts, localEngine, purge: servers, refresh, inside: () => services.devContainers.inside() })
   localEngine.whenMissing((afterInstall: boolean) => { void repair.offer(afterInstall) })
+  const reset: ResetController = new ResetController({
+    servers: services.servers, repair: services.repair, local: services.localEngine, auth, localEngine, refresh,
+    state: new ToolboxState(context), extensionId: context.extension.id, inside: () => services.devContainers.inside()
+  })
   return {
-    refresh, connect, localEngine, host: hostController, link: new LinkController(), servers, repair,
+    refresh, connect, localEngine, host: hostController, link: new LinkController(), servers, repair, reset,
     sync: new SyncController({ sync: services.sync, hosts: services.hosts, tree: views.syncTree }),
     images: new ImageController(services.images, views.catalogTree),
     localCi: new LocalCiController({ localCi: services.localCi, memory: context.workspaceState, projects, states, tree: views.projectTree }),

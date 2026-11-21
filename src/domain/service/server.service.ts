@@ -4,7 +4,7 @@
  * @module
  */
 import { DomainError, msg, type Message } from '../model/message.model'
-import { Servers, type PurgePlan, type ServerContainer } from '../model/server.model'
+import { Servers, type DevContainerPlan, type PurgePlan, type ServerContainer } from '../model/server.model'
 import type { ContainerRuntime, DockerAvailability } from '../repository/container-runtime.repository'
 
 /** Receives each step of a purge, for the progress notification. */
@@ -96,6 +96,35 @@ export class ServerService {
    */
   public async stopDevContainer(container: string): Promise<void> {
     await this.runtime.stop([container])
+  }
+
+  /**
+   * Collects what removing the projects' dev containers removes: the containers, their images and the named volumes
+   * they mount. Removes nothing.
+   *
+   * @returns The plan.
+   * @throws When Docker fails.
+   */
+  public async devContainerPlan(): Promise<DevContainerPlan> {
+    const containers: ServerContainer[] = await this.runtime.containers(Servers.DEV_CONTAINER_LABEL)
+    const volumes: string[] = []
+    for (const container of containers) volumes.push(...(await this.runtime.namedVolumes(container.id)))
+    return { containers, images: [...new Set(containers.map((container: ServerContainer) => container.image))], volumes: [...new Set(volumes)] }
+  }
+
+  /**
+   * Removes the dev containers of a plan (forcibly, running ones too), then their volumes and images; objects that
+   * fail to go are skipped.
+   *
+   * @param plan - The plan from {@link ServerService.devContainerPlan}.
+   * @param report - Receives the steps.
+   */
+  public async removeDevContainers(plan: DevContainerPlan, report: PurgeReport): Promise<void> {
+    report(msg('removing {0} dev containers…', plan.containers.length))
+    await this.runtime.remove('container', plan.containers.map((container: ServerContainer) => container.id))
+    report(msg('removing their volumes and images…'))
+    await this.runtime.remove('volume', plan.volumes)
+    await this.runtime.remove('image', plan.images)
   }
 
   /**

@@ -215,6 +215,20 @@ toolbox opens *Local Server* when no local engine is installed (its *Install Loc
 shows), and *Catalog* once, the first time it has something to show. It never closes a view: one
 you open or close yourself stays as you left it.
 
+## Reset
+
+**WarpEngine: Reset…** (also a button on the Dashboard) removes what WarpEngine left on this
+computer. Pick any of the parts, or *Everything*:
+
+| Part | What goes |
+|---|---|
+| **Local engine** | its containers (engine, git server, CI), volumes, network, images and its data folder (`~/.warpengine`) — also when the containers are gone already |
+| **Dev containers** | every VS Code dev container on this computer with its image and named volumes (including the Dev Containers' shared `vscode` volume); windows open in them close |
+| **WarpEngine Toolbox** | its settings (user, workspace and folder), the sign-ins of every host, its stored state, then the extension itself; a reload finishes it |
+
+One confirmation lists what goes, with the counts; nothing is undone. In a window in a dev
+container *Reset…* offers *Reopen Folder Locally* instead, as it would remove its own container.
+
 ## Health
 
 The *Health* view checks everything the toolbox depends on, in three groups: the **host**
