@@ -6,6 +6,7 @@
 
 import { FilePath } from '../../../domain/model/path.model'
 import { Servers, type ServerContainer, type ServerRole } from '../../../domain/model/server.model'
+import type { DevContainerService } from '../../../domain/service/dev-container.service'
 import type { ServerService } from '../../../domain/service/server.service'
 import { Dialogs } from '../../ui/dialogs'
 import { t } from '../../ui/l10n'
@@ -23,16 +24,22 @@ export class ServersTreeView implements TreeView {
    * Creates the view.
    *
    * @param servers - Lists the containers.
+   * @param devContainers - Tells whether this window runs in a dev container, where there is no Docker to ask.
    */
-  public constructor(private readonly servers: ServerService) {}
+  public constructor(private readonly servers: ServerService, private readonly devContainers: DevContainerService) {}
 
   /**
    * Returns one node per WarpEngine container, or one that installs the local engine when there is none, then one
-   * per dev container; sets the `warpengine.hasServers` context key (WarpEngine containers only).
+   * per dev container; sets the `warpengine.hasServers` context key (WarpEngine containers only). In a dev
+   * container it returns one node saying that the view works from a window on the computer.
    *
    * @returns The nodes.
    */
   public async roots(): Promise<TreeNode[]> {
+    if (this.devContainers.inside()) {
+      await Dialogs.setContext('warpengine.hasServers', false)
+      return [new TreeNode(t('This window runs in a dev container'), { description: t('the containers are listed in a window on this computer'), icon: 'info' })]
+    }
     const containers: ServerContainer[] = await this.servers.containers()
     await Dialogs.setContext('warpengine.hasServers', containers.length > 0)
     const engine: TreeNode[] = containers.length === 0 ? [ServersTreeView.installNode()] : containers.map((container: ServerContainer) => ServersTreeView.node(container))

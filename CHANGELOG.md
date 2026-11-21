@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- *Local Server* in a window reopened in a dev container says that the containers are listed in a
+  window on the computer, instead of a `spawn docker ENOENT` error.
+
 ## 1.14.0
 
 - **Start a stopped dev container** from *Local Server*: a stopped one has a start button

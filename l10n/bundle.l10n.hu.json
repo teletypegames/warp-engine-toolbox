@@ -359,5 +359,7 @@
   "The host does not know the {0} platform of {1}.": "A hoszt nem ismeri a(z) {1} {0} platformját.",
   "This window runs in the dev container already; its image is built.": "Ez az ablak már a dev containerben fut, az image-e megépült.",
   "WarpEngine: adding a dev container to {0}": "WarpEngine: dev container hozzáadása ehhez: {0}",
-  "dev container": "dev container"
+  "dev container": "dev container",
+  "This window runs in a dev container": "Ez az ablak dev containerben fut",
+  "the containers are listed in a window on this computer": "a konténerek egy ezen a gépen futó ablakban látszanak"
 }
