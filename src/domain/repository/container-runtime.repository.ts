@@ -52,6 +52,12 @@ export interface ContainerRuntime {
    */
   mountSource(container: string, destination: string): Promise<string | null>
   /**
+   * Stops containers, keeping them; a name that fails is skipped silently.
+   *
+   * @param names - The container names or ids; empty does nothing.
+   */
+  stop(names: readonly string[]): Promise<void>
+  /**
    * Removes Docker objects one by one, containers and volumes forcibly; a name that fails is skipped silently.
    *
    * @param kind - What the names are.

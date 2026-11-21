@@ -8,6 +8,8 @@
   the bundled Dev Containers CLI from a window on this computer (on the editor's own Node), as
   they are in a window reopened in the container; the containers a window started stop when it
   closes. New Game offers *Open in Container*.
+- **Local Server lists the dev containers** of the projects; a running one has a stop button
+  (for one left running when the editor crashed).
 - **Add Dev Container** adds the template's dev container to a project you have, keeping its
   files, its metadata and its version.
 - New task kinds: `"action": "play"` and `"action": "devImage"`, and `"host": true` (build in the

@@ -10,7 +10,7 @@ const info = { version: '5.5.3', profile: 'local' } as WellKnown
 const host = { name: 'Local', url: 'http://127.0.0.1:7470' }
 
 function container(name: string, state: string = 'running'): ServerContainer {
-  return { id: name, name, image: 'x', state, status: state, hostPorts: [7470] }
+  return { id: name, name, image: 'x', state, status: state, hostPorts: [7470], folder: null }
 }
 
 function titles(section: HealthSection | null): string[] {

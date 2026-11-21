@@ -9,6 +9,7 @@ import { Servers } from '../../domain/model/server.model'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { ServerService } from '../../domain/service/server.service'
 import type { WarpEngineAuthProvider } from '../auth/warp-engine.auth-provider'
+import type { TreeNode } from '../view/tree/tree.node'
 import { Dialogs } from '../ui/dialogs'
 import { t } from '../ui/l10n'
 import type { LocalEngineController } from './local-engine.controller'
@@ -36,6 +37,17 @@ export class ServersController {
    * @param deps - The services and controllers it uses.
    */
   public constructor(private readonly deps: ServersDependencies) {}
+
+  /**
+   * `warpengine.stopDevContainer`: stops the dev container of a Local Server node (it is kept for the next start) and redraws the views.
+   *
+   * @param node - The dev container's node; its data is the container id. Without one nothing happens.
+   */
+  public async stopDevContainer(node?: TreeNode): Promise<void> {
+    if (typeof node?.data !== 'string') return
+    await this.deps.servers.stopDevContainer(node.data)
+    await this.deps.refresh.refresh()
+  }
 
   /**
    * `warpengine.purgeLocalEngine`: after a confirmation that lists what goes, removes the WarpEngine containers, volumes, networks, images and data folder from this machine, with a progress notification.

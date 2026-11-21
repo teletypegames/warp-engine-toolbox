@@ -17,9 +17,10 @@ interface PsRow {
   readonly state: string
   readonly status: string
   readonly ports: string
+  readonly folder: string
 }
 
-const PS_FORMAT = '{"id":{{json .ID}},"name":{{json .Names}},"image":{{json .Image}},"state":{{json .State}},"status":{{json .Status}},"ports":{{json .Ports}}}'
+const PS_FORMAT = '{"id":{{json .ID}},"name":{{json .Names}},"image":{{json .Image}},"state":{{json .State}},"status":{{json .Status}},"ports":{{json .Ports}},"folder":{{json (.Label "devcontainer.local_folder")}}}'
 
 /**
  * Runs the Docker CLI, in the home folder, for the Local Server view and the purge of WarpEngine Local.
@@ -89,6 +90,15 @@ export class DockerContainerRuntime implements ContainerRuntime {
   }
 
   /**
+   * Stops containers one by one (`docker stop`); a name that fails is skipped silently.
+   *
+   * @param names - The container names or ids; empty does nothing.
+   */
+  public async stop(names: readonly string[]): Promise<void> {
+    for (const name of names) await ProcessRunner.run(this.binary(), ['stop', name], homedir())
+  }
+
+  /**
    * Removes Docker objects one by one (`docker rm -f`, `docker volume rm -f`, `docker network rm`,
    * `docker image rm`); a name that fails is skipped silently.
    *
@@ -126,6 +136,6 @@ export class DockerContainerRuntime implements ContainerRuntime {
 
   private static container(row: PsRow): ServerContainer {
     const ports: number[] = [...row.ports.matchAll(/:(\d+)->/g)].map((match: RegExpMatchArray) => Number(match[1]))
-    return { id: row.id, name: row.name, image: row.image, state: row.state, status: row.status, hostPorts: [...new Set(ports)] }
+    return { id: row.id, name: row.name, image: row.image, state: row.state, status: row.status, hostPorts: [...new Set(ports)], folder: row.folder || null }
   }
 }

@@ -20,6 +20,8 @@ export interface ServerContainer {
   readonly status: string
   /** The host ports the container publishes. */
   readonly hostPorts: readonly number[]
+  /** The project folder of a dev container (its `devcontainer.local_folder` label); `null` for other containers. */
+  readonly folder: string | null
 }
 
 /** What a purge of the local WarpEngine removes. */
@@ -46,6 +48,8 @@ export class Servers {
   public static readonly ENGINE_IMAGE: string = 'git.teletypegames.org/build/warp-engine-local'
   /** The path in the engine container where its data folder is mounted. */
   public static readonly DATA_MOUNT: string = '/data'
+  /** The label the Dev Containers tooling puts on a project's dev container, with the project folder as its value. */
+  public static readonly DEV_CONTAINER_LABEL: string = 'devcontainer.local_folder'
 
   /**
    * Tells what a container does from its name.

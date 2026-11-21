@@ -30,6 +30,26 @@ export class ServerService {
   }
 
   /**
+   * Lists the dev containers of the projects on this machine (by the Dev Containers label), running or not.
+   *
+   * @returns The containers, each with its project folder, running ones first.
+   * @throws When Docker fails.
+   */
+  public async devContainers(): Promise<ServerContainer[]> {
+    const containers: ServerContainer[] = await this.runtime.containers(Servers.DEV_CONTAINER_LABEL)
+    return containers.sort((a: ServerContainer, b: ServerContainer) => Number(b.state === 'running') - Number(a.state === 'running'))
+  }
+
+  /**
+   * Stops a dev container (such as one left running after the editor closed); it is kept for the next start.
+   *
+   * @param container - The container name or id.
+   */
+  public async stopDevContainer(container: string): Promise<void> {
+    await this.runtime.stop([container])
+  }
+
+  /**
    * Collects what a purge would remove: the containers, their volumes, network and images (the engine image included), and the engine's data folder when it may be wiped. Removes nothing.
    *
    * @returns The plan to show the user.

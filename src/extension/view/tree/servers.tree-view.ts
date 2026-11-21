@@ -1,9 +1,10 @@
 /**
- * The Local Server view: the WarpEngine containers on this machine.
+ * The Local Server view: the WarpEngine containers and the projects' dev containers on this machine.
  *
  * @packageDocumentation
  */
 
+import { FilePath } from '../../../domain/model/path.model'
 import { Servers, type ServerContainer, type ServerRole } from '../../../domain/model/server.model'
 import type { ServerService } from '../../../domain/service/server.service'
 import { Dialogs } from '../../ui/dialogs'
@@ -15,7 +16,7 @@ import type { TreeView } from './tree.provider'
 const ROLE_ICONS: Readonly<Record<ServerRole, string>> = { engine: 'server', git: 'git-merge', ci: 'server-process', agent: 'run-all', other: 'package' }
 
 /**
- * The content of the Local Server view (`warpengine.servers`): the engine, git server, CI and agent containers with their state and ports; a click opens a running server's web page.
+ * The content of the Local Server view (`warpengine.servers`): the engine, git server, CI and agent containers with their state and ports (a click opens a running server's web page), then the dev containers of the projects, a running one with *Stop*.
  */
 export class ServersTreeView implements TreeView {
   /**
@@ -26,16 +27,26 @@ export class ServersTreeView implements TreeView {
   public constructor(private readonly servers: ServerService) {}
 
   /**
-   * Returns one node per container, or one that installs the local engine when there is none; sets the
-   * `warpengine.hasServers` context key.
+   * Returns one node per WarpEngine container, or one that installs the local engine when there is none, then one
+   * per dev container; sets the `warpengine.hasServers` context key (WarpEngine containers only).
    *
    * @returns The nodes.
    */
   public async roots(): Promise<TreeNode[]> {
     const containers: ServerContainer[] = await this.servers.containers()
     await Dialogs.setContext('warpengine.hasServers', containers.length > 0)
-    if (containers.length === 0) return [ServersTreeView.installNode()]
-    return containers.map((container: ServerContainer) => ServersTreeView.node(container))
+    const engine: TreeNode[] = containers.length === 0 ? [ServersTreeView.installNode()] : containers.map((container: ServerContainer) => ServersTreeView.node(container))
+    const dev: ServerContainer[] = await this.servers.devContainers().catch(() => [])
+    return [...engine, ...dev.map((container: ServerContainer) => ServersTreeView.devNode(container))]
+  }
+
+  private static devNode(container: ServerContainer): TreeNode {
+    const running: boolean = container.state === 'running'
+    return new TreeNode(container.folder ? FilePath.basename(container.folder) : container.name, {
+      description: [t('dev container'), container.status].join(' · '),
+      tooltip: [container.folder, container.image, container.status].filter(Boolean).join('\n'),
+      icon: running ? 'vm-running' : 'vm-outline', context: running ? 'devcontainer running' : 'devcontainer', data: container.id
+    })
   }
 
   private static installNode(): TreeNode {

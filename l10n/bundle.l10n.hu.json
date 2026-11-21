@@ -358,5 +358,6 @@
   "The Dev Containers extension connects to /var/run/docker.sock, which is missing here (OrbStack or Colima without its compatibility link). Turn that link on to open projects in their container; until then the project opens here, and its builds still run in the dev container.": "A Dev Containers bővítmény a /var/run/docker.sock-hoz kapcsolódik, ami itt hiányzik (OrbStack vagy Colima a kompatibilitási link nélkül). Kapcsold be azt a linket, hogy a projektek a konténerükben nyíljanak meg; addig a projekt itt nyílik meg, a buildjei pedig így is a dev containerben futnak.",
   "The host does not know the {0} platform of {1}.": "A hoszt nem ismeri a(z) {1} {0} platformját.",
   "This window runs in the dev container already; its image is built.": "Ez az ablak már a dev containerben fut, az image-e megépült.",
-  "WarpEngine: adding a dev container to {0}": "WarpEngine: dev container hozzáadása ehhez: {0}"
+  "WarpEngine: adding a dev container to {0}": "WarpEngine: dev container hozzáadása ehhez: {0}",
+  "dev container": "dev container"
 }

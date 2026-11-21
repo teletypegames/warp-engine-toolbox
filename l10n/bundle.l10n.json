@@ -83,6 +83,7 @@
   "Delete": "Delete",
   "Delete {0} ({1}) from the catalog? It and its releases leave every listing.": "Delete {0} ({1}) from the catalog? It and its releases leave every listing.",
   "Delete the release {0} of {1} with its files?": "Delete the release {0} of {1} with its files?",
+  "dev container": "dev container",
   "dev image": "dev image",
   "Disconnect": "Disconnect",
   "Disconnected from {0}.": "Disconnected from {0}.",

@@ -34,7 +34,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
 | **Admin page** | The project panel links the software's page in the host's admin web UI. |
 | **Local CI** | When the local engine runs a git server and a CI, the toolbox offers to set the open project up on them (a `wplocal` remote); *Release…* asks which remote a tag goes to. |
-| **Local Server** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports; **Purge Local Engine…** removes all of it: containers, data, volumes, network and images. |
+| **Local Server** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports, and the dev containers of the projects (a running one can be stopped there); **Purge Local Engine…** removes all of the WarpEngine's: containers, data, volumes, network and images. |
 | **Dashboard** | **WarpEngine: Open Dashboard** (the dashboard button of the project panel) opens a tab that sums up the sidebar in tables: health with its fixes, the latest pipeline runs, the releases with play links, the local containers, the sync partners and the catalog as a table — with *Open* on the entries whose project you opened in VS Code before; its buttons run the same commands. |
 | **Health** | What is set up and what is not — the host, the sign-in, the local engine and its CI, the project's metadata, catalog entry, pipeline and last run — green, yellow or red; a click on a gap runs the step that fixes it. |
 | **Sync** | A local engine's releases go on to another WarpEngine instance (e.g. `https://games.example.org`): **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
@@ -203,7 +203,8 @@ the computer:
 - **In a window on this computer** the `warpengine` tasks (`build`, `clear`, `rebuild`, and the
   build Play runs) go into the container through the Dev Containers CLI that comes with the
   toolbox, on the editor's own Node: nothing to install but Docker. The first task starts the
-  container; the ones this window started stop when it closes.
+  container; the ones this window started stop when it closes, and one left running (the editor
+  crashed) shows in *Local Server* with a stop button.
 - **Reopened in the container** (the Dev Containers extension; New Game offers *Open in
   Container*) the toolbox runs there and the tasks run as they are.
 - **dev image** builds the container image ahead of time; **play** builds and plays the game in
