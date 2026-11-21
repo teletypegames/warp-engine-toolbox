@@ -1,6 +1,6 @@
 {
   "$schema": "vscode://schemas/color-theme",
-  "name": "Teletype Games - Ebitengine",
+  "name": "WarpEngine - Ebitengine",
   "type": "light",
   "semanticHighlighting": true,
   "colors": {

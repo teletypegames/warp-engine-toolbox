@@ -1,6 +1,6 @@
 {
   "$schema": "vscode://schemas/color-theme",
-  "name": "Teletype Games - Godot",
+  "name": "WarpEngine - Godot",
   "type": "dark",
   "semanticHighlighting": true,
   "colors": {

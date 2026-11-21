@@ -1,4 +1,4 @@
-// Builds the Teletype Games color themes (Dark, Light, Retro) from the brand's tokens in themes/source/;
+// Builds the WarpEngine brand color themes (Dark, Light, Retro) from the brand's tokens in themes/source/;
 // --check fails when a theme file is out of date or a text color is below its contrast minimum.
 import { readFileSync, writeFileSync } from 'node:fs'
 
@@ -32,9 +32,9 @@ function palettes() {
   const dark = { ...light, ...tokens["[data-theme='dark']"] }
   const retro = { ...dark, info: '#00a8a8', ...blocks(RETRO)["[data-theme='retro']"], danger: '#ff5555' }
   return {
-    dark: { label: 'Teletype Games - Dark', ui: 'vs-dark', c: dark, code: { keyword: dark.accent, type: dark['accent-hover'], string: dark.warn, number: dark.info, comment: dark['fg-subtle'] } },
-    light: { label: 'Teletype Games - Light', ui: 'vs', c: light, code: { keyword: light.accent, type: light['accent-hover'], string: light.warn, number: light.info, comment: light['fg-subtle'] } },
-    retro: { label: 'Teletype Games - Retro', ui: 'vs-dark', c: retro, code: { keyword: '#ffff55', type: '#ffffff', string: '#55ffff', number: '#55ff55', comment: retro['fg-subtle'] } },
+    dark: { label: 'WarpEngine - Dark', ui: 'vs-dark', c: dark, code: { keyword: dark.accent, type: dark['accent-hover'], string: dark.warn, number: dark.info, comment: dark['fg-subtle'] } },
+    light: { label: 'WarpEngine - Light', ui: 'vs', c: light, code: { keyword: light.accent, type: light['accent-hover'], string: light.warn, number: light.info, comment: light['fg-subtle'] } },
+    retro: { label: 'WarpEngine - Retro', ui: 'vs-dark', c: retro, code: { keyword: '#ffff55', type: '#ffffff', string: '#55ffff', number: '#55ff55', comment: retro['fg-subtle'] } },
     ...platforms()
   }
 }

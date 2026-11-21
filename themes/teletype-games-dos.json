@@ -1,6 +1,6 @@
 {
   "$schema": "vscode://schemas/color-theme",
-  "name": "Teletype Games - DOS",
+  "name": "WarpEngine - DOS",
   "type": "dark",
   "semanticHighlighting": true,
   "colors": {

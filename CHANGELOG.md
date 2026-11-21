@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.17.0
 
+- The color themes are named after WarpEngine: *WarpEngine - Dark, Light, Retro* and *WarpEngine - C64, Plus/4,
+  TIC-80, LÖVE, Phaser, Ebitengine, Bevy, Godot, DOS, Electron*. A *Teletype Games - …* theme chosen before has to be
+  picked again in *Preferences: Color Theme*.
 - **Clone…** and **Fork…** on a software of the Catalog view, and a *Forks* node under it, from the host's public
   catalog (WECP `api: 3`; an older host shows none of them). A fork gets a new name on a host you can connect to, an
   `upstream` remote, its parent in the metadata (`fork_of_*`), and Connect; **Pull from Upstream** merges the

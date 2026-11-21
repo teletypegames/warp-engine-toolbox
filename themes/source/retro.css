@@ -1,4 +1,4 @@
-/* The --c-* palette of the wiki's retro mode (services/wiki-pages/themes/ttgwiki2/css/retro.css), the source of Teletype Games - Retro: run npm run themes after a change there. */
+/* The --c-* palette of the wiki's retro mode (services/wiki-pages/themes/ttgwiki2/css/retro.css), the source of WarpEngine - Retro: run npm run themes after a change there. */
 [data-theme='retro'] {
   --c-page: 0 0 0;
   --c-surface: 0 0 168;

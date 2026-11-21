@@ -102,24 +102,24 @@ Three color themes in the look of teletypegames.org come with the toolbox; pick 
 
 | Theme | |
 |---|---|
-| **Teletype Games - Dark** | zinc greys and the green accent of the site's dark mode |
-| **Teletype Games - Light** | the same in the site's light mode |
-| **Teletype Games - Retro** | the wiki's retro mode: black editor, CGA-blue panels, white lines, bright yellow, cyan and green code |
+| **WarpEngine - Dark** | zinc greys and the green accent of the site's dark mode |
+| **WarpEngine - Light** | the same in the site's light mode |
+| **WarpEngine - Retro** | the wiki's retro mode: black editor, CGA-blue panels, white lines, bright yellow, cyan and green code |
 
 And one per platform, in its own colors:
 
 | Theme | Its look |
 |---|---|
-| **Teletype Games - C64** | the BASIC boot screen: blue editor in a light blue frame |
-| **Teletype Games - Plus/4** | the BASIC 3.5 boot screen: white editor in a light purple frame, black text |
-| **Teletype Games - TIC-80** | Sweetie 16, the TIC-80 default palette |
-| **Teletype Games - LÖVE** | LÖVE's pink and light blue on deep blue |
-| **Teletype Games - Phaser** | neon arcade: deep violet, magenta and cyan |
-| **Teletype Games - Ebitengine** | the Go look: white, Go blue, the gopher's yellow on the current line |
-| **Teletype Games - Bevy** | graphite with Rust's orange |
-| **Teletype Games - Godot** | the Godot editor's slate blue and script colors |
-| **Teletype Games - DOS** | the blue editor of the classic DOS IDEs: yellow text, a grey menu and status bar |
-| **Teletype Games - Electron** | charcoal with Electron's teal |
+| **WarpEngine - C64** | the BASIC boot screen: blue editor in a light blue frame |
+| **WarpEngine - Plus/4** | the BASIC 3.5 boot screen: white editor in a light purple frame, black text |
+| **WarpEngine - TIC-80** | Sweetie 16, the TIC-80 default palette |
+| **WarpEngine - LÖVE** | LÖVE's pink and light blue on deep blue |
+| **WarpEngine - Phaser** | neon arcade: deep violet, magenta and cyan |
+| **WarpEngine - Ebitengine** | the Go look: white, Go blue, the gopher's yellow on the current line |
+| **WarpEngine - Bevy** | graphite with Rust's orange |
+| **WarpEngine - Godot** | the Godot editor's slate blue and script colors |
+| **WarpEngine - DOS** | the blue editor of the classic DOS IDEs: yellow text, a grey menu and status bar |
+| **WarpEngine - Electron** | charcoal with Electron's teal |
 
 Keywords take the green accent, types its lighter shade, strings amber, numbers blue, comments
 the muted grey (the platform themes take their palette's colors instead); every text color passes a contrast check (4.5:1, comments 3:1). The remote
