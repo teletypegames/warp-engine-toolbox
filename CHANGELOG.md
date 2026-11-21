@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.15.1
 
 - In a window reopened in a dev container the steps on the computer's Docker — *Install Local Engine*, *Purge*,
   *Start Docker*, *Start the Local Engine* — no longer run in the container (the installer found no Docker there):
