@@ -4,8 +4,14 @@ import { readFileSync, writeFileSync } from 'node:fs'
 
 const TOKENS = 'themes/source/tokens.css'
 const RETRO = 'themes/source/retro.css'
+const PLATFORMS = 'themes/source/platforms.json'
 const MIN_TEXT = 4.5
 const MIN_QUIET = 3
+const SURFACES = [
+  ['editor text', 'editor.foreground', 'editor.background'], ['title bar', 'titleBar.activeForeground', 'titleBar.activeBackground'],
+  ['status bar', 'statusBar.foreground', 'statusBar.background'], ['activity bar', 'activityBar.foreground', 'activityBar.background'],
+  ['remote indicator', 'statusBarItem.remoteForeground', 'statusBarItem.remoteBackground'], ['tab', 'tab.activeForeground', 'tab.activeBackground']
+]
 
 function blocks(file) {
   const text = readFileSync(file, 'utf8')
@@ -28,8 +34,14 @@ function palettes() {
   return {
     dark: { label: 'Teletype Games - Dark', ui: 'vs-dark', c: dark, code: { keyword: dark.accent, type: dark['accent-hover'], string: dark.warn, number: dark.info, comment: dark['fg-subtle'] } },
     light: { label: 'Teletype Games - Light', ui: 'vs', c: light, code: { keyword: light.accent, type: light['accent-hover'], string: light.warn, number: light.info, comment: light['fg-subtle'] } },
-    retro: { label: 'Teletype Games - Retro', ui: 'vs-dark', c: retro, code: { keyword: '#ffff55', type: '#ffffff', string: '#55ffff', number: '#55ff55', comment: retro['fg-subtle'] } }
+    retro: { label: 'Teletype Games - Retro', ui: 'vs-dark', c: retro, code: { keyword: '#ffff55', type: '#ffffff', string: '#55ffff', number: '#55ff55', comment: retro['fg-subtle'] } },
+    ...platforms()
   }
+}
+
+function platforms() {
+  const entries = Object.entries(JSON.parse(readFileSync(PLATFORMS, 'utf8'))).filter(([name]) => !name.startsWith('_'))
+  return Object.fromEntries(entries.map(([name, p]) => [name, { label: p.label, ui: p.ui, c: p.c, code: p.code, colors: p.colors ?? {} }]))
 }
 
 function workbench(c) {
@@ -91,7 +103,7 @@ function tokenColors(c, code) {
 }
 
 function theme(p) {
-  const colors = Object.fromEntries(Object.entries(workbench(p.c)).filter(([, value]) => value !== undefined))
+  const colors = Object.fromEntries(Object.entries({ ...workbench(p.c), ...(p.colors ?? {}) }).filter(([, value]) => value !== undefined))
   return {
     $schema: 'vscode://schemas/color-theme', name: p.label, type: p.ui === 'vs' ? 'light' : 'dark', semanticHighlighting: true, colors,
     tokenColors: tokenColors(p.c, p.code),
@@ -115,7 +127,8 @@ function contrastProblems(name, p) {
     ['number', p.code.number, p.c.page, MIN_TEXT], ['comment', p.code.comment, p.c.page, MIN_QUIET], ['text', p.c.fg, p.c.page, MIN_TEXT],
     ['side bar text', p.c.fg, p.c.surface, MIN_TEXT], ['muted text', p.c['fg-muted'], p.c.surface, MIN_TEXT],
     ['button', p.c['accent-fg'], p.c.accent, MIN_TEXT], ['selection text', p.c.fg, p.c['accent-quiet'], MIN_TEXT],
-    ['error in a list', p.c.danger, p.c.surface, MIN_QUIET], ['warning in a list', p.c.warn, p.c.surface, MIN_QUIET]
+    ['error in a list', p.c.danger, p.c.surface, MIN_QUIET], ['warning in a list', p.c.warn, p.c.surface, MIN_QUIET],
+    ...SURFACES.map(([what, fg, bg]) => [what, theme(p).colors[fg], theme(p).colors[bg], MIN_TEXT])
   ]
   return pairs.filter(([, fg, bg, min]) => contrast(fg, bg) < min).map(([what, fg, bg, min]) => `${name}: ${what} ${fg} on ${bg} is ${contrast(fg, bg).toFixed(2)}:1, below ${min}:1`)
 }
@@ -127,6 +140,8 @@ if (process.argv.includes('--check')) {
     try { current = readFileSync(file, 'utf8') } catch { current = null }
     return [...(current === text ? [] : [`${file} is out of date: run npm run themes`]), ...contrastProblems(name, p)]
   })
+  const listed = JSON.parse(readFileSync('package.json', 'utf8')).contributes.themes.map((entry) => entry.path.replace(/^\.\//, ''))
+  problems.push(...built.filter(({ file }) => !listed.includes(file)).map(({ file }) => `${file} is not listed in package.json contributes.themes`))
   for (const problem of problems) console.error(problem)
   process.exit(problems.length > 0 ? 1 : 0)
 }

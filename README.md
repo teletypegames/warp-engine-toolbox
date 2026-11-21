@@ -105,8 +105,23 @@ Three color themes in the look of teletypegames.org come with the toolbox; pick 
 | **Teletype Games - Light** | the same in the site's light mode |
 | **Teletype Games - Retro** | the wiki's retro mode: black editor, CGA-blue panels, white lines, bright yellow, cyan and green code |
 
+And one per platform, in its own colors:
+
+| Theme | Its look |
+|---|---|
+| **Teletype Games - C64** | the BASIC boot screen: blue editor in a light blue frame |
+| **Teletype Games - Plus/4** | the BASIC 3.5 boot screen: white editor in a light purple frame, black text |
+| **Teletype Games - TIC-80** | Sweetie 16, the TIC-80 default palette |
+| **Teletype Games - LÖVE** | LÖVE's pink and light blue on deep blue |
+| **Teletype Games - Phaser** | neon arcade: deep violet, magenta and cyan |
+| **Teletype Games - Ebitengine** | the Go look: white, Go blue, the gopher's yellow on the current line |
+| **Teletype Games - Bevy** | graphite with Rust's orange |
+| **Teletype Games - Godot** | the Godot editor's slate blue and script colors |
+| **Teletype Games - DOS** | the blue editor of the classic DOS IDEs: yellow text, a grey menu and status bar |
+| **Teletype Games - Electron** | charcoal with Electron's teal |
+
 Keywords take the green accent, types its lighter shade, strings amber, numbers blue, comments
-the muted grey; every text color passes a contrast check (4.5:1, comments 3:1). The remote
+the muted grey (the platform themes take their palette's colors instead); every text color passes a contrast check (4.5:1, comments 3:1). The remote
 indicator is green, so a window in a dev container shows at a glance. A font is not part of a
 theme: for the retro look set `editor.fontFamily` to a monospace like Lucida Console yourself.
 

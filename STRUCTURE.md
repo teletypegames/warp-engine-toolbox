@@ -137,9 +137,13 @@ complexity 8, 4 parameters (more travel as one input object).
 `themes/teletype-games-{dark,light,retro}.json` are generated, not edited: `npm run themes`
 (`scripts/themes.mjs`) builds them from `themes/source/tokens.css` (a copy of the site's
 `services/teletypegames/apps/frontend/src/styles/tokens.css`) and `themes/source/retro.css`
-(the `--c-*` palette of the wiki's retro mode). After a brand color changes, copy the source
+(the `--c-*` palette of the wiki's retro mode), and one theme per platform from
+`themes/source/platforms.json` (the same roles, the five code colors and any VS Code color set
+directly, each with the source of its palette). After a brand color changes, copy the source
 over and run it. `npm run themes:check` runs with the unit tests and fails when a theme is out of
-date or a text color is below its contrast minimum.
+date, missing from `contributes.themes`, or a text color — of the roles or of the final colors of
+the editor, title bar, status bar, activity bar, active tab and remote indicator — is below its
+contrast minimum.
 
 ## i18n
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **A theme per platform**: *Teletype Games - C64, Plus/4, TIC-80, LÖVE, Phaser, Ebitengine, Bevy, Godot, DOS, Electron*,
+  each in its platform's own colors (the C64 and Plus/4 boot screens, TIC-80's Sweetie 16, the Godot editor, a DOS IDE…),
+  contrast-checked like the others.
+
 ## 1.15.3
 
 - **Teletype Games - Dark / Light / Retro**: color themes in the look of teletypegames.org (Retro: the wiki's DOS

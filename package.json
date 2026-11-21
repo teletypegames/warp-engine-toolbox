@@ -63,6 +63,56 @@
         "label": "Teletype Games - Retro",
         "uiTheme": "vs-dark",
         "path": "./themes/teletype-games-retro.json"
+      },
+      {
+        "label": "Teletype Games - C64",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-c64.json"
+      },
+      {
+        "label": "Teletype Games - Plus/4",
+        "uiTheme": "vs",
+        "path": "./themes/teletype-games-plus4.json"
+      },
+      {
+        "label": "Teletype Games - TIC-80",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-tic80.json"
+      },
+      {
+        "label": "Teletype Games - LÖVE",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-love.json"
+      },
+      {
+        "label": "Teletype Games - Phaser",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-phaser.json"
+      },
+      {
+        "label": "Teletype Games - Ebitengine",
+        "uiTheme": "vs",
+        "path": "./themes/teletype-games-ebitengine.json"
+      },
+      {
+        "label": "Teletype Games - Bevy",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-bevy.json"
+      },
+      {
+        "label": "Teletype Games - Godot",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-godot.json"
+      },
+      {
+        "label": "Teletype Games - DOS",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-dos.json"
+      },
+      {
+        "label": "Teletype Games - Electron",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-electron.json"
       }
     ],
     "commands": [
