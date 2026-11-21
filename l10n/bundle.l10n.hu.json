@@ -400,10 +400,13 @@
   "The local engine runs in Docker.": "A helyi motor Dockerben fut.",
   "The local engine runs in Docker. Install it, or set warpengine.docker to the Docker command when it is somewhere else.": "A helyi motor Dockerben fut. Telepítsd, vagy ha máshol van, állítsd a warpengine.docker beállítást a Docker-parancsra.",
   "The WarpEngine Toolbox was installed in this dev container after the window opened: reload the window so its tasks work.": "A WarpEngine Toolbox az ablak megnyitása után települt ebbe a dev containerbe: töltsd újra az ablakot, hogy a taskjai működjenek.",
-  "This window runs in a dev container, where Docker cannot be reached: start or repair the engine with WarpEngine: Fix Host Connection… in a window on this computer, then try again.": "Ez az ablak dev containerben fut, ahonnan a Docker nem érhető el: indítsd el vagy javítsd meg a motort egy ezen a gépen futó ablakban (WarpEngine: Host-kapcsolat javítása…), aztán próbáld újra.",
   "Try Again": "Újra",
   "Use {0}": "{0} használata",
   "Use that address as the host?": "Legyen ez a cím a host?",
   "Waiting for Docker…": "Várakozás a Dockerre…",
-  "WarpEngine Local log": "WarpEngine Local napló"
+  "WarpEngine Local log": "WarpEngine Local napló",
+  "Reopen Folder Locally": "Megnyitás a gépen",
+  "The local engine and Docker are on the computer, not in the container: reopen the folder on the computer and do it there.": "A helyi motor és a Docker a gépen van, nem a konténerben: nyisd meg a mappát a gépen, és ott csináld.",
+  "This window runs in a dev container, where Docker cannot be reached: reopen the folder on the computer, where Fix… repairs the engine, or choose another host.": "Ez az ablak dev containerben fut, ahonnan a Docker nem érhető el: nyisd meg a mappát a gépen, ott a Javítás… megjavítja a motort, vagy válassz másik hostot.",
+  "This window runs in a dev container.": "Ez az ablak dev containerben fut."
 }

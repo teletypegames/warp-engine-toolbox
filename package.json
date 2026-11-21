@@ -335,12 +335,12 @@
         },
         {
           "command": "warpengine.purgeLocalEngine",
-          "when": "view == warpengine.servers && warpengine.hasServers",
+          "when": "view == warpengine.servers && warpengine.hasServers && !warpengine.inDevContainer",
           "group": "navigation@2"
         },
         {
           "command": "warpengine.installLocalEngine",
-          "when": "view == warpengine.servers && !warpengine.hasServers",
+          "when": "view == warpengine.servers && !warpengine.hasServers && !warpengine.inDevContainer",
           "group": "navigation@1"
         }
       ],
@@ -452,6 +452,22 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "warpengine.installLocalEngine",
+          "when": "!warpengine.inDevContainer"
+        },
+        {
+          "command": "warpengine.purgeLocalEngine",
+          "when": "!warpengine.inDevContainer"
+        },
+        {
+          "command": "warpengine.startDocker",
+          "when": "!warpengine.inDevContainer"
+        },
+        {
+          "command": "warpengine.startLocalEngine",
+          "when": "!warpengine.inDevContainer"
+        },
         {
           "command": "warpengine.startDevContainer",
           "when": "false"

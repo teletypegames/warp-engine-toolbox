@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- In a window reopened in a dev container the steps on the computer's Docker — *Install Local Engine*, *Purge*,
+  *Start Docker*, *Start the Local Engine* — no longer run in the container (the installer found no Docker there):
+  they offer **Reopen Folder Locally**, and so do *Fix…* and the *Local Server* line; the toolbar buttons are hidden there.
+
 ## 1.15.0
 
 - **Fix…** on every "cannot be reached" (views, notifications, *Health*), also as **WarpEngine: Fix Host

@@ -10,6 +10,7 @@ import type { DevContainerService } from '../../../domain/service/dev-container.
 import type { ServerService } from '../../../domain/service/server.service'
 import { Dialogs } from '../../ui/dialogs'
 import { t } from '../../ui/l10n'
+import { HostMachineDialog } from '../../ui/host-machine.dialog'
 import { RemedyDialog } from '../../ui/remedy.dialog'
 import { TreeNode } from './tree.node'
 import type { TreeView } from './tree.provider'
@@ -31,14 +32,14 @@ export class ServersTreeView implements TreeView {
   /**
    * Returns one node per WarpEngine container, or one that installs the local engine when there is none, then one
    * per dev container; sets the `warpengine.hasServers` context key (WarpEngine containers only). In a dev
-   * container it returns one node saying that the view works from a window on the computer.
+   * container it returns one node saying that the view works from a window on the computer; a click reopens the folder there.
    *
    * @returns The nodes.
    */
   public async roots(): Promise<TreeNode[]> {
     if (this.devContainers.inside()) {
       await Dialogs.setContext('warpengine.hasServers', false)
-      return [new TreeNode(t('This window runs in a dev container'), { description: t('the containers are listed in a window on this computer'), icon: 'info' })]
+      return [new TreeNode(t('This window runs in a dev container'), { description: t('the containers are listed in a window on this computer'), icon: 'info', command: { title: HostMachineDialog.label(), command: 'remote-containers.reopenLocally' } })]
     }
     const containers: ServerContainer[] = await this.servers.containers()
     await Dialogs.setContext('warpengine.hasServers', containers.length > 0)

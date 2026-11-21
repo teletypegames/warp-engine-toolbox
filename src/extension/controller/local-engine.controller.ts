@@ -11,6 +11,7 @@ import type { HostService } from '../../domain/service/host.service'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import { Dialogs } from '../ui/dialogs'
 import { t } from '../ui/l10n'
+import { HostMachineDialog } from '../ui/host-machine.dialog'
 import { RemedyDialog } from '../ui/remedy.dialog'
 
 const OFFERED_KEY = 'warpengine.localEngineOffered'
@@ -26,6 +27,8 @@ export interface LocalEngineDependencies {
   readonly connection: ConnectionService
   /** The global state that remembers that the install was offered. */
   readonly state: vscode.Memento
+  /** Tells whether this window runs in a dev container, where the installer must not run. */
+  readonly inside: () => boolean
 }
 
 /** Receives a local engine that does not answer: `afterInstall` when the installer has just closed. */
@@ -74,9 +77,12 @@ export class LocalEngineController {
    *
    * When the terminal closes, looks for the local engine again; when it still does not answer, the missing handler gets it.
    *
+   * In a dev container it does not run: it offers to reopen the folder on the computer instead.
+   *
    * @param reuse - `true` runs it with `--yes`: the saved answers and the data stay, nothing is asked.
    */
-  public install(reuse: boolean = false): void {
+  public async install(reuse: boolean = false): Promise<void> {
+    if (!(await HostMachineDialog.allows(this.deps.inside()))) return
     const terminal: vscode.Terminal = vscode.window.createTerminal(LocalEngineController.installer(reuse))
     const closed: vscode.Disposable = vscode.window.onDidCloseTerminal((done: vscode.Terminal) => {
       if (done !== terminal) return
@@ -107,7 +113,7 @@ export class LocalEngineController {
     const install: string = t('Install a local engine')
     const host: string = t('Set Host…')
     const answer: string | undefined = await Dialogs.ask(t('No WarpEngine host yet. Install one on this machine (Docker), or set the address of one?'), install, host)
-    if (answer === install) this.install()
+    if (answer === install) await this.install()
     if (answer === host) await vscode.commands.executeCommand('warpengine.selectHost')
   }
 

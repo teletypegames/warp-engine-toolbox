@@ -14,6 +14,7 @@ import type { HostService } from '../../domain/service/host.service'
 import type { RepairService } from '../../domain/service/repair.service'
 import type { ServerService } from '../../domain/service/server.service'
 import { Dialogs } from '../ui/dialogs'
+import { HostMachineDialog } from '../ui/host-machine.dialog'
 import { t } from '../ui/l10n'
 import type { LocalEngineController } from './local-engine.controller'
 import type { RefreshController } from './refresh.controller'
@@ -38,6 +39,8 @@ export interface RepairDependencies {
   readonly purge: ServersController
   /** Redraws everything once the host answers. */
   readonly refresh: RefreshController
+  /** Tells whether this window runs in a dev container, where Docker cannot be reached. */
+  readonly inside: () => boolean
 }
 
 type Step = () => Promise<void>
@@ -90,9 +93,10 @@ export class RepairController {
   /**
    * `warpengine.startDocker`: opens OrbStack or Docker Desktop (macOS, Windows), or starts the Docker service in a
    * terminal (`sudo systemctl start docker`, Linux); waits for Docker, then refreshes and, for a local host, looks at it again.
-   * Without a Docker command it offers to get Docker or set the command instead.
+   * Without a Docker command it offers to get Docker or set the command instead; in a dev container, to reopen the folder on the computer.
    */
   public async startDocker(): Promise<void> {
+    if (!(await HostMachineDialog.allows(this.deps.inside()))) return
     const availability: DockerAvailability = await this.deps.servers.docker()
     if (availability === 'missing') {
       await this.dockerMissing()
@@ -110,9 +114,10 @@ export class RepairController {
 
   /**
    * `warpengine.startLocalEngine`: starts the stopped WarpEngine containers, waits for the host when it is the local
-   * engine, then refreshes everything.
+   * engine, then refreshes everything; in a dev container it offers to reopen the folder on the computer instead.
    */
   public async startLocalEngine(): Promise<void> {
+    if (!(await HostMachineDialog.allows(this.deps.inside()))) return
     await this.afterStep(t('Starting the local engine…'), async (): Promise<void> => { await this.deps.servers.startLocal() })
   }
 
@@ -126,7 +131,7 @@ export class RepairController {
   private prompt(diagnosis: Exclude<HostDiagnosis, { kind: 'answers' | 'dockerMissing' | 'noHost' }>): Prompt {
     switch (diagnosis.kind) {
       case 'remote': return this.remote(diagnosis.url)
-      case 'inside': return { message: t('The local engine at {0} does not answer.', diagnosis.url), detail: t('This window runs in a dev container, where Docker cannot be reached: start or repair the engine with WarpEngine: Fix Host Connection… in a window on this computer, then try again.'), steps: [this.again(), this.otherHost()] }
+      case 'inside': return { message: t('The local engine at {0} does not answer.', diagnosis.url), detail: t('This window runs in a dev container, where Docker cannot be reached: reopen the folder on the computer, where Fix… repairs the engine, or choose another host.'), steps: [[HostMachineDialog.label(), async (): Promise<void> => HostMachineDialog.reopen()], this.again(), this.otherHost()] }
       case 'dockerDown': return { message: t('Docker does not run.'), detail: t('The local engine runs in Docker.'), steps: [[t('Start Docker'), async (): Promise<void> => this.startDocker()], this.otherHost()] }
       case 'notInstalled': return this.notInstalled(diagnosis.dataFolder, diagnosis.configured)
       case 'stopped': return this.stopped(diagnosis.containers)
@@ -180,10 +185,7 @@ export class RepairController {
   }
 
   private install(reuse: boolean): Step {
-    return async (): Promise<void> => {
-      this.deps.localEngine.install(reuse)
-      return Promise.resolve()
-    }
+    return async (): Promise<void> => this.deps.localEngine.install(reuse)
   }
 
   private async dockerMissing(): Promise<void> {
