@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.15.3
 
 - **Teletype Games - Dark / Light / Retro**: color themes in the look of teletypegames.org (Retro: the wiki's DOS
   palette), generated from the site's tokens and contrast-checked; pick one in *Preferences: Color Theme*.
