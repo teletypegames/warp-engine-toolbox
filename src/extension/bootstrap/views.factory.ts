@@ -61,7 +61,7 @@ export interface Views {
  */
 export function createViews(context: vscode.ExtensionContext, services: Services, workspace: Workspace): Views {
   const { projects, states } = workspace
-  const tasks: MakeTaskProvider = new MakeTaskProvider(projects, services.make)
+  const tasks: MakeTaskProvider = new MakeTaskProvider(projects, services.make, services.devContainers)
   return {
     tasks,
     projectTree: new TreeProvider(new ProjectTreeView({ hosts: services.hosts, projects, states, play: services.play, local: services.localEngine, hostInfo: services.hostInfo })),

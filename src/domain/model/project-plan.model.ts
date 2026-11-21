@@ -8,6 +8,7 @@ import { Marker } from './marker.model'
 import type { JsonEdits } from './placeholders.model'
 import type { Platform } from './platform.model'
 import { ProjectFiles } from './project-files.model'
+import { TasksDocument } from './tasks-document.model'
 
 /** Which downloaded archive a planned file is copied from. */
 export type PlanRoot = 'template' | 'demo'
@@ -25,10 +26,20 @@ export interface PlannedFile {
   } | null
   /** The generated content, or `null` when the file is copied. */
   readonly content: string | null
-  /** How the copied text is changed: the project name set in a `Makefile`, placeholders filled, JSON edits applied, or none. */
-  readonly transform: 'makefile' | 'fill' | 'json' | null
+  /** How the copied text is changed: the project name set in a `Makefile`, placeholders filled, JSON edits applied, its tasks merged into the target (`tasks`), or none. */
+  readonly transform: 'makefile' | 'fill' | 'json' | 'tasks' | null
   /** The JSON edits to apply when the transform is `json`. */
   readonly edits?: JsonEdits
+}
+
+/** The `devcontainer` part of a template manifest: the dev container a project gets. */
+export interface DevContainerManifest {
+  /** Source path mapped to target path, such as `example-devcontainer.json` to `.devcontainer/devcontainer.json`. */
+  readonly files?: Readonly<Record<string, string>>
+  /** Files whose placeholders are filled (`{builderImage}` among them). */
+  readonly fill?: readonly string[]
+  /** A `tasks.json` whose tasks are merged into the project's `.vscode/tasks.json`. */
+  readonly tasks?: string
 }
 
 /** The `warp-template.json` of a template or demo repository: how its files become a project. */
@@ -43,6 +54,8 @@ export interface TemplateManifest {
   readonly keep?: readonly string[]
   /** Template files left out when the project starts from the demo. */
   readonly templateOnly?: readonly string[]
+  /** The dev container the project gets; a toolbox that does not know the key ignores it. */
+  readonly devcontainer?: DevContainerManifest
 }
 
 /** What a {@link ProjectPlan} is made from. */
@@ -61,6 +74,8 @@ export interface PlanInput {
   readonly demoManifest?: TemplateManifest | null
   /** The WarpEngine host the game will publish to. */
   readonly host: string
+  /** `devcontainer` plans the dev container files only (Add Dev Container); absent plans the whole project. */
+  readonly only?: 'devcontainer'
 }
 
 const DEMO_SKIPPED: readonly RegExp[] = [
@@ -81,13 +96,16 @@ export const TEMPLATE_MANIFEST = 'warp-template.json'
  */
 export class ProjectPlan {
   private readonly files: Map<string, PlannedFile> = new Map<string, PlannedFile>()
+  private readonly tasks: PlannedFile[] = []
 
   /**
-   * Plans the files at once from the input.
+   * Plans the files at once from the input: the template, its dev container, the demo and the generated files, or only the dev container.
    * @param input - The platform, answers, archive listings and manifests.
    */
   public constructor(private readonly input: PlanInput) {
-    this.addTemplate()
+    if (input.only !== 'devcontainer') this.addTemplate()
+    this.addDevContainer()
+    if (input.only === 'devcontainer') return
     this.addDemo()
     this.addGenerated()
   }
@@ -110,6 +128,25 @@ export class ProjectPlan {
    */
   public list(): PlannedFile[] {
     return [...this.files.values()].sort((a: PlannedFile, b: PlannedFile) => a.target.localeCompare(b.target))
+  }
+
+  /**
+   * Lists the task files to merge into the project's `tasks.json` once the files are written.
+   * @returns The merges; their transform is `tasks`.
+   */
+  public merges(): PlannedFile[] {
+    return [...this.tasks]
+  }
+
+  private addDevContainer(): void {
+    const manifest: DevContainerManifest | undefined = this.input.manifest?.devcontainer
+    if (!manifest) return
+    const fill: ReadonlySet<string> = new Set<string>(manifest.fill ?? [])
+    for (const [from, to] of Object.entries(manifest.files ?? {})) {
+      const target: string = to.replaceAll(NAME_PLACEHOLDER, this.input.answers.name)
+      this.files.set(target, { target, source: { root: 'template', path: from }, content: null, transform: fill.has(from) ? 'fill' : null })
+    }
+    if (manifest.tasks) this.tasks.push({ target: TasksDocument.FILE, source: { root: 'template', path: manifest.tasks }, content: null, transform: 'tasks' })
   }
 
   private addTemplate(): void {

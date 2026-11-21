@@ -11,6 +11,7 @@ import type { SourceControlFactory } from '../../domain/repository/source-contro
 import { CatalogService } from '../../domain/service/catalog.service'
 import { ConnectService } from '../../domain/service/connect.service'
 import { ConnectionService } from '../../domain/service/connection.service'
+import { DevContainerService } from '../../domain/service/dev-container.service'
 import { HealthService } from '../../domain/service/health.service'
 import { HostInfoService } from '../../domain/service/host-info.service'
 import { HostService } from '../../domain/service/host.service'
@@ -34,6 +35,7 @@ import { HttpDiscoveryRepository } from '../../infrastructure/http/discovery.htt
 import { WarpEngineHttpGateway } from '../../infrastructure/http/warp-engine.http-gateway'
 import { PreviewServer } from '../../infrastructure/preview/preview.server'
 import { DockerContainerRuntime } from '../../infrastructure/process/container-runtime.docker-repository'
+import { CliDevContainerRepository } from '../../infrastructure/process/dev-container.cli-repository'
 import { ProcessShellRepository } from '../../infrastructure/process/shell.process-repository'
 import { TarTemplateRepository } from '../../infrastructure/template/template.tar-repository'
 import { VsCodeFileSystemRepository } from '../../infrastructure/vscode/file-system.vscode-repository'
@@ -104,6 +106,8 @@ export interface Services {
   readonly hostInfo: HostInfoService
   /** What is set up and what is not, for the Health view. */
   readonly health: HealthService
+  /** The dev containers of the projects: where their commands run, and running them there. */
+  readonly devContainers: DevContainerService
 }
 
 /** One controller per user flow, built by {@link "extension/bootstrap/controllers.factory".createControllers}; the command table maps the command ids to their methods. */
@@ -166,9 +170,12 @@ export function createServices(context: vscode.ExtensionContext): Services {
   return {
     hosts, localEngine, connection, platforms, projects, ...project, ...remote,
     images: new ImageService(connection), sync, localCi, servers, hostInfo,
+    devContainers: new DevContainerService(new CliDevContainerRepository({ cli: context.asAbsolutePath(DEV_CONTAINER_CLI), node: process.execPath, docker: dockerBinary }), infrastructure.files),
     health: new HealthService({ hosts, hostInfo, connection, local: localEngine, servers, publishCheck: project.publishCheck, files: infrastructure.files })
   }
 }
+
+const DEV_CONTAINER_CLI = 'dist/devcontainer-cli/devcontainer.js'
 
 function dockerBinary(): string {
   return vscode.workspace.getConfiguration('warpengine').get<string>('docker') ?? 'docker'

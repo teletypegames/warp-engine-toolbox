@@ -27,6 +27,8 @@ import type { ToolboxApi } from './toolbox.api'
 import { createViews, type Views } from './views.factory'
 import { createWorkspace, type Workspace } from './workspace.factory'
 
+let stopDevContainers: () => Promise<void> = async (): Promise<void> => Promise.resolve()
+
 /**
  * Activates the toolbox.
  *
@@ -47,6 +49,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   const views: Views = createViews(context, services, workspace)
   const controllers: Controllers = createControllers(context, services, workspace, views)
   const hostWatcher: HostWatcher = new HostWatcher(services.hosts)
+  stopDevContainers = async (): Promise<void> => services.devContainers.stopStarted()
   context.subscriptions.push(
     hostWatcher, workspace.projects, workspace.states, workspace.auth, ...disposables(views), ...registrations(context, services, workspace, views),
     ...wireEvents({ workspace, views, controllers, hostWatcher, hostInfo: services.hostInfo }),
@@ -59,9 +62,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<Toolbo
   return { ...workspace, ...views, platforms: services.platforms, hosts: services.hosts, scaffold: services.scaffold, sync: services.sync, signIn: services.signIn, localCi: services.localCi, servers: services.servers }
 }
 
-/** Deactivates the toolbox; the context subscriptions dispose everything, so it does nothing itself. */
-export function deactivate(): void {
-  /* the subscriptions dispose everything */
+/**
+ * Deactivates the toolbox: stops the dev containers this window started (they are kept for the next start); the
+ * context subscriptions dispose everything else.
+ *
+ * @returns When the containers are stopped.
+ */
+export async function deactivate(): Promise<void> {
+  await stopDevContainers()
 }
 
 function disposables(views: Views): Disposer[] {

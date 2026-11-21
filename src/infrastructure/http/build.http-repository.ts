@@ -9,6 +9,7 @@ import type { PlatformDescription } from '../../domain/model/platform-descriptio
 import type { PublishCheck } from '../../domain/model/publish-check.model'
 import type { BuildRepository, PlayPreviewRequest, PublishCheckRequest } from '../../domain/repository/build.repository'
 import type { WarpEngineHttpClient } from './warp-engine.http-client'
+import { Loopback } from './loopback'
 
 const PAGE_TIMEOUT_MS = 30_000
 
@@ -102,7 +103,7 @@ export class HttpBuildRepository implements BuildRepository {
    * @throws {@link domain/model/message.model!DomainError} when the answer is not 2xx.
    */
   public async page(url: string): Promise<string> {
-    const response: Response = await fetch(url, { signal: AbortSignal.timeout(PAGE_TIMEOUT_MS) })
+    const response: Response = await fetch(Loopback.reach(url), { signal: AbortSignal.timeout(PAGE_TIMEOUT_MS) })
     if (!response.ok) throw new DomainError(msg('{0} answered {1} for the play preview', this.client.baseUrl, response.status))
     return response.text()
   }

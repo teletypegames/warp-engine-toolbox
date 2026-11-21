@@ -4,6 +4,7 @@
  * @module
  */
 import { WarpEngineError } from './warp-engine.error'
+import { Loopback } from './loopback'
 
 const TIMEOUT_MS = 30_000
 const ADMIN = '/api/admin/v1'
@@ -123,7 +124,7 @@ export class WarpEngineHttpClient {
 
   private async send(url: string, init: RequestInit): Promise<Response> {
     try {
-      return await fetch(url, init)
+      return await fetch(Loopback.reach(url), init)
     } catch (error: unknown) {
       throw new WarpEngineError(`${this.baseUrl} cannot be reached: ${error instanceof Error ? error.message : String(error)}`, 0)
     }

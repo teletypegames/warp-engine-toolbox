@@ -10,6 +10,7 @@ import type { AddressInfo } from 'node:net'
 import { join, normalize, resolve, sep } from 'node:path'
 import type { PreviewRepository } from '../../domain/repository/preview.repository'
 import { BINARY, contentType } from './content-types'
+import { Loopback } from '../http/loopback'
 
 interface Cached {
   readonly type: string
@@ -135,7 +136,7 @@ export class PreviewServer implements PreviewRepository {
 
   private async fetchUpstream(url: string): Promise<Cached | number> {
     try {
-      const upstream: Response = await fetch(url, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) })
+      const upstream: Response = await fetch(Loopback.reach(url), { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) })
       if (!upstream.ok) return upstream.status
       const entry: Cached = { type: upstream.headers.get('content-type') ?? BINARY, body: Buffer.from(await upstream.arrayBuffer()) }
       this.cache.set(url, entry)

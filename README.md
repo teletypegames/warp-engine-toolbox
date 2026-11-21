@@ -20,6 +20,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 |---|---|
 | **New Game…** | Pick a platform, name the game, and get a project from the host's template (and demo): Makefile, tasks, pipeline marker, metadata, README, a git repository. |
 | **Add WarpEngine to This Project** | The marker, the metadata and the template's files for a project you already have; your own files are kept. |
+| **Dev container** | A template with a dev container gives the project `.devcontainer/` on the platform's CI builder image: with Docker alone on the computer, the project builds with the same toolchain as the pipeline (see [Develop with only Docker](#develop-with-only-docker)). **Add Dev Container** adds it to a project you have. |
 | **Connect** | One step on the host: repository on the forge, CI for it, a CI token in its secret and a draft catalog entry. The working copy gets the remote and is pushed: the first build starts. |
 | **Metadata** | `metadata.json` is validated against the host's schema for the platform (or edited in a form), and on every save the host says what a publish would refuse. TIC-80 headers are read the same way. |
 | **Pipeline marker** | Completion and hover for `platform:` in `.woodpecker.yaml`, and a lens that shows the full pipeline the host serves. |
@@ -50,11 +51,26 @@ A template repository can say exactly what a new game gets in a `warp-template.j
 
 `files` maps a template path to its place in the project; `{name}` in a target becomes the
 game's name. The files under `fill` get the placeholders replaced in their content: `{name}`,
-`{title}`, `{author}`, `{description}` and `{catalogUrl}` (the address of the host the toolbox is
-connected to). `json` sets fields of a JSON file by dotted path, with the placeholders filled in
+`{title}`, `{author}`, `{description}`, `{catalogUrl}` (the address of the host the toolbox is
+connected to) and `{builderImage}` (the platform's CI builder image, from the host). `json` sets fields of a JSON file by dotted path, with the placeholders filled in
 the values. `templateOnly` lists the template files a project gets only when it starts without
 the demo (the Hello World the demo replaces). Without a manifest the template's top-level `example-*` files are taken
 (`example-makefile.make` → `Makefile`).
+
+`devcontainer` gives the project a dev container: its `files` are copied (and filled when listed
+under its `fill`), and the tasks of its `tasks` file are merged into `.vscode/tasks.json` by
+label, the project's own tasks and comments kept. A toolbox that does not know the key leaves it
+out, so a template can carry it before every user has a toolbox that understands it:
+
+```json
+{
+  "devcontainer": {
+    "files": { "example-devcontainer.json": ".devcontainer/devcontainer.json", "example-devcontainer.Dockerfile": ".devcontainer/Dockerfile" },
+    "fill": ["example-devcontainer.json", "example-devcontainer.Dockerfile"],
+    "tasks": "example-devcontainer-tasks.json"
+  }
+}
+```
 
 A demo repository may carry a `warp-template.json` too, for the demo's own files: `fill`, `json`,
 and `keep` for files a demo copy otherwise leaves out (its `LICENSE`, `README`, CI and
@@ -178,11 +194,35 @@ Now*, *Edit Channels…*, *Check Connection*, *Disconnect* (removes the pairing 
 you are signed in to the other engine). The other engine must allow pairing: an `admin:write`
 sign-in always may, any signed-in tool where it says `pairing :anyone`.
 
+## Develop with only Docker
+
+A project with `.devcontainer/devcontainer.json` builds in its dev container — the platform's CI
+builder image with git and a `dev` user — so ACME, cc65, Go or Rust never have to be installed on
+the computer:
+
+- **In a window on this computer** the `warpengine` tasks (`build`, `clear`, `rebuild`, and the
+  build Play runs) go into the container through the Dev Containers CLI that comes with the
+  toolbox, on the editor's own Node: nothing to install but Docker. The first task starts the
+  container; the ones this window started stop when it closes.
+- **Reopened in the container** (the Dev Containers extension; New Game offers *Open in
+  Container*) the toolbox runs there and the tasks run as they are.
+- **dev image** builds the container image ahead of time; **play** builds and plays the game in
+  the host's web runtime — the way to try it, as the container has no emulator window. A task
+  with `"host": true` (the template's *run (VICE)*) builds in the container, then runs its
+  target on this computer, for a local emulator.
+- Play needs the host: its runtime page and files come from there.
+
+The Dev Containers extension connects to `/var/run/docker.sock`; with OrbStack or Colima turn on
+their compatibility link (OrbStack: *Use admin privileges for enhanced compatibility*). The
+toolbox's own route follows the Docker CLI's context and needs none. Inside the container the
+toolbox reaches a local engine on this computer at `host.docker.internal`.
+
 ## Requirements
 
-- VS Code 1.101 or later, git, `make`, and the platform's own tools for local builds
-  (`make deps` in a new project installs them where the template knows how).
-- Docker (or OrbStack) for Build Like CI.
+- VS Code 1.101 or later and git; for a project with a dev container, Docker is enough.
+- Without a dev container: `make` and the platform's own tools for local builds (`make deps` in a
+  new project installs them where the template knows how), and Docker (or OrbStack) for Build
+  Like CI.
 
 ## Development
 

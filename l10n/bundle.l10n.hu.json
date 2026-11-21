@@ -345,5 +345,18 @@
   "OK": "OK",
   "Info": "Infó",
   "Warning": "Figyelem",
-  "Error": "Hiba"
+  "Error": "Hiba",
+  "{0} (this computer)": "{0} (ezen a gépen)",
+  "{0} is not valid JSON.": "A(z) {0} nem érvényes JSON.",
+  "Built in the dev container; running make {0} on this computer.": "Lefordult a dev containerben; most ezen a gépen fut a make {0}.",
+  "dev image": "dev image",
+  "Its builds run in the dev container now.": "A buildjei mostantól a dev containerben futnak.",
+  "Open in Container": "Megnyitás konténerben",
+  "play": "játék",
+  "Tasks added: {0}.": "Hozzáadott taskok: {0}.",
+  "The {0} template has no dev container yet.": "A(z) {0} sablonnak még nincs dev containere.",
+  "The Dev Containers extension connects to /var/run/docker.sock, which is missing here (OrbStack or Colima without its compatibility link). Turn that link on to open projects in their container; until then the project opens here, and its builds still run in the dev container.": "A Dev Containers bővítmény a /var/run/docker.sock-hoz kapcsolódik, ami itt hiányzik (OrbStack vagy Colima a kompatibilitási link nélkül). Kapcsold be azt a linket, hogy a projektek a konténerükben nyíljanak meg; addig a projekt itt nyílik meg, a buildjei pedig így is a dev containerben futnak.",
+  "The host does not know the {0} platform of {1}.": "A hoszt nem ismeri a(z) {1} {0} platformját.",
+  "This window runs in the dev container already; its image is built.": "Ez az ablak már a dev containerben fut, az image-e megépült.",
+  "WarpEngine: adding a dev container to {0}": "WarpEngine: dev container hozzáadása ehhez: {0}"
 }

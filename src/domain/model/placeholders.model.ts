@@ -8,12 +8,13 @@ import type { GameAnswers } from './game-answers.model'
 /** JSON edits a template manifest asks for: a dotted key path mapped to the value to set there, its strings filled with placeholders. */
 export type JsonEdits = Readonly<Record<string, unknown>>
 
-const PLACEHOLDER = /\{(name|title|author|description|catalogUrl)\}/g
+const PLACEHOLDER = /\{(name|title|author|description|catalogUrl|builderImage)\}/g
 
 /**
  * Fills the New Game answers into template files.
  *
- * Recognised placeholders: `{name}`, `{title}`, `{author}`, `{description}` and `{catalogUrl}` (the host without a trailing slash).
+ * Recognised placeholders: `{name}`, `{title}`, `{author}`, `{description}`, `{catalogUrl}` (the host without a trailing slash)
+ * and `{builderImage}` (the CI builder image of the platform, which a dev container builds on).
  */
 export class Placeholders {
   private readonly values: Readonly<Record<string, string>>
@@ -22,14 +23,16 @@ export class Placeholders {
    * Collects the placeholder values.
    * @param answers - The answers of the New Game questions.
    * @param host - The WarpEngine host the game will publish to.
+   * @param builderImage - The platform's CI builder image; `null` (no builder) fills an empty text.
    */
-  public constructor(answers: GameAnswers, host: string) {
+  public constructor(answers: GameAnswers, host: string, builderImage: string | null = null) {
     this.values = {
       name: answers.name,
       title: answers.title,
       author: answers.author,
       description: answers.description,
-      catalogUrl: host.replace(/\/+$/, '')
+      catalogUrl: host.replace(/\/+$/, ''),
+      builderImage: builderImage ?? ''
     }
   }
 

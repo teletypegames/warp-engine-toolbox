@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TemplateRepository, TemplateTree } from '../../domain/repository/template.repository'
 import { ProcessRunner } from '../process/process.runner'
+import { Loopback } from '../http/loopback'
 
 const DOWNLOAD_TIMEOUT_MS = 120_000
 
@@ -79,7 +80,7 @@ export class TarTemplateRepository implements TemplateRepository {
   }
 
   private async fetchArchive(repositoryUrl: string, ref: string): Promise<Buffer> {
-    const response: Response = await fetch(TarTemplateRepository.archiveUrl(repositoryUrl, ref), { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) })
+    const response: Response = await fetch(Loopback.reach(TarTemplateRepository.archiveUrl(repositoryUrl, ref)), { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) })
     if (!response.ok) throw new Error(`${repositoryUrl} (${ref}): ${String(response.status)} ${response.statusText}`)
     return Buffer.from(await response.arrayBuffer())
   }

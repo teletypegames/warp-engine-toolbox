@@ -46,7 +46,7 @@ export function createControllers(context: vscode.ExtensionContext, services: Se
     servers: new ServersController({ servers: services.servers, local: services.localEngine, auth, localEngine, refresh }),
     signIn: new SignInController(services.connection, auth, refresh),
     release: new ReleaseController(services.release, projects, states, services.localEngine),
-    newGame: new NewGameController({ hosts: services.hosts, hostController, dialog, scaffold: services.scaffold, projects, connect }),
+    newGame: new NewGameController({ hosts: services.hosts, hostController, dialog, scaffold: services.scaffold, projects, connect, devContainers: services.devContainers }),
     project: new ProjectController({ projects, pipelines: services.pipelines, play: services.play, tasks: views.tasks, diagnostics: views.diagnostics, player: views.player, reports: views.reports, dashboard: views.dashboard }),
     catalog: new CatalogController({ catalog: services.catalog, pipelines: services.pipelines, projects, states, reports: views.reports, tree: views.catalogTree })
   }

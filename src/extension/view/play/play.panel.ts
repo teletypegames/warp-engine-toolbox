@@ -98,8 +98,13 @@ export class PlayPanel implements vscode.Disposable {
       Dialogs.error(plan.payloadKind === 'html' ? t('No index.html of a web build was found.') : t('No {0} build was found.', plan.payloadKind))
       return null
     }
-    const base: string = await this.deps.preview.serve(FilePath.dirname(payload))
+    const base: string = await PlayPanel.reachable(await this.deps.preview.serve(FilePath.dirname(payload)))
     return { project, plan, payload, base, shown: FilePath.relative(project.folder, payload) }
+  }
+
+  private static async reachable(url: string): Promise<string> {
+    const external: string = (await vscode.env.asExternalUri(vscode.Uri.parse(url))).toString(true)
+    return external.endsWith('/') ? external : `${external}/`
   }
 
   private async showLocal(prepared: Prepared, panel: vscode.WebviewPanel, renderer: PlayPageRenderer): Promise<void> {

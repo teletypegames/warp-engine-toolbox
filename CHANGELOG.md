@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **Develop with only Docker**: a template's `devcontainer` gives a new project `.devcontainer/` on
+  the platform's CI builder image (`{builderImage}`), and its tasks are merged into
+  `.vscode/tasks.json`. The `warpengine` tasks of such a project run in the container — through
+  the bundled Dev Containers CLI from a window on this computer (on the editor's own Node), as
+  they are in a window reopened in the container; the containers a window started stop when it
+  closes. New Game offers *Open in Container*.
+- **Add Dev Container** adds the template's dev container to a project you have, keeping its
+  files, its metadata and its version.
+- New task kinds: `"action": "play"` and `"action": "devImage"`, and `"host": true` (build in the
+  container, run the target on this computer). *Build Like CI* builds in the dev container when
+  the project has one.
+- Play reaches its preview server from a remote window (`asExternalUri`), and inside a dev
+  container `127.0.0.1` addresses (a local engine) go to `host.docker.internal`.
+
 ## 1.12.0
 
 - **A clearer Dashboard**: Pipeline and Releases show their five newest rows with a count, and

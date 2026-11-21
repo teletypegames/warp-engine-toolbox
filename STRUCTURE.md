@@ -44,7 +44,7 @@ Nothing in the domain imports `vscode`, `node:*`, `fetch`, `infrastructure/` or
 |---|---|---|
 | `model/` | Entities and value objects: classes with behaviour (`Version`, `Marker`, `LuaHeader`, `Metadata`, `Platform`, `Project`, `ProjectPlan`, `AssetChecklist`, `Changelog`, `Makefile`) and the plain data the host sends (`Software`, `Release`, `PipelineRun`, …). The rules on plain data live in a class of static methods named for it in the plural (`Releases`, `PipelineRuns`, `RemoteStates`, `PublishChecks`, `Servers`, `HealthChecks`), not in loose functions; `msg()`, the `Message` factory, is the one exception. | `model/` |
 | `repository/` | Ports: interfaces only, for everything outside the process — the host API, git, the project's files, the template archives, the shell, the stored sessions, the settings, the preview server. | `model/` |
-| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, `HealthService` (the facts of the Health checks), … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
+| `service/` | One class per business capability, on models and ports: `ReleaseService`, `ConnectService`, `ScaffoldService`, `RemoteStateService`, `PlayService`, `SyncService` (pairing two engines), `ImageService`, `ServerService` (the local containers and their purge), `HostInfoService`, `HealthService` (the facts of the Health checks), `DevContainerService` (where a project's commands run and running them in its dev container), … Every decision lives here: what is missing for a release, which versions to offer, what the host would refuse. A service never asks the user anything. | `model/`, `repository/` |
 
 A domain failure is a `DomainError` carrying a `Message` (an English text with `{0}`
 placeholders and its arguments) and, when one step fixes it, a `Remedy` (`signIn`,
@@ -55,9 +55,9 @@ the message and turns the remedy into a button. The Health checks carry remedies
 
 | Folder | Implements |
 |---|---|
-| `http/` | `WarpEngineHttpClient` (fetch, errors, the admin envelope) and the HTTP repositories on it: build, catalog, pipeline, sign-in; `WarpEngineHttpGateway` hands them out for the current host and token. |
+| `http/` | `WarpEngineHttpClient` (fetch, errors, the admin envelope) and the HTTP repositories on it: build, catalog, pipeline, sign-in; `WarpEngineHttpGateway` hands them out for the current host and token; `Loopback` turns `127.0.0.1` into `host.docker.internal` inside a dev container, for every fetch. |
 | `git/` | `SourceControl` with the `git` CLI. |
-| `process/` | Running a command (`execFile`) and a shell line; `ContainerRuntime` with the `docker` CLI (the Servers view, the purge). |
+| `process/` | Running a command (`execFile`) and a shell line; `ContainerRuntime` with the `docker` CLI (the Servers view, the purge); `CliDevContainerRepository`: the dev containers through the bundled `@devcontainers/cli`, run on the editor's Electron as Node. |
 | `template/` | `TemplateRepository`: a repository's archive downloaded and unpacked. |
 | `preview/` | `PreviewServer`: the loopback HTTP server Play uses. |
 | `vscode/` | The ports whose natural home is VS Code: the settings (hosts), the secret storage (sessions), the memento (platform cache), the workspace file system, the authentication session (token). The only infrastructure folder that may import `vscode`. |

@@ -26,6 +26,7 @@ function projectCommands({ newGame, connect, project, release }: Controllers): C
   return [
     ['warpengine.newGame', async (): Promise<void> => { await newGame.newGame() }],
     ['warpengine.addToProject', async (): Promise<void> => { await newGame.addToProject() }],
+    ['warpengine.addDevContainer', async (): Promise<void> => { await newGame.addDevContainer() }],
     ['warpengine.connect', async (): Promise<void> => { await connect.connect() }],
     ['warpengine.previewPipeline', async (): Promise<void> => { await project.previewPipeline() }],
     ['warpengine.play', async (): Promise<void> => { await project.play() }],
