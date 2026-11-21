@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.13.0
 
 - **Develop with only Docker**: a template's `devcontainer` gives a new project `.devcontainer/` on
   the platform's CI builder image (`{builderImage}`), and its tasks are merged into
