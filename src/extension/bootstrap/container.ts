@@ -9,9 +9,11 @@ import type { PreviewRepository } from '../../domain/repository/preview.reposito
 import type { FileSystemRepository } from '../../domain/repository/file-system.repository'
 import type { SourceControlFactory } from '../../domain/repository/source-control.repository'
 import { CatalogService } from '../../domain/service/catalog.service'
+import { CloneService } from '../../domain/service/clone.service'
 import { ConnectService } from '../../domain/service/connect.service'
 import { ConnectionService } from '../../domain/service/connection.service'
 import { DevContainerService } from '../../domain/service/dev-container.service'
+import { ForkService } from '../../domain/service/fork.service'
 import { HealthService } from '../../domain/service/health.service'
 import { HostInfoService } from '../../domain/service/host-info.service'
 import { HostService } from '../../domain/service/host.service'
@@ -31,6 +33,7 @@ import { ScaffoldService } from '../../domain/service/scaffold.service'
 import { ServerService } from '../../domain/service/server.service'
 import { SignInService } from '../../domain/service/sign-in.service'
 import { SyncService } from '../../domain/service/sync.service'
+import { UpstreamService } from '../../domain/service/upstream.service'
 import { GitCliFactory } from '../../infrastructure/git/git.cli-repository'
 import { HttpDiscoveryRepository } from '../../infrastructure/http/discovery.http-repository'
 import { WarpEngineHttpGateway } from '../../infrastructure/http/warp-engine.http-gateway'
@@ -47,7 +50,9 @@ import { SecretSessionRepository } from '../../infrastructure/vscode/session.sec
 import { AuthenticationTokenRepository } from '../../infrastructure/vscode/token.authentication-repository'
 import { AUTH_PROVIDER_ID } from '../auth/warp-engine.auth-provider'
 import type { CatalogController } from '../controller/catalog.controller'
+import type { CloneController } from '../controller/clone.controller'
 import type { ConnectController } from '../controller/connect.controller'
+import type { ForkController } from '../controller/fork.controller'
 import type { HostController } from '../controller/host.controller'
 import type { ImageController } from '../controller/image.controller'
 import type { LinkController } from '../controller/link.controller'
@@ -62,6 +67,7 @@ import type { RepairController } from '../controller/repair.controller'
 import type { ResetController } from '../controller/reset.controller'
 import type { SignInController } from '../controller/sign-in.controller'
 import type { SyncController } from '../controller/sync.controller'
+import type { UpstreamController } from '../controller/upstream.controller'
 
 /** Every domain service of the toolbox, built once by {@link "extension/bootstrap/container".createServices} on the infrastructure that implements its ports. */
 export interface Services {
@@ -113,6 +119,12 @@ export interface Services {
   readonly devContainers: DevContainerService
   /** Why the current host does not answer, and waiting for Docker or the engine. */
   readonly repair: RepairService
+  /** The public catalog's sources and forks, and cloning a source. */
+  readonly clone: CloneService
+  /** Where a fork can go, its name, and making it. */
+  readonly fork: ForkService
+  /** Pulling a fork's upstream. */
+  readonly upstream: UpstreamService
 }
 
 /** One controller per user flow, built by {@link "extension/bootstrap/controllers.factory".createControllers}; the command table maps the command ids to their methods. */
@@ -149,6 +161,12 @@ export interface Controllers {
   readonly repair: RepairController
   /** Reset…. */
   readonly reset: ResetController
+  /** Clone… and Try Again…. */
+  readonly clone: CloneController
+  /** Fork…. */
+  readonly fork: ForkController
+  /** Pull from Upstream. */
+  readonly upstream: UpstreamController
 }
 
 interface Infrastructure {
@@ -177,9 +195,10 @@ export function createServices(context: vscode.ExtensionContext): Services {
   const servers: ServerService = new ServerService(runtime)
   const hostInfo: HostInfoService = new HostInfoService(new HttpDiscoveryRepository(), hosts)
   const project: Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> = projectServices(infrastructure, connection, projects)
+  const forks: Pick<Services, 'clone' | 'fork' | 'upstream'> = forkServices({ infrastructure, connection, hosts, projects, signIn: remote.signIn })
   const devContainers: DevContainerService = new DevContainerService(new CliDevContainerRepository({ cli: context.asAbsolutePath(DEV_CONTAINER_CLI), node: process.execPath, docker: dockerBinary }), infrastructure.files)
   return {
-    hosts, localEngine, connection, platforms, projects, ...project, ...remote,
+    hosts, localEngine, connection, platforms, projects, ...project, ...remote, ...forks,
     images: new ImageService(connection), sync, localCi, servers, hostInfo, devContainers,
     repair: new RepairService({ hosts, discovery: new HttpDiscoveryRepository(), local: new VsCodeLocalEngineRepository(), runtime, inside: () => devContainers.inside() }),
     health: new HealthService({ hosts, hostInfo, connection, local: localEngine, servers, publishCheck: project.publishCheck, files: infrastructure.files })
@@ -190,6 +209,23 @@ const DEV_CONTAINER_CLI = 'dist/devcontainer-cli/devcontainer.js'
 
 function dockerBinary(): string {
   return vscode.workspace.getConfiguration('warpengine').get<string>('docker') ?? 'docker'
+}
+
+interface ForkWiring {
+  readonly infrastructure: Infrastructure
+  readonly connection: ConnectionService
+  readonly hosts: HostService
+  readonly projects: ProjectService
+  readonly signIn: SignInService
+}
+
+function forkServices(wiring: ForkWiring): Pick<Services, 'clone' | 'fork' | 'upstream'> {
+  const { files, git } = wiring.infrastructure
+  const clone: CloneService = new CloneService(wiring.connection, git, files)
+  return {
+    clone, upstream: new UpstreamService(git),
+    fork: new ForkService({ gateway: new WarpEngineHttpGateway(), hosts: wiring.hosts, signIn: wiring.signIn, clone, projects: wiring.projects, sourceControl: git, files })
+  }
 }
 
 function projectServices(infrastructure: Infrastructure, connection: ConnectionService, projects: ProjectService): Pick<Services, 'scaffold' | 'connect' | 'release' | 'publishCheck' | 'make'> {

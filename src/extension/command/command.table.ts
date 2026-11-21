@@ -5,6 +5,7 @@
  */
 import type * as vscode from 'vscode'
 import type { Controllers } from '../bootstrap/container'
+import { Project } from '../../domain/model/project.model'
 import type { TreeNode } from '../view/tree/tree.node'
 import type { CommandHandler } from './command.registry'
 
@@ -22,8 +23,12 @@ export function commandTable(controllers: Controllers): CommandRow[] {
   return [...projectCommands(controllers), ...accountCommands(controllers), ...catalogCommands(controllers), ...syncCommands(controllers)]
 }
 
-function projectCommands({ newGame, connect, project, release }: Controllers): CommandRow[] {
+function projectCommands({ newGame, connect, project, release, clone, fork, upstream }: Controllers): CommandRow[] {
   return [
+    ['warpengine.cloneSoftware', async (node?: TreeNode): Promise<void> => { await clone.clone(node) }],
+    ['warpengine.forkSoftware', async (node?: TreeNode): Promise<void> => { await fork.fork(node) }],
+    ['warpengine.retryClone', async (): Promise<void> => { await clone.retry() }],
+    ['warpengine.pullUpstream', async (): Promise<void> => { await upstream.pull() }],
     ['warpengine.newGame', async (): Promise<void> => { await newGame.newGame() }],
     ['warpengine.addToProject', async (): Promise<void> => { await newGame.addToProject() }],
     ['warpengine.addDevContainer', async (): Promise<void> => { await newGame.addDevContainer() }],
@@ -61,7 +66,7 @@ function syncCommands({ sync, images, localCi, servers, repair, reset }: Control
     ['warpengine.purgeLocalEngine', async (): Promise<void> => { await servers.purge() }],
     ['warpengine.startDevContainer', async (node?: TreeNode): Promise<void> => { await servers.startDevContainer(node) }],
     ['warpengine.stopDevContainer', async (node?: TreeNode): Promise<void> => { await servers.stopDevContainer(node) }],
-    ['warpengine.setupLocalCi', async (): Promise<void> => { await localCi.setUp() }],
+    ['warpengine.setupLocalCi', async (target?: unknown): Promise<void> => { await localCi.setUp(target instanceof Project ? target : undefined) }],
     ['warpengine.syncTo', async (): Promise<void> => { await sync.syncTo() }],
     ['warpengine.syncPushNow', async (node?: TreeNode): Promise<void> => { await sync.pushNow(node) }],
     ['warpengine.syncEditChannels', async (node?: TreeNode): Promise<void> => { await sync.editChannels(node) }],

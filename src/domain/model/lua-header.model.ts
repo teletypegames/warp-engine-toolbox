@@ -83,6 +83,19 @@ export class LuaHeader {
     return lines.join(eol)
   }
 
+  /**
+   * The file text without the header line of a key. Line endings are kept.
+   *
+   * @param key - The key to remove, in any case.
+   * @returns The whole new file content; the text unchanged when the header has no such line.
+   */
+  public without(key: string): string {
+    const found: HeaderLine | null = this.line(key)
+    if (!found) return this.text
+    const eol: string = this.text.includes('\r\n') ? '\r\n' : '\n'
+    return this.text.split(/\r?\n/).filter((_line: string, index: number) => index !== found.line).join(eol)
+  }
+
   private end(): number {
     return this.lines.reduce((last: number, entry: HeaderLine) => Math.max(last, entry.line + 1), 0)
   }

@@ -18,12 +18,13 @@ export class ProcessRunner {
    * @param command - The program, such as `git` or `docker`.
    * @param args - Its arguments.
    * @param cwd - The folder it runs in.
+   * @param env - Variables added to the extension's environment for this run.
    * @returns The exit code, standard output and standard error; never rejects, a program that
    *   cannot start gives a non-zero code with the error message as standard error.
    */
-  public static async run(command: string, args: readonly string[], cwd: string): Promise<ShellResult> {
+  public static async run(command: string, args: readonly string[], cwd: string, env: Readonly<Record<string, string>> = {}): Promise<ShellResult> {
     return new Promise((resolve: (result: ShellResult) => void) => {
-      execFile(command, [...args], { cwd, env: process.env, maxBuffer: MAX_BUFFER }, (error: Error | null, stdout: string, stderr: string) => {
+      execFile(command, [...args], { cwd, env: { ...process.env, ...env }, maxBuffer: MAX_BUFFER }, (error: Error | null, stdout: string, stderr: string) => {
         const code: number = ProcessRunner.exitCode(error)
         resolve({ code, stdout, stderr: stderr || (error && code !== 0 ? error.message : stderr) })
       })
@@ -36,11 +37,12 @@ export class ProcessRunner {
    * @param command - The program.
    * @param args - Its arguments.
    * @param cwd - The folder it runs in.
+   * @param env - Variables added to the extension's environment for this run.
    * @returns The standard output.
    * @throws `Error` naming the command line, with the standard error or the exit code.
    */
-  public static async runOrThrow(command: string, args: readonly string[], cwd: string): Promise<string> {
-    const result: ShellResult = await ProcessRunner.run(command, args, cwd)
+  public static async runOrThrow(command: string, args: readonly string[], cwd: string, env: Readonly<Record<string, string>> = {}): Promise<string> {
+    const result: ShellResult = await ProcessRunner.run(command, args, cwd, env)
     if (result.code !== 0) throw new Error(`${command} ${args.join(' ')}: ${result.stderr.trim() || `exit ${String(result.code)}`}`)
     return result.stdout
   }

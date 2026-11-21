@@ -124,6 +124,53 @@ export interface SourceControl {
    * @param args - The arguments after `push`, e.g. `["origin", "main", "v1.2.0"]`.
    */
   push(args: readonly string[]): Promise<void>
+  /**
+   * Renames a remote (`git remote rename`), with its remote-tracking branches.
+   *
+   * @param from - The current name.
+   * @param to - The new name.
+   */
+  renameRemote(from: string, to: string): Promise<void>
+  /**
+   * Fetches a remote (`git fetch`).
+   *
+   * @param remote - The remote name.
+   */
+  fetch(remote: string): Promise<void>
+  /**
+   * Reads the default branch of a remote, asking the remote when it is not known locally.
+   *
+   * @param remote - The remote name.
+   * @returns The branch name without the remote prefix, or `null` when it cannot be found.
+   */
+  remoteHead(remote: string): Promise<string | null>
+  /**
+   * Merges a reference into the checked-out branch (`git merge --no-edit`).
+   *
+   * @param ref - The reference, such as `upstream/master`.
+   * @returns What happened; a conflict leaves the merge in progress for the user.
+   */
+  merge(ref: string): Promise<MergeOutcome>
+}
+
+/** What a merge did: nothing new, merged (fast-forward or with a merge commit), or stopped on conflicts. */
+export interface MergeOutcome {
+  /** `upToDate`, `merged` or `conflict`. */
+  readonly state: 'upToDate' | 'merged' | 'conflict'
+  /** The files left with conflicts; empty unless `conflict`. */
+  readonly conflicts: readonly string[]
+}
+
+/** What {@link SourceControlFactory.clone} clones and where. */
+export interface CloneRequest {
+  /** The address to clone. */
+  readonly url: string
+  /** The folder to create; it must not exist. */
+  readonly folder: string
+  /** The branch or tag to check out, or `null` for the default branch. */
+  readonly ref: string | null
+  /** `true` clones without the blobs of the history (`--filter=blob:none`); they are fetched when needed. */
+  readonly partial: boolean
 }
 
 /** Creates {@link SourceControl} ports and reads the global git identity. */
@@ -141,4 +188,18 @@ export interface SourceControlFactory {
    * @returns The name; empty when none is set.
    */
   userName(): Promise<string>
+  /**
+   * Clones a repository into a new folder (`git clone`), never asking for credentials.
+   *
+   * @param request - The address, the folder, the branch and whether the clone is partial.
+   * @throws `Error` with git's standard error when the clone fails.
+   */
+  clone(request: CloneRequest): Promise<void>
+  /**
+   * Tells whether a remote answers without asking anything (`git ls-remote` with SSH in batch mode and no prompts).
+   *
+   * @param url - The address.
+   * @returns `true` when git lists the remote's references.
+   */
+  reachable(url: string): Promise<boolean>
 }

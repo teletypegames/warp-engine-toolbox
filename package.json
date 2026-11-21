@@ -373,6 +373,28 @@
         "title": "%command.deleteRelease%",
         "category": "WarpEngine",
         "icon": "$(trash)"
+      },
+      {
+        "command": "warpengine.cloneSoftware",
+        "title": "%command.cloneSoftware%",
+        "category": "WarpEngine",
+        "icon": "$(repo-clone)"
+      },
+      {
+        "command": "warpengine.forkSoftware",
+        "title": "%command.forkSoftware%",
+        "category": "WarpEngine",
+        "icon": "$(repo-forked)"
+      },
+      {
+        "command": "warpengine.retryClone",
+        "title": "%command.retryClone%",
+        "category": "WarpEngine"
+      },
+      {
+        "command": "warpengine.pullUpstream",
+        "title": "%command.pullUpstream%",
+        "category": "WarpEngine"
       }
     ],
     "menus": {
@@ -523,6 +545,16 @@
           "command": "warpengine.deleteRelease",
           "when": "view == warpengine.catalog && viewItem =~ /release/",
           "group": "2_danger@1"
+        },
+        {
+          "command": "warpengine.cloneSoftware",
+          "when": "view == warpengine.catalog && viewItem =~ /cloneable/",
+          "group": "1_source@1"
+        },
+        {
+          "command": "warpengine.forkSoftware",
+          "when": "view == warpengine.catalog && viewItem =~ /forkable/",
+          "group": "1_source@2"
         }
       ],
       "commandPalette": [
@@ -625,6 +657,22 @@
         {
           "command": "warpengine.deleteRelease",
           "when": "false"
+        },
+        {
+          "command": "warpengine.cloneSoftware",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.forkSoftware",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.retryClone",
+          "when": "false"
+        },
+        {
+          "command": "warpengine.pullUpstream",
+          "when": "warpengine.isProject"
         }
       ],
       "editor/title": [

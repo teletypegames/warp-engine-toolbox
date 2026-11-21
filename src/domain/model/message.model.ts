@@ -39,7 +39,7 @@ export function msg(text: string, ...args: MessageArgument[]): Message {
  */
 export type Remedy =
   | 'selectHost' | 'signIn' | 'reauthorize' | 'installLocalEngine' | 'connect' | 'setupLocalCi' | 'editMetadata' | 'addToProject' | 'newGame'
-  | 'repairHost' | 'startDocker' | 'startLocalEngine'
+  | 'repairHost' | 'startDocker' | 'startLocalEngine' | 'retryClone' | 'pullUpstream'
 
 /** A domain failure carrying a {@link Message}; its `message` is the English text with the arguments filled in. */
 export class DomainError extends Error {

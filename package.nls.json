@@ -69,5 +69,9 @@
   "command.repairHost": "Fix Host Connection…",
   "command.startDocker": "Start Docker",
   "command.startLocalEngine": "Start the Local Engine",
-  "command.reset": "Reset…"
+  "command.reset": "Reset…",
+  "command.cloneSoftware": "Clone…",
+  "command.forkSoftware": "Fork…",
+  "command.retryClone": "Try Clone Again…",
+  "command.pullUpstream": "Pull from Upstream"
 }

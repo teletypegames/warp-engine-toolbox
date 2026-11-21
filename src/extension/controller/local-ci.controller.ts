@@ -67,10 +67,11 @@ export class LocalCiController {
    *
    * Redraws the project view, refreshes and polls the remote state, and reports the remote (and any warnings) in a notification.
    *
+   * @param target - The project to set up; the current project when left out.
    * @throws {@link "domain/model/message.model".DomainError} When there is no current project or the local engine refuses the setup.
    */
-  public async setUp(): Promise<void> {
-    const project: Project = this.deps.projects.require()
+  public async setUp(target?: Project): Promise<void> {
+    const project: Project = target ?? this.deps.projects.require()
     const setup: LocalCiSetup = await Dialogs.progress(t('Setting {0} up on the local CI', project.title), async (report) => this.deps.localCi.setUp(project, report))
     this.deps.tree.refresh()
     await this.deps.states.refresh()

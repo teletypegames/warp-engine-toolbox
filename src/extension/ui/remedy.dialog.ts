@@ -21,7 +21,9 @@ const COMMANDS: Readonly<Record<Remedy, string>> = {
   newGame: 'warpengine.newGame',
   repairHost: 'warpengine.repairHost',
   startDocker: 'warpengine.startDocker',
-  startLocalEngine: 'warpengine.startLocalEngine'
+  startLocalEngine: 'warpengine.startLocalEngine',
+  retryClone: 'warpengine.retryClone',
+  pullUpstream: 'warpengine.pullUpstream'
 }
 
 const LABELS: Readonly<Record<Remedy, () => string>> = {
@@ -36,7 +38,9 @@ const LABELS: Readonly<Record<Remedy, () => string>> = {
   newGame: () => t('New Game…'),
   repairHost: () => t('Fix…'),
   startDocker: () => t('Start Docker'),
-  startLocalEngine: () => t('Start the Local Engine')
+  startLocalEngine: () => t('Start the Local Engine'),
+  retryClone: () => t('Try Again…'),
+  pullUpstream: () => t('Pull from Upstream')
 }
 
 /** Turns remedies into buttons and commands. */

@@ -83,6 +83,7 @@ async function world(sessions: Session[] = [{ id: 's', host: REMOTE, token: 'rem
   const tokens: Record<string, string> = {}
   const gateway: WarpEngineGateway = {
     build: () => { throw new Error('unused') },
+    publicCatalog: () => { throw new Error('unused') },
     signIn: () => { throw new Error('unused') },
     admin: (url: string, token: string): AdminRepositories => {
       tokens[url] = token

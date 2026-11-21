@@ -4,6 +4,7 @@
  * @module
  */
 import type { ScaffoldResult } from '../model/catalog.model'
+import type { ForkOrigin } from '../model/fork.model'
 import { DomainError, msg, type Message } from '../model/message.model'
 import { MetadataDocument } from '../model/metadata-document.model'
 import type { Project } from '../model/project.model'
@@ -69,7 +70,8 @@ export class ConnectService {
   }
 
   /**
-   * Has the host create the software, its repository and CI from the project's name, title, platform, category and description; signs in when needed.
+   * Has the host create the software, its repository and CI from the project's name, title, platform, category and
+   * description, and its licence and parent (the `fork_of_*` metadata keys) when it has them; signs in when needed.
    *
    * @param project - The project.
    * @returns What the host created.
@@ -79,9 +81,12 @@ export class ConnectService {
     const admin = await this.connection.admin(true)
     if (!admin) throw new DomainError(msg('Sign in first.'), 'signIn')
     const title: string = project.title
+    const license: string | null = project.metadata.trimmed('license')
+    const forkOf: ForkOrigin | null = ConnectService.forkOf(project)
     return admin.catalog.scaffold({
       name: project.name, title, platform: project.platformName,
-      category: project.metadata.trimmed('category'), description: project.metadata.trimmed('desc') ?? title
+      category: project.metadata.trimmed('category'), description: project.metadata.trimmed('desc') ?? title,
+      ...(forkOf ? { forkOf } : {}), ...(license ? { license } : {})
     })
   }
 
@@ -117,6 +122,13 @@ export class ConnectService {
     if (!input.remote) return
     input.report(msg('pushing: the first build starts…'))
     await git.push(['-u', 'origin', (await git.branch()) ?? FIRST_BRANCH])
+  }
+
+  private static forkOf(project: Project): ForkOrigin | null {
+    const engine: string | null = project.metadata.trimmed('fork_of_engine')
+    const name: string | null = project.metadata.trimmed('fork_of_name')
+    if (!engine || !name) return null
+    return { engine, name, version: project.metadata.trimmed('fork_of_version'), repo: project.metadata.trimmed('fork_of_repo') }
   }
 
   private async recordRepository(project: Project, url: string | null): Promise<void> {

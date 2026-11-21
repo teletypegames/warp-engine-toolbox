@@ -7,12 +7,13 @@ import { homedir } from 'node:os'
 import type { Commit } from '../../domain/model/commit.model'
 import type { GitRemote } from '../../domain/model/git-remote.model'
 import type { ShellResult } from '../../domain/repository/shell.repository'
-import type { SourceControl, SourceControlFactory } from '../../domain/repository/source-control.repository'
+import type { CloneRequest, MergeOutcome, SourceControl, SourceControlFactory } from '../../domain/repository/source-control.repository'
 import { Loopback } from '../http/loopback'
 import { ProcessRunner } from '../process/process.runner'
 
 const ORIGIN = 'origin'
 const NETWORK_COMMANDS: ReadonlySet<string> = new Set<string>(['push', 'fetch', 'pull', 'ls-remote'])
+const NO_PROMPT: Readonly<Record<string, string>> = { GIT_TERMINAL_PROMPT: '0', GIT_SSH_COMMAND: 'ssh -o BatchMode=yes -o ConnectTimeout=15' }
 
 /**
  * {@link domain/repository/source-control.repository!SourceControl} for one working copy, running the `git` CLI in its folder.
@@ -188,6 +189,55 @@ export class GitCliRepository implements SourceControl {
     await this.must((await this.remoteUrl(name)) ? ['remote', 'set-url', name, url] : ['remote', 'add', name, url])
   }
 
+  /**
+   * Renames a remote (`git remote rename from to`).
+   *
+   * @param from - The current name.
+   * @param to - The new name.
+   * @throws `Error` when git fails.
+   */
+  public async renameRemote(from: string, to: string): Promise<void> { await this.must(['remote', 'rename', from, to]) }
+
+  /**
+   * Fetches a remote without prompting for credentials (`git fetch --quiet remote`).
+   *
+   * @param remote - The remote name.
+   * @throws `Error` with git's standard error when git fails.
+   */
+  public async fetch(remote: string): Promise<void> {
+    await ProcessRunner.runOrThrow('git', [...(await this.reach(['fetch'])), 'fetch', '--quiet', remote], this.cwd, NO_PROMPT)
+  }
+
+  /**
+   * Reads `refs/remotes/<remote>/HEAD`; when it is missing, sets it from the remote (`git remote set-head --auto`) and reads it again.
+   *
+   * @param remote - The remote name.
+   * @returns The branch name without the remote prefix, or `null` when git cannot tell.
+   */
+  public async remoteHead(remote: string): Promise<string | null> {
+    const read = async (): Promise<string | null> => (await this.answer(['symbolic-ref', '--short', `refs/remotes/${remote}/HEAD`]))?.replace(`${remote}/`, '') ?? null
+    const known: string | null = await read()
+    if (known) return known
+    await ProcessRunner.run('git', ['remote', 'set-head', remote, '--auto'], this.cwd, NO_PROMPT)
+    return read()
+  }
+
+  /**
+   * Merges a reference (`git merge --no-edit ref`); on failure lists the unmerged files (`git diff --name-only --diff-filter=U`).
+   *
+   * @param ref - The reference to merge.
+   * @returns `upToDate`, `merged`, or `conflict` with the files.
+   * @throws `Error` with git's standard error when the merge fails without conflicts.
+   */
+  public async merge(ref: string): Promise<MergeOutcome> {
+    const before: string | null = await this.head()
+    const result: ShellResult = await this.git(['merge', '--no-edit', ref])
+    if (result.code === 0) return { state: before === (await this.head()) ? 'upToDate' : 'merged', conflicts: [] }
+    const conflicts: string[] = ((await this.answer(['diff', '--name-only', '--diff-filter=U'])) ?? '').split('\n').filter(Boolean)
+    if (conflicts.length === 0) throw new Error(`git merge ${ref}: ${result.stderr.trim() || result.stdout.trim()}`)
+    return { state: 'conflict', conflicts }
+  }
+
   private async git(args: readonly string[]): Promise<ShellResult> {
     return ProcessRunner.run('git', [...(await this.reach(args)), ...args], this.cwd)
   }
@@ -237,5 +287,32 @@ export class GitCliFactory implements SourceControlFactory {
    */
   public async userName(): Promise<string> {
     return (await ProcessRunner.run('git', ['config', 'user.name'], homedir())).stdout.trim()
+  }
+
+  /**
+   * Clones a repository (`git clone [--filter=blob:none] [--branch ref] url folder`), run in the home folder with
+   * prompts switched off and SSH in batch mode.
+   *
+   * @param request - The address, the folder, the branch and whether the clone is partial.
+   * @throws `Error` with git's standard error when git fails.
+   */
+  public async clone(request: CloneRequest): Promise<void> {
+    const options: string[] = [...(request.partial ? ['--filter=blob:none'] : []), ...(request.ref ? ['--branch', request.ref] : [])]
+    await ProcessRunner.runOrThrow('git', [...GitCliFactory.reachOptions(request.url), 'clone', ...options, '--', request.url, request.folder], homedir(), NO_PROMPT)
+  }
+
+  /**
+   * Lists a remote's `HEAD` (`git ls-remote url HEAD`) with prompts switched off and SSH in batch mode.
+   *
+   * @param url - The address.
+   * @returns `true` when git succeeds.
+   */
+  public async reachable(url: string): Promise<boolean> {
+    return (await ProcessRunner.run('git', [...GitCliFactory.reachOptions(url), 'ls-remote', '--', url, 'HEAD'], homedir(), NO_PROMPT)).code === 0
+  }
+
+  private static reachOptions(url: string): string[] {
+    const reached: string = Loopback.reach(url)
+    return reached === url ? [] : ['-c', `url.${reached}.insteadOf=${url}`]
   }
 }

@@ -4,17 +4,16 @@
  * @packageDocumentation
  */
 
-import { homedir } from 'node:os'
 import * as vscode from 'vscode'
 import { DevContainer } from '../../domain/model/dev-container.model'
 import type { GameAnswers } from '../../domain/model/game-answers.model'
 import { FilePath } from '../../domain/model/path.model'
 import type { Platform } from '../../domain/model/platform.model'
 import type { Project } from '../../domain/model/project.model'
-import type { DevContainerService } from '../../domain/service/dev-container.service'
 import type { HostService } from '../../domain/service/host.service'
 import type { ScaffoldService, WriteResult } from '../../domain/service/scaffold.service'
 import { Dialogs } from '../ui/dialogs'
+import { FolderOpenDialog } from '../ui/folder-open.dialog'
 import type { GameAnswersDialog } from '../ui/game-answers.dialog'
 import { t } from '../ui/l10n'
 import type { ProjectRegistry } from '../workspace/project.registry'
@@ -42,12 +41,9 @@ export interface NewGameDependencies {
   readonly projects: ProjectRegistry
   /** Connects the project when the user asks for it. */
   readonly connect: ConnectController
-  /** Tells whether the Dev Containers extension would find Docker. */
-  readonly devContainers: DevContainerService
+  /** Offers to open the new project. */
+  readonly opener: FolderOpenDialog
 }
-
-const DEV_CONTAINERS_EXTENSION = 'ms-vscode-remote.remote-containers'
-const OPEN_IN_CONTAINER = 'remote-containers.openFolder'
 
 /** Serves `warpengine.newGame`, `warpengine.addToProject` and `warpengine.addDevContainer`. */
 export class NewGameController {
@@ -111,7 +107,7 @@ export class NewGameController {
     const platform: Platform | null = await this.deps.dialog.platform(t('New game: platform'))
     const answers: GameAnswers | null = platform ? await this.deps.dialog.answers(platform, null) : null
     if (!platform || !answers) return null
-    const parent: string | null = await NewGameController.askParent(answers.name)
+    const parent: string | null = await FolderOpenDialog.askParent(answers.name, t('Create the project here'))
     if (!parent) return null
     const folder: string = FilePath.join(parent, answers.name)
     if (await this.deps.scaffold.exists(folder)) {
@@ -136,15 +132,6 @@ export class NewGameController {
     if (answer === connect && project) await this.deps.connect.connectProject(project)
   }
 
-  private static async askParent(name: string): Promise<string | null> {
-    const configured: string = (vscode.workspace.getConfiguration('warpengine').get<string>('defaultLocation') ?? '').trim()
-    const parent: vscode.Uri[] | undefined = await vscode.window.showOpenDialog({
-      title: t('Where should the {0} folder go?', name), canSelectFolders: true, canSelectFiles: false,
-      defaultUri: vscode.Uri.file(configured || homedir()), openLabel: t('Create the project here')
-    })
-    return parent?.[0]?.fsPath ?? null
-  }
-
   private static async pickFolder(): Promise<vscode.WorkspaceFolder | undefined> {
     const folders: readonly vscode.WorkspaceFolder[] | undefined = vscode.workspace.workspaceFolders
     if (folders?.length === 1) return folders[0]
@@ -152,29 +139,9 @@ export class NewGameController {
   }
 
   private async offerOpen(game: NewGame, result: WriteResult): Promise<void> {
-    const container: string | null = NewGameController.containerChoice(result)
-    const open: string = t('Open')
-    const add: string = t('Add to Workspace')
-    const answer: string | undefined = await Dialogs.ask(t('{0} is ready ({1} files). Open it to build, play and connect it.', game.answers.title, result.written.length), ...(container ? [container] : []), open, add)
-    if (!answer) return
-    const uri: vscode.Uri = vscode.Uri.file(game.folder)
-    await this.deps.connect.offerLater(game.folder)
-    if (answer === container) await this.openInContainer(uri)
-    else if (answer === open) await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow: false })
-    else vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders?.length ?? 0, 0, { uri })
-  }
-
-  private static containerChoice(result: WriteResult): string | null {
-    const installed: boolean = vscode.extensions.getExtension(DEV_CONTAINERS_EXTENSION) !== undefined
-    return installed && result.written.includes(DevContainer.FILE) ? t('Open in Container') : null
-  }
-
-  private async openInContainer(uri: vscode.Uri): Promise<void> {
-    if (await this.deps.devContainers.socketMissing()) {
-      Dialogs.error(t('The Dev Containers extension connects to /var/run/docker.sock, which is missing here (OrbStack or Colima without its compatibility link). Turn that link on to open projects in their container; until then the project opens here, and its builds still run in the dev container.'))
-      await vscode.commands.executeCommand('vscode.openFolder', uri, { forceNewWindow: false })
-      return
-    }
-    await vscode.commands.executeCommand(OPEN_IN_CONTAINER, uri)
+    await this.deps.opener.offer({
+      folder: game.folder, message: t('{0} is ready ({1} files). Open it to build, play and connect it.', game.answers.title, result.written.length),
+      devContainer: result.written.includes(DevContainer.FILE), beforeOpen: async (): Promise<void> => { await this.deps.connect.offerLater(game.folder) }
+    })
   }
 }

@@ -38,6 +38,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Dashboard** | **WarpEngine: Open Dashboard** (the dashboard button of the project panel) opens a tab that sums up the sidebar in tables: health with its fixes, the latest pipeline runs, the releases with play links, the local containers, the sync partners and the catalog as a table — with *Open* on the entries whose project you opened in VS Code before; its buttons run the same commands. |
 | **Health** | What is set up and what is not — the host, the sign-in, the local engine and its CI, the project's metadata, catalog entry, pipeline and last run — green, yellow or red; a click on a gap runs the step that fixes it. |
 | **Sync** | A local engine's releases go on to another WarpEngine instance (e.g. `https://games.example.org`): **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
+| **Clone, Fork** | A software whose catalog entry gives a source: **Clone…** on its node clones it into a folder of yours and opens it; **Fork…** (when the author allows it) makes it your own version under a new name on a host you can connect to; *Forks* lists the versions others made (see [Clone and fork](#clone-and-fork)). |
 | **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
 
 A template repository can say exactly what a new game gets in a `warp-template.json`:
@@ -265,6 +266,37 @@ The *Sync* view lists the partners with their channels and the last pushes; per 
 Now*, *Edit Channels…*, *Check Connection*, *Disconnect* (removes the pairing on both sides when
 you are signed in to the other engine). The other engine must allow pairing: an `admin:write`
 sign-in always may, any signed-in tool where it says `pairing :anyone`.
+
+## Clone and fork
+
+The Catalog view reads the host's public catalog (`/api/software`, no sign-in needed) beside the
+admin one. A software node whose entry gives a **source** gets *Clone…* in its context menu, one
+whose host allows forking it also *Fork…*, and on hosts that count forks (WECP `api: 3`) the node
+has a *Forks* child: the versions made of it, with the engine they live on (*this engine* when
+it is the same). An older host gives none of these, and the toolbox shows none.
+
+**Clone…** asks for a parent folder and clones the source into `<folder>/<name>`: over SSH when
+the source gives an SSH address that answers without asking, over HTTPS otherwise, without the
+blobs of the old history (`--filter=blob:none`). Then it offers to open the folder, in its dev
+container when it has one. A folder that exists, a repository that cannot be reached, is not
+found or does not let git sign in each get *Try Again…*.
+
+**Fork…** shows the original's owner and licence (and warns when it has none: ask the author
+before you publish your version), then asks:
+
+1. the host the fork goes to — only the configured hosts you are signed in to;
+2. its name — `<name>-<you>` on that host, `-2`, `-3` while it is taken there, checked as you type;
+3. its title and the parent folder.
+
+It clones the whole history, renames `origin` to `upstream`, writes the new `name` and `title`
+into the metadata, removes `repo` and records the parent in `fork_of_engine`, `fork_of_name`,
+`fork_of_version` and `fork_of_repo`, and commits *Fork of <title> from <engine>*. When the
+original has no licence it asks for one (MIT, GPL-3.0, CC-BY-4.0, CC0-1.0 or none). Then the
+chosen host becomes the current one and **Connect** runs on the fork: a repository, the CI, a
+catalog entry that already knows its parent, the first push. Last, it offers to open the fork.
+
+**WarpEngine: Pull from Upstream** fetches a fork's `upstream` and merges its default branch into
+yours. Conflicts stay in the working copy for the editor's merge view; commit when they are solved.
 
 ## Develop with only Docker
 

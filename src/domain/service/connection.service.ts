@@ -5,6 +5,7 @@
  */
 import type { AdminRepositories, WarpEngineGateway } from '../repository/warp-engine.gateway'
 import type { BuildRepository } from '../repository/build.repository'
+import type { PublicCatalogRepository } from '../repository/public-catalog.repository'
 import type { SignInRepository } from '../repository/sign-in.repository'
 import type { TokenRepository } from '../repository/token.repository'
 import type { HostService } from './host.service'
@@ -52,6 +53,26 @@ export class ConnectionService {
    */
   public async signedBuild(): Promise<BuildRepository> {
     return this.build(await this.token(false))
+  }
+
+  /**
+   * Gives the public catalog (WECP) of the current host, with the session's token when there is one, without asking the user.
+   *
+   * @returns The public catalog repository.
+   * @throws {@link "domain/model/message.model".DomainError} When no host is set.
+   */
+  public async publicCatalog(): Promise<PublicCatalogRepository> {
+    return this.gateway.publicCatalog(this.hosts.require().url, await this.token(false))
+  }
+
+  /**
+   * Gives the URL of the current host.
+   *
+   * @returns The URL without a trailing slash.
+   * @throws {@link "domain/model/message.model".DomainError} When no host is set.
+   */
+  public hostUrl(): string {
+    return this.hosts.require().url
   }
 
   /**

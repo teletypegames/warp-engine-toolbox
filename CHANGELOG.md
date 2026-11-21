@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Clone…** and **Fork…** on a software of the Catalog view, and a *Forks* node under it, from the host's public
+  catalog (WECP `api: 3`; an older host shows none of them). A fork gets a new name on a host you can connect to, an
+  `upstream` remote, its parent in the metadata (`fork_of_*`), and Connect; **Pull from Upstream** merges the
+  original's changes later.
+
 ## 1.16.0
 
 - **Reset…** (command and Dashboard button): removes the local engine with every Docker part and `~/.warpengine`, the

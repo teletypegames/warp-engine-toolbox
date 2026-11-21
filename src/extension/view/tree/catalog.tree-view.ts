@@ -9,7 +9,9 @@ import type { Host } from '../../../domain/model/host.model'
 import type { SoftwareImage } from '../../../domain/model/image.model'
 import type { Pipeline } from '../../../domain/model/pipeline.model'
 import type { Platform } from '../../../domain/model/platform.model'
+import type { PublicSoftware } from '../../../domain/model/fork.model'
 import type { CatalogOverview, CatalogService } from '../../../domain/service/catalog.service'
+import type { CloneService } from '../../../domain/service/clone.service'
 import type { HostService } from '../../../domain/service/host.service'
 import type { ImageService } from '../../../domain/service/image.service'
 import type { PlatformService } from '../../../domain/service/platform.service'
@@ -17,6 +19,7 @@ import type { PlayService } from '../../../domain/service/play.service'
 import { Dialogs } from '../../ui/dialogs'
 import type { ProjectRegistry } from '../../workspace/project.registry'
 import { t } from '../../ui/l10n'
+import { ForkNode } from './fork.node'
 import { ReleaseNode } from './release.node'
 import { TreeNode } from './tree.node'
 import type { TreeView } from './tree.provider'
@@ -51,6 +54,8 @@ export interface CatalogTreeDependencies {
   readonly images: ImageService
   /** The current project, whose software is shown first. */
   readonly projects: ProjectRegistry
+  /** The public catalog: sources, whether forking is allowed, the forks. */
+  readonly sources: CloneService
 }
 
 /**
@@ -65,6 +70,8 @@ export class CatalogTreeView implements TreeView {
   private readonly play: PlayService
   private readonly images: ImageService
   private readonly projects: ProjectRegistry
+  private readonly sources: CloneService
+  private published: ReadonlyMap<string, PublicSoftware> = new Map<string, PublicSoftware>()
 
   /**
    * Creates the view.
@@ -78,11 +85,13 @@ export class CatalogTreeView implements TreeView {
     this.play = deps.play
     this.images = deps.images
     this.projects = deps.projects
+    this.sources = deps.sources
   }
 
   /**
    * Returns the host, the current project's software (when it is in the catalog), the softwares and the pipelines nodes;
-   * sets the `warpengine.signedIn` context key.
+   * sets the `warpengine.signedIn` context key. Reads the public catalog too, for the Clone… and Fork… entries and the
+   * *Forks* nodes.
    *
    * @returns The root nodes; none without a host or a sign-in.
    */
@@ -93,6 +102,7 @@ export class CatalogTreeView implements TreeView {
     await Dialogs.setContext('warpengine.signedIn', signedIn)
     const overview: CatalogOverview | null = signedIn ? await this.catalog.overview() : null
     if (!overview) return []
+    this.published = await this.sources.softwares()
     const described: Platform[] = await this.platforms.all().catch((): Platform[] => [])
     return [this.hostNode(host, overview), ...this.projectNode(overview, described), this.softwaresNode(overview, described), this.pipelinesNode()]
   }
@@ -135,10 +145,14 @@ export class CatalogTreeView implements TreeView {
 
   private softwareNode(software: Software, platform: Platform | null, current: boolean = false): TreeNode {
     const description = `${software.name} · ${software.status ?? t('no status')}`
+    const published: PublicSoftware | undefined = this.published.get(software.name)
     return new TreeNode(software.title, {
       description: current ? `${description} · ${t('this project')}` : description, icon: current ? 'star-full' : 'game',
-      context: 'software', data: software, expanded: current,
-      load: (): TreeNode[] => [...CatalogTreeView.fields(software), this.releasesNode(software, platform), this.imagesNode(software), this.linksNode(software)]
+      context: `software${ForkNode.context(published)}`, data: software, expanded: current,
+      load: (): TreeNode[] => [
+        ...CatalogTreeView.fields(software), this.releasesNode(software, platform), this.imagesNode(software), this.linksNode(software),
+        ...ForkNode.forks(published, async (name: string) => this.sources.forks(name))
+      ]
     })
   }
 

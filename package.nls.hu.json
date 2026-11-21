@@ -69,5 +69,9 @@
   "command.repairHost": "Host-kapcsolat javítása…",
   "command.startDocker": "Docker indítása",
   "command.startLocalEngine": "Helyi motor indítása",
-  "command.reset": "Visszaállítás…"
+  "command.reset": "Visszaállítás…",
+  "command.cloneSoftware": "Klónozás…",
+  "command.forkSoftware": "Forkolás…",
+  "command.retryClone": "Klónozás újra…",
+  "command.pullUpstream": "Frissítés az upstreamből"
 }

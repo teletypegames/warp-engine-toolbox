@@ -8,6 +8,7 @@ import type { CatalogRepository } from './catalog.repository'
 import type { ImageRepository } from './image.repository'
 import type { LocalComponentRepository } from './local-component.repository'
 import type { PipelineRepository } from './pipeline.repository'
+import type { PublicCatalogRepository } from './public-catalog.repository'
 import type { SignInRepository } from './sign-in.repository'
 import type { SyncPairingRepository, SyncPeerRepository } from './sync.repository'
 
@@ -37,6 +38,14 @@ export interface WarpEngineGateway {
    * @returns The build repository.
    */
   build(hostUrl: string, token: string | null): BuildRepository
+  /**
+   * Gives the public catalog (WECP) of a host.
+   *
+   * @param hostUrl - The host URL.
+   * @param token - The admin token to send along, or `null` to read anonymously.
+   * @returns The public catalog repository.
+   */
+  publicCatalog(hostUrl: string, token: string | null): PublicCatalogRepository
   /**
    * Gives the admin API repositories of a host.
    *

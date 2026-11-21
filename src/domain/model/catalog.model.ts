@@ -3,6 +3,8 @@
  *
  * @module
  */
+import type { ForkOrigin } from './fork.model'
+
 /** A file attached to a release on the WarpEngine host, as the admin API sends it. */
 export interface ReleaseAsset {
   /** The asset's id on the host. */
@@ -127,6 +129,10 @@ export interface ScaffoldRequest {
   readonly category: string | null
   /** The description. */
   readonly description: string
+  /** For a fork, the software it was forked from; left out otherwise. */
+  readonly forkOf?: ForkOrigin
+  /** The licence, when the project's metadata names one. */
+  readonly license?: string
 }
 
 /** The catalog statuses offered when the host does not send its own list. */
