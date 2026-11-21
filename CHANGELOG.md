@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.16.0
 
 - **Reset…** (command and Dashboard button): removes the local engine with every Docker part and `~/.warpengine`, the
   VS Code dev containers with their images and volumes, the toolbox with its settings, sign-ins and state — chosen
