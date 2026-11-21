@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-import type * as vscode from 'vscode'
+import * as vscode from 'vscode'
 import type { ScaffoldResult } from '../../domain/model/catalog.model'
 import { msg } from '../../domain/model/message.model'
 import type { Project } from '../../domain/model/project.model'
@@ -79,10 +79,15 @@ export class ConnectController {
    * Connects a project: signs in, confirms replacing an existing remote, asks over which URL to push when the host offers several, and reports the result (with any warnings) in a notification.
    *
    * Creates the repository, the CI, a CI token and the draft catalog entry on the host, sets the remote and pushes, with a progress notification; then re-reads the projects.
+   * On the local engine it runs *Set up local CI* instead (`warpengine.setupLocalCi`): the same entry, repository and CI, pushed over the engine's token URL — its git server has no SSH.
    *
    * @param project - The project to connect.
    */
   public async connectProject(project: Project): Promise<void> {
+    if (this.offers.local.setupRemedy() === 'setupLocalCi') {
+      await vscode.commands.executeCommand(RemedyDialog.command('setupLocalCi').command)
+      return
+    }
     if (!(await this.service.signIn())) return
     if (!(await this.confirmRemote(project))) return
     const result: ScaffoldResult = await Dialogs.progress(t('WarpEngine: connecting {0}', project.name), async (report) => {

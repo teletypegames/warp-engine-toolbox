@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- *Connect* on the local engine (also from *New Game*) runs **Set up local CI**: the same catalog entry, repository and
+  CI, pushed over the engine's token URL. Its git server has no SSH, so the SSH remote Connect used to set could not push.
+- In a dev container git reaches a remote on the computer's loopback (the local engine's git server) at
+  `host.docker.internal`: *Release…*, *Set up local CI* and the remote state push and fetch from the container too.
+
 ## 1.15.1
 
 - In a window reopened in a dev container the steps on the computer's Docker — *Install Local Engine*, *Purge*,

@@ -8,9 +8,11 @@ import type { Commit } from '../../domain/model/commit.model'
 import type { GitRemote } from '../../domain/model/git-remote.model'
 import type { ShellResult } from '../../domain/repository/shell.repository'
 import type { SourceControl, SourceControlFactory } from '../../domain/repository/source-control.repository'
+import { Loopback } from '../http/loopback'
 import { ProcessRunner } from '../process/process.runner'
 
 const ORIGIN = 'origin'
+const NETWORK_COMMANDS: ReadonlySet<string> = new Set<string>(['push', 'fetch', 'pull', 'ls-remote'])
 
 /**
  * {@link domain/repository/source-control.repository!SourceControl} for one working copy, running the `git` CLI in its folder.
@@ -18,6 +20,10 @@ const ORIGIN = 'origin'
  * Queries return `false` or `null` when git fails; the commands that change the
  * repository (`init`, `add`, `commit`, `tag`, `push`, `remote`) throw an `Error`
  * with git's standard error when git exits non-zero.
+ *
+ * In a dev container the commands that reach a remote (`push`, `fetch`, `pull`, `ls-remote`) reach a remote on the
+ * computer's loopback (the local engine's git server) at `host.docker.internal`: each such remote's URL gets a
+ * `url.<rewritten>.insteadOf` for that command only, so the remote, its name and its upstream stay as they are.
  */
 export class GitCliRepository implements SourceControl {
   /**
@@ -183,11 +189,21 @@ export class GitCliRepository implements SourceControl {
   }
 
   private async git(args: readonly string[]): Promise<ShellResult> {
-    return ProcessRunner.run('git', args, this.cwd)
+    return ProcessRunner.run('git', [...(await this.reach(args)), ...args], this.cwd)
   }
 
   private async must(args: readonly string[]): Promise<string> {
-    return ProcessRunner.runOrThrow('git', args, this.cwd)
+    return ProcessRunner.runOrThrow('git', [...(await this.reach(args)), ...args], this.cwd)
+  }
+
+  private async reach(args: readonly string[]): Promise<string[]> {
+    if (!NETWORK_COMMANDS.has(args[0] ?? '') || !Loopback.inDevContainer()) return []
+    const options: string[] = []
+    for (const remote of await this.remotes()) {
+      const reached: string = Loopback.reach(remote.url)
+      if (reached !== remote.url) options.push('-c', `url.${reached}.insteadOf=${remote.url}`)
+    }
+    return options
   }
 
   private async succeeds(args: readonly string[]): Promise<boolean> {
