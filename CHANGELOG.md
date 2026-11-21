@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.15.0
 
 - **Fix…** on every "cannot be reached" (views, notifications, *Health*), also as **WarpEngine: Fix Host
   Connection…**: it finds why the host does not answer and offers the step — *Start Docker*, *Start*, *Restart*,
