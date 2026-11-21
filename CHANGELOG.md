@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.14.0
 
 - **Start a stopped dev container** from *Local Server*: a stopped one has a start button
   (`docker start`, as it was created); it runs until it is stopped.
