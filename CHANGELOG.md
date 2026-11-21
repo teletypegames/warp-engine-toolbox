@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Teletype Games - Dark / Light / Retro**: color themes in the look of teletypegames.org (Retro: the wiki's DOS
+  palette), generated from the site's tokens and contrast-checked; pick one in *Preferences: Color Theme*.
 - A dev container that reaches the computer's Docker (the templates now mount its socket and add the Docker CLI)
   gets the whole *Local Server* view and *Fix…* there: the containers, start, restart, the log. Installing and removing
   the local engine still need a window on the computer; an older dev container without the socket says so.

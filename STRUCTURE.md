@@ -132,6 +132,15 @@ complexity 8, 4 parameters (more travel as one input object).
 - **A Dashboard part**: the data in `DashboardCollector`, a card in `DashboardRenderer`
   (escape every text, buttons as `data-command`), its style in `media/webview/dashboard.css`.
 
+## Themes
+
+`themes/teletype-games-{dark,light,retro}.json` are generated, not edited: `npm run themes`
+(`scripts/themes.mjs`) builds them from `themes/source/tokens.css` (a copy of the site's
+`services/teletypegames/apps/frontend/src/styles/tokens.css`) and `themes/source/retro.css`
+(the `--c-*` palette of the wiki's retro mode). After a brand color changes, copy the source
+over and run it. `npm run themes:check` runs with the unit tests and fails when a theme is out of
+date or a text color is below its contrast minimum.
+
 ## i18n
 
 - English is the base language, Hungarian the first translation.

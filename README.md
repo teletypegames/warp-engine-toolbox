@@ -94,6 +94,22 @@ Everything a platform needs — what it publishes, where its metadata and versio
 plays on the web, its builder image, template and documentation — comes from the host
 (`GET /build/platforms`). A platform the host adds works here without a new toolbox.
 
+## Themes
+
+Three color themes in the look of teletypegames.org come with the toolbox; pick one with
+**Preferences: Color Theme** (the toolbox never switches the theme itself):
+
+| Theme | |
+|---|---|
+| **Teletype Games - Dark** | zinc greys and the green accent of the site's dark mode |
+| **Teletype Games - Light** | the same in the site's light mode |
+| **Teletype Games - Retro** | the wiki's retro mode: black editor, CGA-blue panels, white lines, bright yellow, cyan and green code |
+
+Keywords take the green accent, types its lighter shade, strings amber, numbers blue, comments
+the muted grey; every text color passes a contrast check (4.5:1, comments 3:1). The remote
+indicator is green, so a window in a dev container shows at a glance. A font is not part of a
+theme: for the retro look set `editor.fontFamily` to a monospace like Lucida Console yourself.
+
 ## In the editor
 
 ![Play: the locally built C64 demo running in the host's EmulatorJS runtime, inside VS Code](https://wiki.teletypegames.org/wiki-assets/development/warpengine-toolbox-play.png)

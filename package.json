@@ -27,7 +27,8 @@
   "categories": [
     "Other",
     "Snippets",
-    "Linters"
+    "Linters",
+    "Themes"
   ],
   "keywords": [
     "warpengine",
@@ -47,6 +48,23 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "themes": [
+      {
+        "label": "Teletype Games - Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-dark.json"
+      },
+      {
+        "label": "Teletype Games - Light",
+        "uiTheme": "vs",
+        "path": "./themes/teletype-games-light.json"
+      },
+      {
+        "label": "Teletype Games - Retro",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-retro.json"
+      }
+    ],
     "commands": [
       {
         "command": "warpengine.newGame",
@@ -812,12 +830,14 @@
     "watch": "node scripts/build.mjs --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "test": "npm run l10n:check && node scripts/build.mjs --tests && node --test 'dist-test/**/*.test.cjs'",
+    "test": "npm run l10n:check && npm run themes:check && node scripts/build.mjs --tests && node --test 'dist-test/**/*.test.cjs'",
     "package": "npm run build && vsce package --no-dependencies -o dist/warpengine-toolbox.vsix",
     "vscode:prepublish": "node scripts/build.mjs --production",
     "test:integration": "node scripts/integration.mjs",
     "test:walkthrough": "node scripts/walkthrough.mjs",
     "l10n": "node scripts/l10n.mjs",
+    "themes": "node scripts/themes.mjs",
+    "themes:check": "node scripts/themes.mjs --check",
     "l10n:check": "node scripts/l10n.mjs --check",
     "docs": "node scripts/reference.mjs && typedoc",
     "docs:check": "node scripts/reference.mjs && typedoc --emit none"

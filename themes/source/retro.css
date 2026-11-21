@@ -1,0 +1,17 @@
+/* The --c-* palette of the wiki's retro mode (services/wiki-pages/themes/ttgwiki2/css/retro.css), the source of Teletype Games - Retro: run npm run themes after a change there. */
+[data-theme='retro'] {
+  --c-page: 0 0 0;
+  --c-surface: 0 0 168;
+  --c-raised: 0 0 168;
+  --c-line: 255 255 255;
+  --c-line-strong: 255 255 255;
+  --c-fg: 255 255 255;
+  --c-fg-muted: 200 200 200;
+  --c-fg-subtle: 168 168 168;
+  --c-accent: 0 168 0;
+  --c-accent-hover: 0 168 0;
+  --c-accent-fg: 0 0 0;
+  --c-accent-quiet: 0 0 168;
+  --c-warn: 168 168 0;
+  --c-danger: 168 0 0;
+}

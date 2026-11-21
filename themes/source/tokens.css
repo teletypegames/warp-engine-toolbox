@@ -1,0 +1,44 @@
+/* Copy of services/teletypegames/apps/frontend/src/styles/tokens.css, the source of the Teletype Games themes: run npm run themes after a change there. */
+:root {
+  --c-page: 255 255 255;
+  --c-surface: 250 250 250;
+  --c-raised: 244 244 245;
+
+  --c-line: 228 228 231;
+  --c-line-strong: 212 212 216;
+
+  --c-fg: 24 24 27;
+  --c-fg-muted: 82 82 91;
+  --c-fg-subtle: 113 113 122;
+
+  --c-accent: 21 128 61;
+  --c-accent-hover: 22 101 52;
+  --c-accent-fg: 255 255 255;
+  --c-accent-quiet: 220 252 231;
+
+  --c-info: 29 78 216;
+  --c-warn: 180 83 9;
+  --c-danger: 185 28 28;
+}
+
+[data-theme='dark'] {
+  --c-page: 9 9 11;
+  --c-surface: 24 24 27;
+  --c-raised: 39 39 42;
+
+  --c-line: 39 39 42;
+  --c-line-strong: 63 63 70;
+
+  --c-fg: 250 250 250;
+  --c-fg-muted: 161 161 170;
+  --c-fg-subtle: 113 113 122;
+
+  --c-accent: 74 222 128;
+  --c-accent-hover: 134 239 172;
+  --c-accent-fg: 9 9 11;
+  --c-accent-quiet: 20 83 45;
+
+  --c-info: 96 165 250;
+  --c-warn: 255 176 0;
+  --c-danger: 248 113 113;
+}

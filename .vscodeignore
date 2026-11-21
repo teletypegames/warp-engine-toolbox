@@ -18,3 +18,4 @@ docs/**
 typedoc.json
 CLAUDE.md
 .styleguide.json
+themes/source/**
