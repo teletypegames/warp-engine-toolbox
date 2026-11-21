@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- A dev container that reaches the computer's Docker (the templates now mount its socket and add the Docker CLI)
+  gets the whole *Local Server* view and *Fix…* there: the containers, start, restart, the log. Installing and removing
+  the local engine still need a window on the computer; an older dev container without the socket says so.
+
 ## 1.15.2
 
 - *Connect* on the local engine (also from *New Game*) runs **Set up local CI**: the same catalog entry, repository and

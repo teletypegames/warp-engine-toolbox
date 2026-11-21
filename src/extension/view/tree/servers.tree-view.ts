@@ -25,21 +25,22 @@ export class ServersTreeView implements TreeView {
    * Creates the view.
    *
    * @param servers - Lists the containers.
-   * @param devContainers - Tells whether this window runs in a dev container, where there is no Docker to ask.
+   * @param devContainers - Tells whether this window runs in a dev container, where Docker answers only through a mounted socket.
    */
   public constructor(private readonly servers: ServerService, private readonly devContainers: DevContainerService) {}
 
   /**
    * Returns one node per WarpEngine container, or one that installs the local engine when there is none, then one
-   * per dev container; sets the `warpengine.hasServers` context key (WarpEngine containers only). In a dev
-   * container it returns one node saying that the view works from a window on the computer; a click reopens the folder there.
+   * per dev container; sets the `warpengine.hasServers` context key (WarpEngine containers only). A dev container
+   * reaches the computer's containers through its mounted Docker socket; one without it gets a single node saying so,
+   * whose click reopens the folder on the computer.
    *
    * @returns The nodes.
    */
   public async roots(): Promise<TreeNode[]> {
-    if (this.devContainers.inside()) {
+    if (this.devContainers.inside() && (await this.servers.docker()) !== 'ok') {
       await Dialogs.setContext('warpengine.hasServers', false)
-      return [new TreeNode(t('This window runs in a dev container'), { description: t('the containers are listed in a window on this computer'), icon: 'info', command: { title: HostMachineDialog.label(), command: 'remote-containers.reopenLocally' } })]
+      return [new TreeNode(t('This dev container does not reach Docker'), { description: t('rebuild it from the current template, or open the folder on this computer'), icon: 'info', command: { title: HostMachineDialog.label(), command: 'remote-containers.reopenLocally' } })]
     }
     const containers: ServerContainer[] = await this.servers.containers()
     await Dialogs.setContext('warpengine.hasServers', containers.length > 0)

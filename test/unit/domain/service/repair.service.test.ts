@@ -53,8 +53,9 @@ describe('RepairService', () => {
     assert.deepEqual(await service({ url: 'https://games.example.org', docker: 'down' }).diagnose(), { kind: 'remote', url: 'https://games.example.org' })
   })
 
-  it('cannot look at Docker from a dev container', async () => {
+  it('cannot look at Docker from a dev container without the socket, and can with it', async () => {
     assert.equal((await service({ inside: true, docker: 'down' }).diagnose()).kind, 'inside')
+    assert.deepEqual(await service({ inside: true, containers: [engine('exited')] }).diagnose(), { kind: 'stopped', containers: ['warp-engine-local'] })
   })
 
   it('tells a missing Docker from one that does not run', async () => {

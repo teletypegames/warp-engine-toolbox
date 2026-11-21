@@ -465,10 +465,6 @@
           "when": "!warpengine.inDevContainer"
         },
         {
-          "command": "warpengine.startLocalEngine",
-          "when": "!warpengine.inDevContainer"
-        },
-        {
           "command": "warpengine.startDevContainer",
           "when": "false"
         },

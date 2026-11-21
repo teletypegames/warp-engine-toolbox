@@ -114,10 +114,10 @@ export class RepairController {
 
   /**
    * `warpengine.startLocalEngine`: starts the stopped WarpEngine containers, waits for the host when it is the local
-   * engine, then refreshes everything; in a dev container it offers to reopen the folder on the computer instead.
+   * engine, then refreshes everything; in a dev container that does not reach Docker it offers to reopen the folder on the computer instead.
    */
   public async startLocalEngine(): Promise<void> {
-    if (!(await HostMachineDialog.allows(this.deps.inside()))) return
+    if (!(await HostMachineDialog.allows(this.deps.inside() && (await this.deps.servers.docker()) !== 'ok'))) return
     await this.afterStep(t('Starting the local engine…'), async (): Promise<void> => { await this.deps.servers.startLocal() })
   }
 
@@ -131,7 +131,7 @@ export class RepairController {
   private prompt(diagnosis: Exclude<HostDiagnosis, { kind: 'answers' | 'dockerMissing' | 'noHost' }>): Prompt {
     switch (diagnosis.kind) {
       case 'remote': return this.remote(diagnosis.url)
-      case 'inside': return { message: t('The local engine at {0} does not answer.', diagnosis.url), detail: t('This window runs in a dev container, where Docker cannot be reached: reopen the folder on the computer, where Fix… repairs the engine, or choose another host.'), steps: [[HostMachineDialog.label(), async (): Promise<void> => HostMachineDialog.reopen()], this.again(), this.otherHost()] }
+      case 'inside': return { message: t('The local engine at {0} does not answer.', diagnosis.url), detail: t('This dev container does not reach Docker: rebuild it from the current template (it mounts the computer\'s Docker socket), or reopen the folder on the computer, where Fix… repairs the engine.'), steps: [[HostMachineDialog.label(), async (): Promise<void> => HostMachineDialog.reopen()], this.again(), this.otherHost()] }
       case 'dockerDown': return { message: t('Docker does not run.'), detail: t('The local engine runs in Docker.'), steps: [[t('Start Docker'), async (): Promise<void> => this.startDocker()], this.otherHost()] }
       case 'notInstalled': return this.notInstalled(diagnosis.dataFolder, diagnosis.configured)
       case 'stopped': return this.stopped(diagnosis.containers)

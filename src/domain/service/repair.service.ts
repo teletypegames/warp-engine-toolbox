@@ -22,7 +22,7 @@ export interface RepairDependencies {
   readonly local: LocalEngineRepository
   /** Docker. */
   readonly runtime: ContainerRuntime
-  /** Tells whether this window runs in a dev container (where there is no Docker to ask). */
+  /** Tells whether this window runs in a dev container (where Docker answers only through the computer's socket, when it is mounted). */
   readonly inside: () => boolean
 }
 
@@ -43,7 +43,8 @@ export class RepairService {
 
   /**
    * Finds the state of the current host: whether it answers, and when it is the local engine (a loopback address)
-   * that does not, what is wrong with it on this machine — Docker, the containers, the address.
+   * that does not, what is wrong with it on this machine — Docker, the containers, the address. In a dev container
+   * without the computer's Docker socket it can only say so (`inside`).
    *
    * @returns The diagnosis.
    */
@@ -53,7 +54,7 @@ export class RepairService {
     const url: string = host.url
     if (await this.deps.discovery.probe(url)) return { kind: 'answers', url }
     if (!LocalEngine.isLoopback(url)) return { kind: 'remote', url }
-    if (this.deps.inside()) return { kind: 'inside', url }
+    if (this.deps.inside() && (await this.deps.runtime.availability()) !== 'ok') return { kind: 'inside', url }
     return this.diagnoseLocal(url)
   }
 

@@ -360,8 +360,6 @@
   "This window runs in the dev container already; its image is built.": "Ez az ablak már a dev containerben fut, az image-e megépült.",
   "WarpEngine: adding a dev container to {0}": "WarpEngine: dev container hozzáadása ehhez: {0}",
   "dev container": "dev container",
-  "This window runs in a dev container": "Ez az ablak dev containerben fut",
-  "the containers are listed in a window on this computer": "a konténerek egy ezen a gépen futó ablakban látszanak",
   "{0} answers.": "A(z) {0} válaszol.",
   "{0} does not answer.": "A(z) {0} nem válaszol.",
   "Check the address and the network, or choose another host.": "Ellenőrizd a címet és a hálózatot, vagy válassz másik hostot.",
@@ -407,6 +405,8 @@
   "WarpEngine Local log": "WarpEngine Local napló",
   "Reopen Folder Locally": "Megnyitás a gépen",
   "The local engine and Docker are on the computer, not in the container: reopen the folder on the computer and do it there.": "A helyi motor és a Docker a gépen van, nem a konténerben: nyisd meg a mappát a gépen, és ott csináld.",
-  "This window runs in a dev container, where Docker cannot be reached: reopen the folder on the computer, where Fix… repairs the engine, or choose another host.": "Ez az ablak dev containerben fut, ahonnan a Docker nem érhető el: nyisd meg a mappát a gépen, ott a Javítás… megjavítja a motort, vagy válassz másik hostot.",
-  "This window runs in a dev container.": "Ez az ablak dev containerben fut."
+  "This window runs in a dev container.": "Ez az ablak dev containerben fut.",
+  "rebuild it from the current template, or open the folder on this computer": "építsd újra a mostani sablonból, vagy nyisd meg a mappát ezen a gépen",
+  "This dev container does not reach Docker": "Ez a dev container nem éri el a Dockert",
+  "This dev container does not reach Docker: rebuild it from the current template (it mounts the computer's Docker socket), or reopen the folder on the computer, where Fix… repairs the engine.": "Ez a dev container nem éri el a Dockert: építsd újra a mostani sablonból (az felcsatolja a gép Docker-socketjét), vagy nyisd meg a mappát a gépen, ott a Javítás… megjavítja a motort."
 }

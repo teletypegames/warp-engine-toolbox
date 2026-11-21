@@ -143,9 +143,10 @@ Every "cannot be reached" — a view, a notification, the *Health* line — come
 | the engine runs but does not answer | *Restart*, *Show Log*, *Reinstall* |
 
 When the host set is a local engine that does not answer, the toolbox offers **Fix…** by itself,
-once per window, and again whenever the installer closes without the engine answering. From a
-window in a dev container Docker cannot be reached: *Fix…* says so, and the engine is repaired
-from a window on the computer.
+once per window, and again whenever the installer closes without the engine answering. A dev
+container from a current template mounts the computer's Docker socket, so *Fix…* starts and
+restarts the engine from there too; installing or removing it needs a window on the computer
+(*Reopen Folder Locally*), since the installer writes its data folder there.
 
 ## Local CI
 
@@ -174,8 +175,9 @@ every stopped one). **Purge Local Engine…** (the trash button) asks once, then
 containers, the data folder (`~/.warpengine`: the catalog, the releases, the token — also when
 the containers are gone already), the volumes, the network and the images — the same as the
 installer's `--uninstall --purge`. When Docker does not answer, the view says so with *Start
-Docker*; in a window reopened in a dev container it says that the containers are listed in a
-window on the computer.
+Docker*. In a dev container the view lists the computer's containers through the mounted Docker
+socket; a dev container built before the socket was part of the template says so, with *Reopen
+Folder Locally*.
 
 The *Catalog* and *Local Server* views start collapsed. While the WarpEngine sidebar is open, the
 toolbox opens *Local Server* when no local engine is installed (its *Install Local Engine* line
@@ -241,7 +243,12 @@ the computer:
 The Dev Containers extension connects to `/var/run/docker.sock`; with OrbStack or Colima turn on
 their compatibility link (OrbStack: *Use admin privileges for enhanced compatibility*). The
 toolbox's own route follows the Docker CLI's context and needs none. Inside the container the
-toolbox reaches a local engine on this computer at `host.docker.internal`.
+toolbox reaches a local engine on this computer at `host.docker.internal` (its HTTP API and its
+git server alike), and the computer's Docker through the socket the template mounts (the
+container has the Docker CLI, and `dev` joins the socket's group when the container starts): one
+local engine per computer, used from every window, contained or not. Mounting the socket gives
+the container the computer's Docker; that socket must exist, so a Docker without
+`/var/run/docker.sock` needs its compatibility link here too.
 
 ## Requirements
 
