@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.15.2
 
 - *Connect* on the local engine (also from *New Game*) runs **Set up local CI**: the same catalog entry, repository and
   CI, pushed over the engine's token URL. Its git server has no SSH, so the SSH remote Connect used to set could not push.
