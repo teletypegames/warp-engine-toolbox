@@ -17,3 +17,4 @@ doc/**
 docs/**
 typedoc.json
 CLAUDE.md
+.styleguide.json

@@ -1,6 +1,10 @@
 # WarpEngine Toolbox
 
-`README.md` is the user guide, `STRUCTURE.md` the layers and the naming. The API
+`README.md` is the user guide, `STRUCTURE.md` the layers and the naming of this
+repo (it is also a guide of the published reference, so it stays a file of its
+own). The rules shared with the other WarpEngine TypeScript tools are the
+`typescript/layered` styleguide of the ttg-styleguide plugin (tools/ttg-marketplace),
+switched on in `.styleguide.json`. The API
 reference is the TypeDoc published to the wiki at
 https://wiki.teletypegames.org/typedoc/warp-engine-toolbox/latest/ on every
 `vX.Y.Z` tag, with a *Commands & Settings* page generated from `package.json`.
