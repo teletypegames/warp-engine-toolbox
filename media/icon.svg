@@ -1,6 +1,6 @@
 <!--
   The WarpEngine Toolbox mark: the WarpEngine W with its motion lines, on the same tile as
-  the WarpEngine Client, so the editor tool and the client read as one family. The source
+  the WarpEngine Desktop, so the editor tool and the client read as one family. The source
   of media/icon.png (rsvg-convert -w 256 -h 256 media/icon.svg -o media/icon.png).
 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">

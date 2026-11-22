@@ -19,7 +19,7 @@ describe('Placeholders', () => {
   })
 
   it('sets dotted paths in a JSON document, creating what is missing, and fills the values', () => {
-    const json: string = JSON.stringify({ name: 'warp-engine-client', version: '3.4.0', warpEngine: { registryUrl: 'https://ours/api/stores' } })
+    const json: string = JSON.stringify({ name: 'we-desktop', version: '3.4.0', warpEngine: { registryUrl: 'https://ours/api/stores' } })
     const edited = JSON.parse(placeholders.edit(json, {
       name: '{name}',
       'warpEngine.registryUrl': '{catalogUrl}/api/stores',

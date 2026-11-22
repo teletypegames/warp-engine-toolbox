@@ -76,7 +76,7 @@ out, so a template can carry it before every user has a toolbox that understands
 A demo repository may carry a `warp-template.json` too, for the demo's own files: `fill`, `json`,
 and `keep` for files a demo copy otherwise leaves out (its `LICENSE`, `README`, CI and
 `metadata.json`). The demo keeps working values in its own repository; the new project gets them
-rewritten. The WarpEngine Client is the `electron` platform's demo this way:
+rewritten. The WarpEngine Desktop is the `electron` platform's demo this way:
 
 ```json
 {
