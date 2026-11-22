@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.17.1
 
 - From a dev container window, *Admin page* and every other link to the computer's own engine opens on the
   computer again: VS Code no longer forwards it to the same port inside the container, where nothing listens.
