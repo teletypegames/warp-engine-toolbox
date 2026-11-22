@@ -4,6 +4,7 @@
  * @module
  */
 import * as vscode from 'vscode'
+import { DevContainer } from '../../domain/model/dev-container.model'
 import type { Message } from '../../domain/model/message.model'
 import { t, translate } from './l10n'
 
@@ -133,12 +134,14 @@ export class Dialogs {
   }
 
   /**
-   * Opens a URL outside VS Code, usually in the browser.
+   * Opens a URL outside VS Code, usually in the browser; from a dev container a link to the computer's loopback opens
+   * on the computer, not through a port forwarded into the container ({@link domain/model/dev-container.model!DevContainer.browserUrl}).
    *
    * @param url - The URL.
    */
   public static async openExternal(url: string): Promise<void> {
-    await vscode.env.openExternal(vscode.Uri.parse(url))
+    const target: string = vscode.env.remoteName?.includes('container') ? DevContainer.browserUrl(url) : url
+    await vscode.env.openExternal(vscode.Uri.parse(target))
   }
 
   /**

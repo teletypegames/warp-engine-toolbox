@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- From a dev container window, *Admin page* and every other link to the computer's own engine opens on the
+  computer again: VS Code no longer forwards it to the same port inside the container, where nothing listens.
+
 ## 1.17.0
 
 - The color themes are named after WarpEngine: *WarpEngine - Dark, Light, Retro* and *WarpEngine - C64, Plus/4,
