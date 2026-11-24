@@ -46,6 +46,15 @@ export class MetadataDocument {
   }
 
   /**
+   * Tells whether a JSON object text names a top-level `version`.
+   * @param text - The JSON text, e.g. a `package.json`.
+   * @returns `true` when it parses to an object with a `version`.
+   */
+  public static jsonHasVersion(text: string): boolean {
+    return MetadataDocument.parseObject(text)?.['version'] !== undefined
+  }
+
+  /**
    * Sets the `version` key of a separate JSON version file.
    * @param text - The current content of the version file.
    * @param version - The new version.

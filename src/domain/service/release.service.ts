@@ -131,7 +131,8 @@ export class ReleaseService {
   }
 
   /**
-   * Releases a version: writes it into the version or metadata file, prepends a `CHANGELOG.md`
+   * Releases a version: writes it into the version or metadata file (and into a `package.json`
+   * that names a version, so the two stay in step), prepends a `CHANGELOG.md`
    * entry from the commits since the last tag, commits, creates the annotated tag `v<version>`
    * and pushes `HEAD` and the tag to the remote.
    *
@@ -171,6 +172,14 @@ export class ReleaseService {
     if (!project.metadataPath) return
     const text: string = (await this.files.readText(project.metadataPath)) ?? ''
     await this.files.writeText(project.metadataPath, new MetadataDocument(text, project.metadataFormat).withVersion(version))
+    await this.syncPackageVersion(project, version)
+  }
+
+  private async syncPackageVersion(project: Project, version: string): Promise<void> {
+    const path: string = FilePath.join(project.folder, 'package.json')
+    const text: string | null = await this.files.readText(path)
+    if (text === null || !MetadataDocument.jsonHasVersion(text)) return
+    await this.files.writeText(path, MetadataDocument.jsonWithVersion(text, version))
   }
 
   private async writeChangelog(project: Project, version: string, git: SourceControl): Promise<string> {

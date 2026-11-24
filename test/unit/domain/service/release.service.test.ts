@@ -48,6 +48,17 @@ describe('ReleaseService', () => {
     assert.deepEqual(git.git.calls, ['fetch', 'add', 'commit Release 0.2.0', 'tag v0.2.0', 'push origin HEAD v0.2.0'])
   })
 
+  it('keeps a package.json that names a version in step with the metadata, and leaves one without alone', async () => {
+    const pkg = '/games/rabbit/package.json'
+    const files: MemoryFiles = new MemoryFiles({ [METADATA]: '{"name":"rabbit","version":"0.1.0"}', [pkg]: '{\n  "name": "rabbit",\n  "version": "0.1.0"\n}\n' })
+    await service(files, new FakeGitFactory()).release({ project: project(), version: '0.2.0', remote: 'origin', report: () => undefined })
+    assert.equal(files.files.get(pkg), '{\n  "name": "rabbit",\n  "version": "0.2.0"\n}\n')
+
+    const bare: MemoryFiles = new MemoryFiles({ [METADATA]: '{"name":"rabbit","version":"0.1.0"}', [pkg]: '{\n  "name": "rabbit"\n}\n' })
+    await service(bare, new FakeGitFactory()).release({ project: project(), version: '0.2.0', remote: 'origin', report: () => undefined })
+    assert.equal(bare.files.get(pkg), '{\n  "name": "rabbit"\n}\n')
+  })
+
   it('writes the version where the platform reads it, keeping the other fields in place', async () => {
     const pkg = '/apps/store/package.json'
     const files: MemoryFiles = new MemoryFiles({ [pkg]: '{\n  "name": "store",\n  "version": "3.4.0",\n  "main": "main.js"\n}\n' })

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Release keeps `package.json` in step**: a project whose `package.json` names a version (a bundled Phaser
+  game, say) gets the new version there too, beside the metadata; WarpEngine 5.10.2's version step warns when the
+  two disagree.
+
 ## 1.18.0
 
 - **Marker completion from the host**: the keys of `.woodpecker.yaml` besides `platform` and `name`, and the values
