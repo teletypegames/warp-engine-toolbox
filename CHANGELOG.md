@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.18.0
 
 - **Marker completion from the host**: the keys of `.woodpecker.yaml` besides `platform` and `name`, and the values
   after them (`release: tag|push`, `app: cli|gui`, `build: make`, `media: prg|d64`…), come from the platform's
