@@ -43,6 +43,28 @@ export interface WebBindingDescription {
   readonly params: readonly WebParamDescription[]
 }
 
+/** A key of the CI marker besides `platform` and `name`, as the host describes it. */
+export interface MarkerOptionDescription {
+  /** The key, such as `release`, `app` or `build`. */
+  readonly name: string
+  /** The values the key takes, such as `tag` and `push`. */
+  readonly values: readonly string[]
+  /** What the key changes, in the host's words. */
+  readonly description: string
+}
+
+/** A variant of a platform (such as `cli` or `gui`), picked by an `app:` line in the marker. */
+export interface AppDescription {
+  /** The variant's name. */
+  readonly name: string
+  /** Whether this is the variant a marker without `app:` builds. */
+  readonly default: boolean
+  /** The marker line that picks it, such as `app: gui`. */
+  readonly marker: string
+  /** The build kinds a release of this variant has. */
+  readonly kinds: readonly KindDescription[]
+}
+
 /** How a project's metadata file is written: a JSON object, a Lua comment header, or a custom format the toolbox cannot edit. */
 export type MetadataFormat = 'json' | 'lua' | 'custom'
 
@@ -54,6 +76,10 @@ export interface PlatformDescription {
   readonly label: string
   /** The build kinds a release has. */
   readonly kinds: readonly KindDescription[]
+  /** The variants, the default first; empty or missing for a platform without variants (or an older host). */
+  readonly apps?: readonly AppDescription[]
+  /** The CI marker keys besides `platform` and `name`; missing when the host is older and does not describe them. */
+  readonly options?: readonly MarkerOptionDescription[]
   /** The metadata file: its format, its path (`null` for the default) and the keys it holds. */
   readonly metadata: {
     /** How the file is written. */

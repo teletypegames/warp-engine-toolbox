@@ -29,7 +29,7 @@ describe('ProjectPlan', () => {
       manifest: null,
       demoFiles: ['.git/HEAD', '.woodpecker.yaml', 'LICENSE', 'Makefile', 'README.md', 'main.asm', 'metadata.json']
     }).list()
-    assert.deepEqual(plan.map((file: PlannedFile) => file.target), ['.gitignore', '.vscode/extensions.json', '.vscode/tasks.json', '.woodpecker.yaml', 'main.asm', 'Makefile', 'metadata.json', 'README.md'])
+    assert.deepEqual(plan.map((file: PlannedFile) => file.target), ['.gitignore', '.vscode/extensions.json', '.vscode/tasks.json', '.woodpecker.yaml', 'LICENSE', 'main.asm', 'Makefile', 'metadata.json', 'README.md'])
     assert.deepEqual(find(plan, 'Makefile')?.source, { root: 'demo', path: 'Makefile' })
     assert.equal(find(plan, 'Makefile')?.transform, 'makefile')
     const metadata = JSON.parse(find(plan, 'metadata.json')?.content ?? '{}') as Record<string, unknown>
@@ -39,7 +39,7 @@ describe('ProjectPlan', () => {
 
   it('follows a template manifest and writes the Lua header where the version command reads it', () => {
     const plan: PlannedFile[] = new ProjectPlan({ platform: TIC80, answers: ANSWERS, host: 'https://h', templateFiles: ['a.mk'], manifest: { files: { 'a.mk': 'Makefile' } }, demoFiles: [] }).list()
-    assert.deepEqual(plan.map((file: PlannedFile) => file.target), ['.gitignore', '.woodpecker.yaml', 'inc/meta/meta.header.lua', 'Makefile', 'README.md'])
+    assert.deepEqual(plan.map((file: PlannedFile) => file.target), ['.gitignore', '.woodpecker.yaml', 'inc/meta/meta.header.lua', 'LICENSE', 'Makefile', 'README.md'])
     assert.match(find(plan, 'inc/meta/meta.header.lua')?.content ?? '', /^-- title: Rabbit\n[\s\S]*-- version: 0.1.0\n/)
   })
 
@@ -81,5 +81,29 @@ describe('ProjectPlan', () => {
     assert.equal(new Makefile('PROJECT ?= x\n').withProject('rabbit'), 'PROJECT ?= rabbit\n')
     assert.equal(new Makefile('NAME = x\n').withProject('rabbit'), 'NAME = x\n')
     assert.deepEqual(new Makefile('.PHONY: all\nall: build\nbuild:\n%.o: %.c\nX := 1\n').targets(), ['all', 'build'])
+  })
+})
+
+describe('ProjectPlan: variant and licence', () => {
+  it('writes the chosen variant into the marker and its preview', () => {
+    const plan: PlannedFile[] = new ProjectPlan({ platform: C64, answers: { ...ANSWERS, app: 'gui' }, host: 'https://h', templateFiles: [], manifest: null, demoFiles: [] }).list()
+    const marker: string = find(plan, '.woodpecker.yaml')?.content ?? ''
+    assert.match(marker, /platform: c64\napp: gui\n$/)
+    assert.match(marker, /options%5Bapp%5D=gui"/)
+  })
+
+  it('writes the MIT licence with the year and the author, and keeps a template LICENSE', () => {
+    const plan: PlannedFile[] = new ProjectPlan({ platform: C64, answers: ANSWERS, host: 'https://h', templateFiles: [], manifest: null, demoFiles: [], year: 2026 }).list()
+    assert.match(find(plan, 'LICENSE')?.content ?? '', /^MIT License\n\nCopyright \(c\) 2026 Teletype\n/)
+    const kept: PlannedFile[] = new ProjectPlan({ platform: C64, answers: ANSWERS, host: 'https://h', templateFiles: [], manifest: { files: { 'LICENSE.md': 'LICENSE.md' } }, demoFiles: [] }).list()
+    assert.equal(find(kept, 'LICENSE'), undefined)
+    assert.equal(find(kept, 'LICENSE.md')?.source?.path, 'LICENSE.md')
+  })
+
+  it('writes no licence file for a licence without a known text or without an author', () => {
+    for (const answers of [{ ...ANSWERS, license: 'GPL-3.0-or-later' }, { ...ANSWERS, author: ' ' }]) {
+      const plan: PlannedFile[] = new ProjectPlan({ platform: C64, answers, host: 'https://h', templateFiles: [], manifest: null, demoFiles: [] }).list()
+      assert.equal(find(plan, 'LICENSE'), undefined)
+    }
   })
 })

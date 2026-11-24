@@ -133,6 +133,8 @@ export interface ScaffoldRequest {
   readonly forkOf?: ForkOrigin
   /** The licence, when the project's metadata names one. */
   readonly license?: string
+  /** The platform variant (`app:` in the marker, such as `gui`), when the marker names one; hosts before WarpEngine 5.10 ignore it. */
+  readonly app?: string
 }
 
 /** The catalog statuses offered when the host does not send its own list. */

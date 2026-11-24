@@ -334,6 +334,7 @@
   "{0} refused every token found on this machine: run the local engine's installer again.": "{0} a gépen talált egyik tokent sem fogadta el: futtasd újra a helyi motor telepítőjét.",
   "{0} takes our pushes ({1}).": "A(z) {0} fogadja a küldéseinket ({1}).",
   "{0} to fix": "{0} javítandó",
+  "{0} variant": "{0}-változat",
   "{0} volumes": "{0} kötet",
   "{0} {1}": "{0} {1}",
   "{0} {1} is published.": "Megjelent: {0} {1}.",

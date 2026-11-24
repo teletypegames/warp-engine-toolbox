@@ -58,12 +58,14 @@ export class Marker {
    * @param platform - The platform name.
    * @param name - The software name, or `null` to leave it out.
    * @param previewUrl - The host address that serves the full pipeline, written as a `curl` comment; `null` for none.
+   * @param options - Further `key: value` lines after the platform and the name, such as `app: gui`; none by default.
    * @returns The file content, ending with a newline.
    */
-  public static render(platform: string, name: string | null, previewUrl: string | null): string {
+  public static render(platform: string, name: string | null, previewUrl: string | null, options: Readonly<Record<string, string>> = {}): string {
     const lines: string[] = previewUrl ? [PREVIEW_COMMENT, `#   curl "${previewUrl}"`] : []
     lines.push(`platform: ${platform}`)
     if (name) lines.push(`name: ${name}`)
+    for (const [key, value] of Object.entries(options)) lines.push(`${key}: ${value}`)
     return `${lines.join('\n')}\n`
   }
 

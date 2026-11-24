@@ -18,12 +18,12 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 
 | | |
 |---|---|
-| **New Game…** | Pick a platform, name the game, and get a project from the host's template (and demo): Makefile, tasks, pipeline marker, metadata, README, a git repository. |
+| **New Game…** | Pick a platform, name the game, and get a project from the host's template (and demo): Makefile, tasks, pipeline marker (with `app:` for the variant you pick, such as Go's `cli` or `gui`), metadata, README, `LICENSE` (for MIT), a git repository. |
 | **Add WarpEngine to This Project** | The marker, the metadata and the template's files for a project you already have; your own files are kept. |
 | **Dev container** | A template with a dev container gives the project `.devcontainer/` on the platform's CI builder image: with Docker alone on the computer, the project builds with the same toolchain as the pipeline (see [Develop with only Docker](#develop-with-only-docker)). **Add Dev Container** adds it to a project you have. |
 | **Connect** | One step on the host: repository on the forge, CI for it, a CI token in its secret and a draft catalog entry. The working copy gets the remote and is pushed: the first build starts. |
 | **Metadata** | `metadata.json` is validated against the host's schema for the platform (or edited in a form), and on every save the host says what a publish would refuse. TIC-80 headers are read the same way. |
-| **Pipeline marker** | Completion and hover for `platform:` in `.woodpecker.yaml`, and a lens that shows the full pipeline the host serves. |
+| **Pipeline marker** | Completion and hover in `.woodpecker.yaml`: the platforms, and the keys and values the platform takes (`release`, `app`, `build`…, as the host describes them); a lens that shows the full pipeline the host serves. |
 | **Build** | The Makefile's targets as tasks with problem matchers (ACME, cc65, gcc-style, Lua), and **Build Like CI**: the same builder image the pipeline uses, in Docker. |
 | **Play** | Builds and plays the game in a panel: in the runtime its release will play in on the web (EmulatorJS, TIC-80 …) with your local build, or its own web build. One click starts it: the browser lets the game's sound start only after a click. |
 | **Platform docs** | A book button on the platform in the project panel opens the host's page about the platform (the `docs` link of its tooling), when the host gives one. |

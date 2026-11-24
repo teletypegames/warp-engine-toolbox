@@ -19,3 +19,9 @@ describe('Marker', () => {
       '# One-line marker: the WarpEngine host serves the full pipeline. Preview it with:\n#   curl "https://h/build/config?platform=c64"\nplatform: c64\n')
   })
 })
+
+describe('Marker options', () => {
+  it('renders further keys after the platform and the name', () => {
+    assert.equal(Marker.render('golang', 'tool', null, { app: 'gui' }), 'platform: golang\nname: tool\napp: gui\n')
+  })
+})

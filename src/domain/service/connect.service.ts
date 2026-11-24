@@ -71,7 +71,7 @@ export class ConnectService {
 
   /**
    * Has the host create the software, its repository and CI from the project's name, title, platform, category and
-   * description, and its licence and parent (the `fork_of_*` metadata keys) when it has them; signs in when needed.
+   * description, and its variant (`app:` in the marker), licence and parent (the `fork_of_*` metadata keys) when it has them; signs in when needed.
    *
    * @param project - The project.
    * @returns What the host created.
@@ -83,10 +83,11 @@ export class ConnectService {
     const title: string = project.title
     const license: string | null = project.metadata.trimmed('license')
     const forkOf: ForkOrigin | null = ConnectService.forkOf(project)
+    const app: string | undefined = project.marker.options['app']
     return admin.catalog.scaffold({
       name: project.name, title, platform: project.platformName,
       category: project.metadata.trimmed('category'), description: project.metadata.trimmed('desc') ?? title,
-      ...(forkOf ? { forkOf } : {}), ...(license ? { license } : {})
+      ...(forkOf ? { forkOf } : {}), ...(license ? { license } : {}), ...(app ? { app } : {})
     })
   }
 

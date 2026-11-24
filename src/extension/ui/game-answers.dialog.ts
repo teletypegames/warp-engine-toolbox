@@ -6,6 +6,7 @@
 import * as vscode from 'vscode'
 import type { Category } from '../../domain/model/catalog.model'
 import { FIRST_VERSION, GameName, LICENSES, type GameAnswers } from '../../domain/model/game-answers.model'
+import type { AppDescription } from '../../domain/model/platform-description.model'
 import type { Platform } from '../../domain/model/platform.model'
 import type { CatalogService } from '../../domain/service/catalog.service'
 import type { PlatformService } from '../../domain/service/platform.service'
@@ -50,22 +51,32 @@ export class GameAnswersDialog {
   }
 
   /**
-   * Asks, in turn, for the name (validated), title, one-line description, author, licence and
-   * category of a new game.
+   * Asks, in turn, for the name (validated), title, one-line description, author, the variant
+   * (when the platform has variants; the default first), licence and category of a new game.
    *
    * @param platform - The chosen platform, named in the first question.
    * @param suggestedName - A name to start from, such as the folder's, or `null`.
    * @returns The answers with the first version, the title standing in for an empty
-   *   description; `null` when a question is dismissed.
+   *   description, and the chosen variant as `app`; `null` when a question is dismissed.
    */
   public async answers(platform: Platform, suggestedName: string | null): Promise<GameAnswers | null> {
     const texts: Texts | null = await this.texts(platform, suggestedName)
     if (!texts) return null
+    const app: string | null | undefined = await GameAnswersDialog.app(platform)
+    if (app === undefined) return null
     const license: string | undefined = await vscode.window.showQuickPick([...LICENSES], { title: t('Licence'), ignoreFocusOut: true })
     if (!license) return null
     const category: string | null | undefined = await this.category()
     if (category === undefined) return null
-    return { ...texts, license, category, description: texts.description || texts.title, version: FIRST_VERSION }
+    return { ...texts, license, category, description: texts.description || texts.title, version: FIRST_VERSION, ...(app ? { app } : {}) }
+  }
+
+  private static async app(platform: Platform): Promise<string | null | undefined> {
+    if (platform.apps.length === 0) return null
+    const items: PickItem<string>[] = platform.apps.map((app: AppDescription) => ({
+      label: app.name, description: app.default ? t('default') : '', detail: app.marker, value: app.name
+    }))
+    return Dialogs.pick(items, { title: t('{0} variant', platform.label), ignoreFocusOut: true })
   }
 
   private async texts(platform: Platform, suggestedName: string | null): Promise<Texts | null> {

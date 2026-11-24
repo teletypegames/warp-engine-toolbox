@@ -4,7 +4,7 @@
  * @module
  */
 import { LuaHeader } from './lua-header.model'
-import type { KindDescription, MetadataFormat, PlatformDescription, WebBindingDescription } from './platform-description.model'
+import type { AppDescription, KindDescription, MarkerOptionDescription, MetadataFormat, PlatformDescription, WebBindingDescription } from './platform-description.model'
 
 const DEFAULT_MARKER = '.woodpecker.yaml'
 const DEFAULT_METADATA = 'metadata.json'
@@ -23,6 +23,13 @@ export class Platform {
   public get label(): string { return this.description.label }
   /** The build kinds (artifacts) a release of this platform has. */
   public get kinds(): readonly KindDescription[] { return this.description.kinds }
+  /** The variants a project can pick with `app:` in the marker, the default first; empty for a platform without variants. */
+  public get apps(): readonly AppDescription[] {
+    const apps: readonly AppDescription[] = this.description.apps ?? []
+    return [...apps].sort((a: AppDescription, b: AppDescription) => Number(b.default) - Number(a.default))
+  }
+  /** The CI marker keys besides `platform` and `name` with their values, or `null` when the host does not describe them. */
+  public get markerOptions(): readonly MarkerOptionDescription[] | null { return this.description.options ?? null }
   /** The web runtimes a build of this platform can be played in. */
   public get web(): readonly WebBindingDescription[] { return this.description.web }
   /** How the project's metadata file is written. */

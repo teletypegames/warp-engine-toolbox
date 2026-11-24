@@ -150,9 +150,11 @@ export class LocalCiService {
   }
 
   private async scaffold(admin: AdminRepositories, project: Project): Promise<ScaffoldResult> {
+    const app: string | undefined = project.marker.options['app']
     return admin.catalog.scaffold({
       name: project.name, title: project.title, platform: project.platformName,
-      category: project.metadata.trimmed('category'), description: project.metadata.trimmed('desc') ?? project.title
+      category: project.metadata.trimmed('category'), description: project.metadata.trimmed('desc') ?? project.title,
+      ...(app ? { app } : {})
     })
   }
 

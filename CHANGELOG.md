@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **Marker completion from the host**: the keys of `.woodpecker.yaml` besides `platform` and `name`, and the values
+  after them (`release: tag|push`, `app: cli|gui`, `build: make`, `media: prg|d64`…), come from the platform's
+  description (`options`, WarpEngine 5.10); keys already written are not offered again. An older host still gets
+  `release` and `build`.
+- **New Game asks for the variant** of a platform that has them (Go: `cli` or `gui`, the default first) and writes
+  `app: <variant>` into the marker; Connect and *Set up local CI* send it to the host's scaffold.
+- **New Game writes a `LICENSE`** for MIT, with the year and the author; a template's own `LICENSE` is kept, and other
+  licences stay in the metadata only.
+
 ## 1.17.1
 
 - From a dev container window, *Admin page* and every other link to the computer's own engine opens on the

@@ -19,6 +19,8 @@ export interface GameAnswers {
   readonly description: string
   /** The project's first version, {@link FIRST_VERSION}. */
   readonly version: string
+  /** The platform variant (such as `gui`) written as `app:` into the marker; left out for the default or a platform without variants. */
+  readonly app?: string
 }
 
 /** The licences offered when creating a game. */

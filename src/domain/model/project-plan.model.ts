@@ -76,11 +76,14 @@ export interface PlanInput {
   readonly host: string
   /** `devcontainer` plans the dev container files only (Add Dev Container); absent plans the whole project. */
   readonly only?: 'devcontainer'
+  /** The copyright year of a generated `LICENSE`; the current year when absent. */
+  readonly year?: number
 }
 
 const DEMO_SKIPPED: readonly RegExp[] = [
   /^\.git\//, /^\.woodpecker\.ya?ml$/, /^\.woodpecker\//, /^\.gitlab-ci\.yml$/, /^metadata\.json$/, /^README(\.md)?$/i, /^LICEN[CS]E/i
 ]
+const LICENSE_FILE = /^LICEN[CS]E(\.[A-Za-z]+)?$/i
 const GENERATED_EXAMPLES: ReadonlySet<string> = new Set(['woodpecker.yaml', 'gitlab-ci.yml', 'metadata.json'])
 const EXAMPLE_TARGETS: Readonly<Record<string, string>> = { 'makefile.make': 'Makefile', 'tasks.json': '.vscode/tasks.json', 'launch.json': '.vscode/launch.json' }
 const EXAMPLE_PREFIX = 'example-'
@@ -90,7 +93,8 @@ export const NAME_PLACEHOLDER = '{name}'
 export const TEMPLATE_MANIFEST = 'warp-template.json'
 
 /**
- * The list of files New Game writes: template files, demo files, then the generated ones (CI marker, metadata, README, `.gitignore`, extension recommendations).
+ * The list of files New Game writes: template files, demo files, then the generated ones (CI marker, metadata, README,
+ * `LICENSE` when the template has none and the licence's text is known, `.gitignore`, extension recommendations).
  *
  * A later file with the same target replaces an earlier one.
  */
@@ -170,9 +174,11 @@ export class ProjectPlan {
 
   private addGenerated(): void {
     const { platform, answers } = this.input
-    this.write(platform.markerFile, Marker.render(platform.name, null, this.previewUrl()))
+    const options: Record<string, string> = answers.app ? { app: answers.app } : {}
+    this.write(platform.markerFile, Marker.render(platform.name, null, this.previewUrl(options), options))
     this.addMetadata()
     this.write('README.md', ProjectFiles.readme(answers, platform))
+    this.addLicense()
     if (!this.files.has('.gitignore')) this.write('.gitignore', ProjectFiles.gitignore())
     if (platform.recommendedExtensions.length > 0) this.write('.vscode/extensions.json', ProjectFiles.extensions(platform.recommendedExtensions))
   }
@@ -184,8 +190,15 @@ export class ProjectPlan {
     else if (platform.metadataFormat === 'lua' && luaFile && !this.files.has(luaFile)) this.write(luaFile, ProjectFiles.luaHeader(answers))
   }
 
-  private previewUrl(): string {
-    return `${this.input.host.replace(/\/$/, '')}/build/config?platform=${this.input.platform.name}`
+  private addLicense(): void {
+    if ([...this.files.keys()].some((target: string) => LICENSE_FILE.test(target))) return
+    const text: string | null = ProjectFiles.license(this.input.answers, this.input.year ?? new Date().getFullYear())
+    if (text) this.write('LICENSE', text)
+  }
+
+  private previewUrl(options: Readonly<Record<string, string>>): string {
+    const query: string = Object.entries(options).map(([key, value]: [string, string]) => `&options%5B${key}%5D=${encodeURIComponent(value)}`).join('')
+    return `${this.input.host.replace(/\/$/, '')}/build/config?platform=${this.input.platform.name}${query}`
   }
 
   private copy(root: PlanRoot, path: string, target: string, rules: ManifestRules): void {

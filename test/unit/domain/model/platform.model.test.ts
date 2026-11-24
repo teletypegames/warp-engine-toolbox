@@ -1,7 +1,8 @@
 import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
 import { FilePath } from '../../../../src/domain/model/path.model'
-import { C64, TIC80 } from '../../fixtures'
+import { Platform } from '../../../../src/domain/model/platform.model'
+import { C64, C64_DESCRIPTION, TIC80 } from '../../fixtures'
 
 describe('Platform', () => {
   it('reads the tooling the host gives', () => {
@@ -25,5 +26,20 @@ describe('FilePath', () => {
     assert.equal(FilePath.basename('/a/b/c.prg'), 'c.prg')
     assert.equal(FilePath.dirname('/a/b/c.prg'), '/a/b')
     assert.equal(FilePath.relative('/a', '/a/dist/index.html'), 'dist/index.html')
+  })
+})
+
+describe('Platform variants and marker options', () => {
+  it('gives the variants with the default first and the marker options the host describes', () => {
+    const kinds = C64.kinds
+    const golang: Platform = new Platform({
+      ...C64_DESCRIPTION, name: 'golang',
+      apps: [{ name: 'gui', default: false, marker: 'app: gui', kinds }, { name: 'cli', default: true, marker: 'app: cli', kinds }],
+      options: [{ name: 'app', values: ['cli', 'gui'], description: 'The kind of program' }]
+    })
+    assert.deepEqual(golang.apps.map((app) => app.name), ['cli', 'gui'])
+    assert.deepEqual(golang.markerOptions?.map((option) => option.name), ['app'])
+    assert.deepEqual(C64.apps, [])
+    assert.equal(C64.markerOptions, null)
   })
 })
