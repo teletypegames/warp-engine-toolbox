@@ -113,6 +113,21 @@
         "label": "WarpEngine - Electron",
         "uiTheme": "vs-dark",
         "path": "./themes/teletype-games-electron.json"
+      },
+      {
+        "label": "WarpEngine - Go",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-golang.json"
+      },
+      {
+        "label": "WarpEngine - Batocera",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-batocera.json"
+      },
+      {
+        "label": "WarpEngine - RetroArch",
+        "uiTheme": "vs-dark",
+        "path": "./themes/teletype-games-retroarch.json"
       }
     ],
     "commands": [

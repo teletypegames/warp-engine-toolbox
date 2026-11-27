@@ -120,6 +120,9 @@ And one per platform, in its own colors:
 | **WarpEngine - Godot** | the Godot editor's slate blue and script colors |
 | **WarpEngine - DOS** | the blue editor of the classic DOS IDEs: yellow text, a grey menu and status bar |
 | **WarpEngine - Electron** | charcoal with Electron's teal |
+| **WarpEngine - Go** | Go after dark: a deep Go-blue editor, Go blue, aqua and the gopher's yellow |
+| **WarpEngine - Batocera** | a retro gaming front end at night: near-black with warm amber |
+| **WarpEngine - RetroArch** | the deep blue of RetroArch's classic XMB menu |
 
 Keywords take the green accent, types its lighter shade, strings amber, numbers blue, comments
 the muted grey (the platform themes take their palette's colors instead); every text color passes a contrast check (4.5:1, comments 3:1). The remote

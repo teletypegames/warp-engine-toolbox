@@ -1,73 +1,425 @@
 {
   "_comment": "Palettes of the platform themes: c holds the roles of the brand tokens, code the five code colors, colors any VS Code color set directly. Each source says where the colors come from; text colors are lightened or darkened from them until they pass npm run themes:check.",
   "c64": {
-    "label": "WarpEngine - C64", "ui": "vs-dark",
+    "label": "WarpEngine - C64",
+    "ui": "vs-dark",
     "source": "the BASIC boot screen: blue screen #352879 in a light blue #6c5eb5 border (Pepto palette)",
-    "c": { "page": "#352879", "surface": "#2b2163", "raised": "#433895", "line": "#4b3fa0", "line-strong": "#6c5eb5", "fg": "#d6d1fa", "fg-muted": "#b2abee", "fg-subtle": "#948ade", "accent": "#9ad284", "accent-hover": "#b6e3a4", "accent-fg": "#000000", "accent-quiet": "#4a3da8", "info": "#70a4b2", "warn": "#b8c76f", "danger": "#e0959a" },
-    "code": { "keyword": "#ffffff", "type": "#9ad284", "string": "#c9d68a", "number": "#86bfcc", "comment": "#948ade" },
-    "colors": { "activityBar.background": "#6c5eb5", "activityBar.foreground": "#ffffff", "activityBar.inactiveForeground": "#d6d1fa", "titleBar.activeBackground": "#6c5eb5", "titleBar.activeForeground": "#ffffff", "titleBar.inactiveBackground": "#6c5eb5", "statusBar.background": "#6c5eb5", "statusBar.foreground": "#ffffff" }
+    "c": {
+      "page": "#352879",
+      "surface": "#2b2163",
+      "raised": "#433895",
+      "line": "#4b3fa0",
+      "line-strong": "#6c5eb5",
+      "fg": "#d6d1fa",
+      "fg-muted": "#b2abee",
+      "fg-subtle": "#948ade",
+      "accent": "#9ad284",
+      "accent-hover": "#b6e3a4",
+      "accent-fg": "#000000",
+      "accent-quiet": "#4a3da8",
+      "info": "#70a4b2",
+      "warn": "#b8c76f",
+      "danger": "#e0959a"
+    },
+    "code": {
+      "keyword": "#ffffff",
+      "type": "#9ad284",
+      "string": "#c9d68a",
+      "number": "#86bfcc",
+      "comment": "#948ade"
+    },
+    "colors": {
+      "activityBar.background": "#6c5eb5",
+      "activityBar.foreground": "#ffffff",
+      "activityBar.inactiveForeground": "#d6d1fa",
+      "titleBar.activeBackground": "#6c5eb5",
+      "titleBar.activeForeground": "#ffffff",
+      "titleBar.inactiveBackground": "#6c5eb5",
+      "statusBar.background": "#6c5eb5",
+      "statusBar.foreground": "#ffffff"
+    }
   },
   "plus4": {
-    "label": "WarpEngine - Plus/4", "ui": "vs",
+    "label": "WarpEngine - Plus/4",
+    "ui": "vs",
     "source": "the BASIC 3.5 boot screen: white screen in a light purple #ce9dff border, black text (xplus4)",
-    "c": { "page": "#ffffff", "surface": "#f6f0ff", "raised": "#ece0ff", "line": "#e2d2fb", "line-strong": "#ce9dff", "fg": "#000000", "fg-muted": "#4a3d5c", "fg-subtle": "#6e6280", "accent": "#6a2fb0", "accent-hover": "#521f8f", "accent-fg": "#ffffff", "accent-quiet": "#eadcff", "info": "#1f5fbf", "warn": "#9a5a00", "danger": "#b3261e" },
-    "code": { "keyword": "#6a2fb0", "type": "#1d6b33", "string": "#9a5a00", "number": "#1f5fbf", "comment": "#6e6280" },
-    "colors": { "activityBar.background": "#ce9dff", "activityBar.foreground": "#000000", "activityBar.inactiveForeground": "#4a3d5c", "titleBar.activeBackground": "#ce9dff", "titleBar.activeForeground": "#000000", "titleBar.inactiveBackground": "#ce9dff", "statusBar.background": "#ce9dff", "statusBar.foreground": "#000000" }
+    "c": {
+      "page": "#ffffff",
+      "surface": "#f6f0ff",
+      "raised": "#ece0ff",
+      "line": "#e2d2fb",
+      "line-strong": "#ce9dff",
+      "fg": "#000000",
+      "fg-muted": "#4a3d5c",
+      "fg-subtle": "#6e6280",
+      "accent": "#6a2fb0",
+      "accent-hover": "#521f8f",
+      "accent-fg": "#ffffff",
+      "accent-quiet": "#eadcff",
+      "info": "#1f5fbf",
+      "warn": "#9a5a00",
+      "danger": "#b3261e"
+    },
+    "code": {
+      "keyword": "#6a2fb0",
+      "type": "#1d6b33",
+      "string": "#9a5a00",
+      "number": "#1f5fbf",
+      "comment": "#6e6280"
+    },
+    "colors": {
+      "activityBar.background": "#ce9dff",
+      "activityBar.foreground": "#000000",
+      "activityBar.inactiveForeground": "#4a3d5c",
+      "titleBar.activeBackground": "#ce9dff",
+      "titleBar.activeForeground": "#000000",
+      "titleBar.inactiveBackground": "#ce9dff",
+      "statusBar.background": "#ce9dff",
+      "statusBar.foreground": "#000000"
+    }
   },
   "tic80": {
-    "label": "WarpEngine - TIC-80", "ui": "vs-dark",
+    "label": "WarpEngine - TIC-80",
+    "ui": "vs-dark",
     "source": "Sweetie 16, the TIC-80 default palette our carts use",
-    "c": { "page": "#1a1c2c", "surface": "#29366f", "raised": "#333c57", "line": "#333c57", "line-strong": "#566c86", "fg": "#f4f4f4", "fg-muted": "#94b0c2", "fg-subtle": "#566c86", "accent": "#a7f070", "accent-hover": "#38b764", "accent-fg": "#1a1c2c", "accent-quiet": "#3b5dc9", "info": "#41a6f6", "warn": "#ffcd75", "danger": "#ef7d57" },
-    "code": { "keyword": "#ef7d57", "type": "#a7f070", "string": "#ffcd75", "number": "#73eff7", "comment": "#566c86" },
+    "c": {
+      "page": "#1a1c2c",
+      "surface": "#29366f",
+      "raised": "#333c57",
+      "line": "#333c57",
+      "line-strong": "#566c86",
+      "fg": "#f4f4f4",
+      "fg-muted": "#94b0c2",
+      "fg-subtle": "#566c86",
+      "accent": "#a7f070",
+      "accent-hover": "#38b764",
+      "accent-fg": "#1a1c2c",
+      "accent-quiet": "#3b5dc9",
+      "info": "#41a6f6",
+      "warn": "#ffcd75",
+      "danger": "#ef7d57"
+    },
+    "code": {
+      "keyword": "#ef7d57",
+      "type": "#a7f070",
+      "string": "#ffcd75",
+      "number": "#73eff7",
+      "comment": "#566c86"
+    },
     "colors": {}
   },
   "love": {
-    "label": "WarpEngine - LÖVE", "ui": "vs-dark",
+    "label": "WarpEngine - LÖVE",
+    "ui": "vs-dark",
     "source": "LÖVE's pink #e74a99 and light blue #27aae1 on a deep blue",
-    "c": { "page": "#1b1d2b", "surface": "#22253a", "raised": "#2d3150", "line": "#2d3150", "line-strong": "#3d4266", "fg": "#f2f2f7", "fg-muted": "#b4b8d4", "fg-subtle": "#8085ab", "accent": "#e74a99", "accent-hover": "#f07ab6", "accent-fg": "#1b1d2b", "accent-quiet": "#4a2443", "info": "#27aae1", "warn": "#f5c26b", "danger": "#ff6b6b" },
-    "code": { "keyword": "#ec5ea6", "type": "#b48cf2", "string": "#f5c26b", "number": "#27aae1", "comment": "#8085ab" },
+    "c": {
+      "page": "#1b1d2b",
+      "surface": "#22253a",
+      "raised": "#2d3150",
+      "line": "#2d3150",
+      "line-strong": "#3d4266",
+      "fg": "#f2f2f7",
+      "fg-muted": "#b4b8d4",
+      "fg-subtle": "#8085ab",
+      "accent": "#e74a99",
+      "accent-hover": "#f07ab6",
+      "accent-fg": "#1b1d2b",
+      "accent-quiet": "#4a2443",
+      "info": "#27aae1",
+      "warn": "#f5c26b",
+      "danger": "#ff6b6b"
+    },
+    "code": {
+      "keyword": "#ec5ea6",
+      "type": "#b48cf2",
+      "string": "#f5c26b",
+      "number": "#27aae1",
+      "comment": "#8085ab"
+    },
     "colors": {}
   },
   "phaser": {
-    "label": "WarpEngine - Phaser", "ui": "vs-dark",
+    "label": "WarpEngine - Phaser",
+    "ui": "vs-dark",
     "source": "neon arcade in the browser: deep violet, magenta and cyan",
-    "c": { "page": "#1a0f2e", "surface": "#22143b", "raised": "#2e1c4f", "line": "#2e1c4f", "line-strong": "#45307a", "fg": "#f4ecff", "fg-muted": "#c2b3e0", "fg-subtle": "#8f7bb8", "accent": "#ff3cac", "accent-hover": "#ff7cc8", "accent-fg": "#1a0f2e", "accent-quiet": "#4a1d5e", "info": "#2be4f3", "warn": "#ffd166", "danger": "#ff5c7a" },
-    "code": { "keyword": "#ff3cac", "type": "#2be4f3", "string": "#ffd166", "number": "#a99bff", "comment": "#8f7bb8" },
+    "c": {
+      "page": "#1a0f2e",
+      "surface": "#22143b",
+      "raised": "#2e1c4f",
+      "line": "#2e1c4f",
+      "line-strong": "#45307a",
+      "fg": "#f4ecff",
+      "fg-muted": "#c2b3e0",
+      "fg-subtle": "#8f7bb8",
+      "accent": "#ff3cac",
+      "accent-hover": "#ff7cc8",
+      "accent-fg": "#1a0f2e",
+      "accent-quiet": "#4a1d5e",
+      "info": "#2be4f3",
+      "warn": "#ffd166",
+      "danger": "#ff5c7a"
+    },
+    "code": {
+      "keyword": "#ff3cac",
+      "type": "#2be4f3",
+      "string": "#ffd166",
+      "number": "#a99bff",
+      "comment": "#8f7bb8"
+    },
     "colors": {}
   },
   "ebitengine": {
-    "label": "WarpEngine - Ebitengine", "ui": "vs",
+    "label": "WarpEngine - Ebitengine",
+    "ui": "vs",
     "source": "the Go look: white, Go blue #00add8 (darkened for text), the gopher's yellow #fddd00 only as a background",
-    "c": { "page": "#ffffff", "surface": "#f5f8fa", "raised": "#e9eff3", "line": "#dbe4ea", "line-strong": "#c2cfd8", "fg": "#202224", "fg-muted": "#4b5563", "fg-subtle": "#6b7280", "accent": "#007d9c", "accent-hover": "#005f78", "accent-fg": "#ffffff", "accent-quiet": "#d6f3fa", "info": "#007d9c", "warn": "#9a6700", "danger": "#b8264f" },
-    "code": { "keyword": "#007d9c", "type": "#0b6e4f", "string": "#9a6700", "number": "#b8264f", "comment": "#6b7280" },
-    "colors": { "editor.lineHighlightBackground": "#fffbe0", "editor.lineHighlightBorder": "#fff3a6", "statusBarItem.remoteBackground": "#fddd00", "statusBarItem.remoteForeground": "#202224" }
+    "c": {
+      "page": "#ffffff",
+      "surface": "#f5f8fa",
+      "raised": "#e9eff3",
+      "line": "#dbe4ea",
+      "line-strong": "#c2cfd8",
+      "fg": "#202224",
+      "fg-muted": "#4b5563",
+      "fg-subtle": "#6b7280",
+      "accent": "#007d9c",
+      "accent-hover": "#005f78",
+      "accent-fg": "#ffffff",
+      "accent-quiet": "#d6f3fa",
+      "info": "#007d9c",
+      "warn": "#9a6700",
+      "danger": "#b8264f"
+    },
+    "code": {
+      "keyword": "#007d9c",
+      "type": "#0b6e4f",
+      "string": "#9a6700",
+      "number": "#b8264f",
+      "comment": "#6b7280"
+    },
+    "colors": {
+      "editor.lineHighlightBackground": "#fffbe0",
+      "editor.lineHighlightBorder": "#fff3a6",
+      "statusBarItem.remoteBackground": "#fddd00",
+      "statusBarItem.remoteForeground": "#202224"
+    }
   },
   "bevy": {
-    "label": "WarpEngine - Bevy", "ui": "vs-dark",
+    "label": "WarpEngine - Bevy",
+    "ui": "vs-dark",
     "source": "graphite like the Bevy site, with Rust's orange #f74c00",
-    "c": { "page": "#232326", "surface": "#1b1b1d", "raised": "#2e2e32", "line": "#333338", "line-strong": "#4a4a50", "fg": "#ececec", "fg-muted": "#b0b0b5", "fg-subtle": "#8a8a90", "accent": "#f74c00", "accent-hover": "#ff7a33", "accent-fg": "#1b1b1d", "accent-quiet": "#4a2a1a", "info": "#6cb6ff", "warn": "#dea584", "danger": "#ff6b6b" },
-    "code": { "keyword": "#ff6a26", "type": "#dea584", "string": "#a5d6a7", "number": "#6cb6ff", "comment": "#8a8a90" },
+    "c": {
+      "page": "#232326",
+      "surface": "#1b1b1d",
+      "raised": "#2e2e32",
+      "line": "#333338",
+      "line-strong": "#4a4a50",
+      "fg": "#ececec",
+      "fg-muted": "#b0b0b5",
+      "fg-subtle": "#8a8a90",
+      "accent": "#f74c00",
+      "accent-hover": "#ff7a33",
+      "accent-fg": "#1b1b1d",
+      "accent-quiet": "#4a2a1a",
+      "info": "#6cb6ff",
+      "warn": "#dea584",
+      "danger": "#ff6b6b"
+    },
+    "code": {
+      "keyword": "#ff6a26",
+      "type": "#dea584",
+      "string": "#a5d6a7",
+      "number": "#6cb6ff",
+      "comment": "#8a8a90"
+    },
     "colors": {}
   },
   "godot": {
-    "label": "WarpEngine - Godot", "ui": "vs-dark",
+    "label": "WarpEngine - Godot",
+    "ui": "vs-dark",
     "source": "the slate blue of the Godot editor, its blue #478cbf and its script colors",
-    "c": { "page": "#202531", "surface": "#262c3b", "raised": "#363d4a", "line": "#363d4a", "line-strong": "#4b5466", "fg": "#e0e6f0", "fg-muted": "#aab4c4", "fg-subtle": "#808a9c", "accent": "#70bafa", "accent-hover": "#9ccdfc", "accent-fg": "#202531", "accent-quiet": "#2d4a6b", "info": "#70bafa", "warn": "#ffda6b", "danger": "#ff7085" },
-    "code": { "keyword": "#ff7085", "type": "#8effda", "string": "#ffeda1", "number": "#a1ffe0", "comment": "#808a9c" },
+    "c": {
+      "page": "#202531",
+      "surface": "#262c3b",
+      "raised": "#363d4a",
+      "line": "#363d4a",
+      "line-strong": "#4b5466",
+      "fg": "#e0e6f0",
+      "fg-muted": "#aab4c4",
+      "fg-subtle": "#808a9c",
+      "accent": "#70bafa",
+      "accent-hover": "#9ccdfc",
+      "accent-fg": "#202531",
+      "accent-quiet": "#2d4a6b",
+      "info": "#70bafa",
+      "warn": "#ffda6b",
+      "danger": "#ff7085"
+    },
+    "code": {
+      "keyword": "#ff7085",
+      "type": "#8effda",
+      "string": "#ffeda1",
+      "number": "#a1ffe0",
+      "comment": "#808a9c"
+    },
     "colors": {}
   },
   "dos": {
-    "label": "WarpEngine - DOS", "ui": "vs-dark",
+    "label": "WarpEngine - DOS",
+    "ui": "vs-dark",
     "source": "the blue editor of the classic DOS IDEs: CGA blue #0000aa, yellow text, a grey menu bar",
-    "c": { "page": "#0000aa", "surface": "#000080", "raised": "#0000cc", "line": "#5555ff", "line-strong": "#aaaaaa", "fg": "#ffffff", "fg-muted": "#aaaaaa", "fg-subtle": "#aaaaaa", "accent": "#55ffff", "accent-hover": "#00aaaa", "accent-fg": "#000000", "accent-quiet": "#0000ff", "info": "#55ffff", "warn": "#ffff55", "danger": "#ff5555" },
-    "code": { "keyword": "#ffffff", "type": "#55ff55", "string": "#55ffff", "number": "#ff55ff", "comment": "#aaaaaa" },
-    "colors": { "editor.foreground": "#ffff55", "titleBar.activeBackground": "#aaaaaa", "titleBar.activeForeground": "#000000", "titleBar.inactiveBackground": "#aaaaaa", "statusBar.background": "#aaaaaa", "statusBar.foreground": "#000000", "statusBarItem.remoteBackground": "#00aaaa", "statusBarItem.remoteForeground": "#000000" }
+    "c": {
+      "page": "#0000aa",
+      "surface": "#000080",
+      "raised": "#0000cc",
+      "line": "#5555ff",
+      "line-strong": "#aaaaaa",
+      "fg": "#ffffff",
+      "fg-muted": "#aaaaaa",
+      "fg-subtle": "#aaaaaa",
+      "accent": "#55ffff",
+      "accent-hover": "#00aaaa",
+      "accent-fg": "#000000",
+      "accent-quiet": "#0000ff",
+      "info": "#55ffff",
+      "warn": "#ffff55",
+      "danger": "#ff5555"
+    },
+    "code": {
+      "keyword": "#ffffff",
+      "type": "#55ff55",
+      "string": "#55ffff",
+      "number": "#ff55ff",
+      "comment": "#aaaaaa"
+    },
+    "colors": {
+      "editor.foreground": "#ffff55",
+      "titleBar.activeBackground": "#aaaaaa",
+      "titleBar.activeForeground": "#000000",
+      "titleBar.inactiveBackground": "#aaaaaa",
+      "statusBar.background": "#aaaaaa",
+      "statusBar.foreground": "#000000",
+      "statusBarItem.remoteBackground": "#00aaaa",
+      "statusBarItem.remoteForeground": "#000000"
+    }
   },
   "electron": {
-    "label": "WarpEngine - Electron", "ui": "vs-dark",
+    "label": "WarpEngine - Electron",
+    "ui": "vs-dark",
     "source": "a charcoal desktop app with Electron's teal #9feaf9",
-    "c": { "page": "#2f3241", "surface": "#262833", "raised": "#3b3f51", "line": "#3b3f51", "line-strong": "#545a73", "fg": "#e8eaf2", "fg-muted": "#b3b8cc", "fg-subtle": "#8f95ac", "accent": "#9feaf9", "accent-hover": "#c5f3fb", "accent-fg": "#1f2230", "accent-quiet": "#2f5960", "info": "#9feaf9", "warn": "#f4d58d", "danger": "#ff7b72" },
-    "code": { "keyword": "#9feaf9", "type": "#c3a6ff", "string": "#f4d58d", "number": "#7ee0b5", "comment": "#8f95ac" },
+    "c": {
+      "page": "#2f3241",
+      "surface": "#262833",
+      "raised": "#3b3f51",
+      "line": "#3b3f51",
+      "line-strong": "#545a73",
+      "fg": "#e8eaf2",
+      "fg-muted": "#b3b8cc",
+      "fg-subtle": "#8f95ac",
+      "accent": "#9feaf9",
+      "accent-hover": "#c5f3fb",
+      "accent-fg": "#1f2230",
+      "accent-quiet": "#2f5960",
+      "info": "#9feaf9",
+      "warn": "#f4d58d",
+      "danger": "#ff7b72"
+    },
+    "code": {
+      "keyword": "#9feaf9",
+      "type": "#c3a6ff",
+      "string": "#f4d58d",
+      "number": "#7ee0b5",
+      "comment": "#8f95ac"
+    },
+    "colors": {}
+  },
+  "golang": {
+    "label": "WarpEngine - Go",
+    "ui": "vs-dark",
+    "source": "Go after dark, the night twin of the Ebitengine theme: a deep Go-blue editor, Go blue #00add8 and light blue #5dc9e2, aqua #00a29c, fuchsia #ce3262 and the gopher's yellow #fddd00 (lightened for text)",
+    "c": {
+      "page": "#0e2430",
+      "surface": "#0a1c26",
+      "raised": "#16323f",
+      "line": "#1d3d4c",
+      "line-strong": "#2f5a6b",
+      "fg": "#e6f4f8",
+      "fg-muted": "#a9c4cf",
+      "fg-subtle": "#7f9ea9",
+      "accent": "#00add8",
+      "accent-hover": "#5dc9e2",
+      "accent-fg": "#04141b",
+      "accent-quiet": "#0f4558",
+      "info": "#5dc9e2",
+      "warn": "#fddd00",
+      "danger": "#f2789f"
+    },
+    "code": {
+      "keyword": "#5dc9e2",
+      "type": "#3fd1c8",
+      "string": "#fddd00",
+      "number": "#f2789f",
+      "comment": "#7f9ea9"
+    },
+    "colors": {}
+  },
+  "batocera": {
+    "label": "WarpEngine - Batocera",
+    "ui": "vs-dark",
+    "source": "a retro gaming front end on a TV at night: a near-black editor, warm amber #ffb000 as the accent, phosphor green and red",
+    "c": {
+      "page": "#15151a",
+      "surface": "#0f0f13",
+      "raised": "#22222a",
+      "line": "#2a2a33",
+      "line-strong": "#44444f",
+      "fg": "#f2efe8",
+      "fg-muted": "#bdb8ac",
+      "fg-subtle": "#8c877c",
+      "accent": "#ffb000",
+      "accent-hover": "#ffc94d",
+      "accent-fg": "#1a1406",
+      "accent-quiet": "#4a3a12",
+      "info": "#7fc8ff",
+      "warn": "#ffb000",
+      "danger": "#ff6b5e"
+    },
+    "code": {
+      "keyword": "#ffb000",
+      "type": "#ffd98a",
+      "string": "#9be38a",
+      "number": "#7fc8ff",
+      "comment": "#8c877c"
+    },
+    "colors": {}
+  },
+  "retroarch": {
+    "label": "WarpEngine - RetroArch",
+    "ui": "vs-dark",
+    "source": "the deep blue of RetroArch's classic XMB menu with white text and a light blue highlight",
+    "c": {
+      "page": "#0d2350",
+      "surface": "#0a1b3f",
+      "raised": "#153167",
+      "line": "#1c3b78",
+      "line-strong": "#2f5598",
+      "fg": "#f2f6ff",
+      "fg-muted": "#b9c8ea",
+      "fg-subtle": "#8ea3d1",
+      "accent": "#6fc3ff",
+      "accent-hover": "#a4d9ff",
+      "accent-fg": "#061430",
+      "accent-quiet": "#1f4a8a",
+      "info": "#6fc3ff",
+      "warn": "#ffd479",
+      "danger": "#ff8a8a"
+    },
+    "code": {
+      "keyword": "#6fc3ff",
+      "type": "#c9b3ff",
+      "string": "#ffd479",
+      "number": "#8ee6b8",
+      "comment": "#8ea3d1"
+    },
     "colors": {}
   }
 }
