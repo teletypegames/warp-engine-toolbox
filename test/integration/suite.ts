@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert'
-import { mkdtempSync, readdirSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as vscode from 'vscode'
@@ -144,6 +144,19 @@ export async function run(): Promise<void> {
     assert.ok(labels.includes('tic80') && labels.includes('godot'), labels.join(', '))
   })
 
+  await step('completes the marker keys the platform offers on a new line', async () => {
+    const uri: vscode.Uri = vscode.Uri.joinPath(folder, '.woodpecker.yaml')
+    const document: vscode.TextDocument = await vscode.workspace.openTextDocument(uri)
+    const edit: vscode.WorkspaceEdit = new vscode.WorkspaceEdit()
+    edit.insert(uri, new vscode.Position(document.lineCount, 0), '\n')
+    await vscode.workspace.applyEdit(edit)
+    const line: number = document.lineCount - 1
+    const list: vscode.CompletionList = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', uri, new vscode.Position(line, 0))
+    const labels: string[] = list.items.map((item: vscode.CompletionItem) => typeof item.label === 'string' ? item.label : item.label.label)
+    assert.ok(labels.includes('release') && labels.includes('build') && labels.includes('media'), labels.join(', '))
+    await vscode.commands.executeCommand('workbench.action.files.revert', uri)
+  })
+
   await step('builds and plays the local build in the host runtime', async () => {
     await api.player.play()
     const url: string = await until('the play URL', () => api.player.lastUrl, 60_000)
@@ -163,5 +176,19 @@ export async function run(): Promise<void> {
     })
     assert.ok(result.written.includes('Makefile') && result.written.includes('metadata.json') && result.written.includes('.woodpecker.yaml'), result.written.join(', '))
     assert.ok(readdirSync(target).includes('Makefile'))
+  })
+
+  await step('writes a golang GUI project with app: gui in its marker and an MIT LICENSE', async () => {
+    const platform = await api.platforms.find('golang')
+    assert.ok(platform)
+    const target: string = mkdtempSync(join(tmpdir(), 'warp-go-'))
+    const result = await api.scaffold.write({
+      folder: target, platform, host: api.hosts.require().url, withDemo: false, overwrite: true, report: () => undefined,
+      answers: { name: 'gopher-hop', title: 'Gopher Hop', author: 'Test', license: 'MIT', category: null, description: 'Hops', version: '0.1.0', app: 'gui' }
+    })
+    assert.ok(result.written.includes('.woodpecker.yaml'), result.written.join(', '))
+    assert.match(readFileSync(join(target, '.woodpecker.yaml'), 'utf8'), /^app: gui$/m)
+    assert.ok(existsSync(join(target, 'LICENSE')), readdirSync(target).join(', '))
+    assert.match(readFileSync(join(target, 'LICENSE'), 'utf8'), /MIT License/)
   })
 }
