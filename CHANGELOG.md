@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0
+
+- **Delete from Catalog asks for the slug**: deleting a software and all its releases now runs only once you type
+  its slug (its catalog `name`) into the box; another text or a dismissed box deletes nothing. *Delete Release…*
+  keeps its simple confirmation.
+- **Three more platform themes**: *WarpEngine - Go* (Go after dark: a deep Go-blue editor with Go blue, aqua and the
+  gopher's yellow), *WarpEngine - Batocera* (near-black with warm amber) and *WarpEngine - RetroArch* (the deep blue
+  of RetroArch's classic XMB menu); every platform has its theme now.
+- **Play sends the project's category** to the host's preview page, so a Commodore tool or store starts with the
+  keyboard and a game with the joystick, as in the catalog's player.
+
 ## 2.0.0
 
 - **WarpEngine 6**: the toolbox speaks the Admin API v2 (`/api/admin/v2`): CI repositories (`/ci_repositories`, the
