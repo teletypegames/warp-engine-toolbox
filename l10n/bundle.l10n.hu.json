@@ -51,7 +51,6 @@
   "default": "alapértelmezett",
   "Delete": "Törlés",
   "Delete the release {0} of {1} with its files?": "Törlöd a(z) {1} {0} kiadását a fájljaival együtt?",
-  "Delete {0} ({1}) from the catalog? It and its releases leave every listing.": "Törlöd a(z) {0} ({1}) szoftvert a katalógusból? A kiadásaival együtt minden listából eltűnik.",
   "Disconnect": "Leválasztás",
   "Disconnected from {0}.": "Leválasztva: {0}.",
   "Disconnected here; sign in to {0} to remove the pairing there too, or leave it: its token no longer has a sender.": "Itt leválasztva; jelentkezz be ide: {0}, hogy ott is megszűnjön a párosítás, vagy hagyd: a tokenjét már senki sem használja.",
@@ -479,5 +478,8 @@
   "WarpEngine: forking {0}": "WarpEngine: {0} forkolása",
   "WarpEngine: pulling {0} from upstream": "WarpEngine: {0} frissítése az upstreamből",
   "Where should the fork live?": "Hol éljen a fork?",
-  "writing the fork into the metadata…": "a fork beírása a metaadatokba…"
+  "writing the fork into the metadata…": "a fork beírása a metaadatokba…",
+  "Delete {0} from the catalog": "{0} törlése a katalógusból",
+  "{0} and all its releases leave every listing. Type {1} to delete it.": "A(z) {0} az összes kiadásával együtt minden listából eltűnik. A törléshez gépeld be: {1}",
+  "Type {0} exactly to delete it.": "A törléshez pontosan ezt gépeld be: {0}"
 }

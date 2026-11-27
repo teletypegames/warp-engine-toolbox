@@ -6,6 +6,7 @@
 import * as vscode from 'vscode'
 import { DevContainer } from '../../domain/model/dev-container.model'
 import type { Message } from '../../domain/model/message.model'
+import { TypedConfirmation } from '../../domain/model/typed-confirmation.model'
 import { t, translate } from './l10n'
 
 const DASHBOARD_COMMAND = 'warpengine.openDashboard'
@@ -62,6 +63,27 @@ export class Dialogs {
    */
   public static async confirm(message: string, action: string): Promise<boolean> {
     return (await vscode.window.showWarningMessage(message, { modal: true }, action)) === action
+  }
+
+  /**
+   * Asks the user to type a name to confirm a destructive action, in an input box that stays open until it is dismissed or the name is typed exactly.
+   *
+   * @param title - The title of the input box, naming the action.
+   * @param prompt - The explanation under the box: what happens and what to type.
+   * @param expected - The name that confirms ({@link domain/model/typed-confirmation.model!TypedConfirmation}).
+   * @param mismatch - The validation message shown while the text typed is not the name.
+   * @returns `true` only when the exact name was entered; `false` when the box is dismissed.
+   */
+  public static async confirmByTyping(title: string, prompt: string, expected: string, mismatch: string): Promise<boolean> {
+    const confirmation: TypedConfirmation = new TypedConfirmation(expected)
+    const typed: string | undefined = await vscode.window.showInputBox({
+      title,
+      prompt,
+      placeHolder: expected,
+      ignoreFocusOut: true,
+      validateInput: (value: string): string | undefined => value === '' || confirmation.matches(value) ? undefined : mismatch
+    })
+    return confirmation.matches(typed)
   }
 
   /**

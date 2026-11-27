@@ -68,15 +68,21 @@ export class CatalogController {
   }
 
   /**
-   * `warpengine.deleteSoftware`: after a confirmation, deletes a software and its releases from the catalog.
+   * `warpengine.deleteSoftware`: deletes a software and its releases from the catalog once the user has typed its slug (its `name`) to confirm.
    *
-   * Redraws the catalog view and refreshes the remote state.
+   * Anything but the exact slug, or a dismissed box, deletes nothing. Redraws the catalog view and refreshes the remote state.
    *
    * @param node - The software node; without one nothing happens.
    */
   public async deleteSoftware(node?: TreeNode): Promise<void> {
     const software: Software | undefined = node?.data as Software | undefined
-    if (!software || !(await Dialogs.confirm(t('Delete {0} ({1}) from the catalog? It and its releases leave every listing.', software.title, software.name), t('Delete')))) return
+    if (!software) return
+    const confirmed: boolean = await Dialogs.confirmByTyping(
+      t('Delete {0} from the catalog', software.title),
+      t('{0} and all its releases leave every listing. Type {1} to delete it.', software.title, software.name),
+      software.name,
+      t('Type {0} exactly to delete it.', software.name))
+    if (!confirmed) return
     await this.deps.catalog.deleteSoftware(software)
     await this.afterDelete()
   }
