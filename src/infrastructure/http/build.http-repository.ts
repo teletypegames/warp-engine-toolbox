@@ -86,7 +86,7 @@ export class HttpBuildRepository implements BuildRepository {
   /**
    * Builds the URL of the host's play preview page for a platform (`/play-preview/:platform[/:binding]`); sends nothing.
    *
-   * @param request - The platform, binding, title, parameters and start file of the preview.
+   * @param request - The platform, binding, title, parameters, start file and category of the preview.
    * @returns The absolute URL, with `payload=message` and the given options in the query.
    */
   public playPreviewUrl(request: PlayPreviewRequest): string {
@@ -94,6 +94,7 @@ export class HttpBuildRepository implements BuildRepository {
     if (request.title) query.set('title', request.title)
     if (request.params !== undefined && request.params !== null) query.set('params', JSON.stringify(request.params))
     if (request.start) query.set('start', request.start)
+    if (request.category) query.set('category', request.category)
     const binding: string = request.binding ? `/${encodeURIComponent(request.binding)}` : ''
     return `${this.client.baseUrl}/play-preview/${encodeURIComponent(request.platform)}${binding}?${query.toString()}`
   }

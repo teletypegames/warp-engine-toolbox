@@ -74,7 +74,8 @@ export class PlayService {
       title: project.metadata.text('title') ?? project.name,
       params: web['params'] ?? null,
       start: typeof web['start'] === 'string' ? web['start'] : null,
-      binding: typeof web['runtime'] === 'string' ? web['runtime'] : null
+      binding: typeof web['runtime'] === 'string' ? web['runtime'] : null,
+      category: project.metadata.text('category')
     })
   }
 

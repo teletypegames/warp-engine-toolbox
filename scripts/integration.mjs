@@ -6,8 +6,8 @@ import { downloadAndUnzipVSCode, runTests } from '@vscode/test-electron'
 import { existsSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-await build({ entryPoints: ['src/extension/bootstrap/main.ts'], outfile: 'dist/extension.js', bundle: true, platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'], sourcemap: true })
-await build({ entryPoints: ['test/integration/suite.ts'], outfile: 'dist-test/integration.cjs', bundle: true, platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'] })
+await build({ entryPoints: ['src/extension/bootstrap/main.ts'], outfile: 'dist/extension.js', bundle: true, mainFields: ['module', 'main'], platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'], sourcemap: true })
+await build({ entryPoints: ['test/integration/suite.ts'], outfile: 'dist-test/integration.cjs', bundle: true, mainFields: ['module', 'main'], platform: 'node', format: 'cjs', target: 'node22', external: ['vscode'] })
 
 const workspace = mkdtempSync(join(tmpdir(), 'warp-workspace-'))
 writeFileSync(join(workspace, '.woodpecker.yaml'), 'platform: c64\n')

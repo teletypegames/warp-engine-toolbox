@@ -30,6 +30,8 @@ export interface PlayPreviewRequest {
   readonly start: string | null
   /** The runtime binding (player variant) to use, or `null` for the platform default. */
   readonly binding: string | null
+  /** The project's catalog category (`game`, `tool`…), which picks the player's input mode; `null` leaves the host's default. */
+  readonly category: string | null
 }
 
 /**
