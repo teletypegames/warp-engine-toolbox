@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0
+
+- **A saved host can be changed and removed**: in *WarpEngine: Set Host…* the pencil of a saved host changes its
+  address and name, the bin removes it after a confirmation; the current host follows a change and is cleared when it
+  goes. A local engine only found running on this machine has neither.
+- **Local Server and Sync only with a local engine**: the two views show when a local engine is among the hosts (one
+  running here, or a saved host on 127.0.0.1/localhost); with only a remote catalog they are hidden. *Install Local
+  Engine* stays in the command palette and in the Health and Dashboard offers.
+
 ## 2.1.0
 
 - **Delete from Catalog asks for the slug**: deleting a software and all its releases now runs only once you type
