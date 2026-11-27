@@ -7,10 +7,10 @@ import type { SyncCheck, SyncEvent, SyncPairing, SyncPeer, SyncPeerInput, SyncPu
 import type { SyncPairingRepository, SyncPeerRepository } from '../../domain/repository/sync.repository'
 import type { WarpEngineHttpClient } from './warp-engine.http-client'
 
-const ADMIN = '/api/admin/v1'
+const ADMIN = '/api/admin/v2'
 
 /**
- * The sync peers of a host (the other engines it sends releases to) over `/api/admin/v1/sync_peers`.
+ * The sync peers of a host (the other engines it sends releases to) over `/api/admin/v2/sync_peers`.
  *
  * The requests throw a `WarpEngineError` when the host fails or cannot be reached.
  */
@@ -23,7 +23,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   public constructor(private readonly client: WarpEngineHttpClient) {}
 
   /**
-   * Lists the peers by label, up to 200 (`GET /api/admin/v1/sync_peers`).
+   * Lists the peers by label, up to 200 (`GET /api/admin/v2/sync_peers`).
    *
    * @returns The peers.
    */
@@ -32,7 +32,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   }
 
   /**
-   * Adds a peer (`POST /api/admin/v1/sync_peers`).
+   * Adds a peer (`POST /api/admin/v2/sync_peers`).
    *
    * @param input - The peer's settings.
    * @returns The created peer.
@@ -42,7 +42,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   }
 
   /**
-   * Changes a peer's settings (`PATCH /api/admin/v1/sync_peers/:id`).
+   * Changes a peer's settings (`PATCH /api/admin/v2/sync_peers/:id`).
    *
    * @param id - The peer id.
    * @param changes - The settings to change.
@@ -53,7 +53,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   }
 
   /**
-   * Deletes a peer (`DELETE /api/admin/v1/sync_peers/:id`).
+   * Deletes a peer (`DELETE /api/admin/v2/sync_peers/:id`).
    *
    * @param id - The peer id.
    */
@@ -62,7 +62,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   }
 
   /**
-   * Has the host test its connection to a peer (`POST /api/admin/v1/sync_peers/:id/check`).
+   * Has the host test its connection to a peer (`POST /api/admin/v2/sync_peers/:id/check`).
    *
    * @param id - The peer id.
    * @returns The result of the check.
@@ -72,7 +72,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   }
 
   /**
-   * Has the host send to a peer now (`POST /api/admin/v1/sync_peers/:id/push`).
+   * Has the host send to a peer now (`POST /api/admin/v2/sync_peers/:id/push`).
    *
    * @param id - The peer id.
    * @returns What the push started.
@@ -82,7 +82,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
   }
 
   /**
-   * Lists the latest sync events of a peer, newest first (`GET /api/admin/v1/sync_events`).
+   * Lists the latest sync events of a peer, newest first (`GET /api/admin/v2/sync_events`).
    *
    * @param peerId - The peer id.
    * @param limit - The most events to return.
@@ -94,7 +94,7 @@ export class HttpSyncPeerRepository implements SyncPeerRepository {
 }
 
 /**
- * The pairings of a host (the receiving side of a sync) over `/api/admin/v1/sync_pairings`.
+ * The pairings of a host (the receiving side of a sync) over `/api/admin/v2/sync_pairings`.
  *
  * The requests throw a `WarpEngineError` when the host fails or cannot be reached.
  */
@@ -107,7 +107,7 @@ export class HttpSyncPairingRepository implements SyncPairingRepository {
   public constructor(private readonly client: WarpEngineHttpClient) {}
 
   /**
-   * Creates a pairing the sending engine can use (`POST /api/admin/v1/sync_pairings`).
+   * Creates a pairing the sending engine can use (`POST /api/admin/v2/sync_pairings`).
    *
    * @param label - The name of the pairing on this host.
    * @returns The pairing with its credentials.
@@ -117,7 +117,7 @@ export class HttpSyncPairingRepository implements SyncPairingRepository {
   }
 
   /**
-   * Deletes a pairing (`DELETE /api/admin/v1/sync_pairings/:id`).
+   * Deletes a pairing (`DELETE /api/admin/v2/sync_pairings/:id`).
    *
    * @param id - The pairing id.
    */

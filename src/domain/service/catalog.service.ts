@@ -3,9 +3,9 @@
  *
  * @module
  */
-import { DEFAULT_STATUSES, type Category, type ExternalLink, type Principal, type Release, type Software, type SoftwareField } from '../model/catalog.model'
+import { DEFAULT_STATUSES, type Category, type SoftwareLink, type Principal, type Release, type Software, type SoftwareField } from '../model/catalog.model'
 import { DomainError, msg } from '../model/message.model'
-import type { Pipeline } from '../model/pipeline.model'
+import type { CiRepository } from '../model/pipeline.model'
 import type { AdminRepositories } from '../repository/warp-engine.gateway'
 import type { ConnectionService } from './connection.service'
 
@@ -76,24 +76,24 @@ export class CatalogService {
   }
 
   /**
-   * Lists the external links of a software.
+   * Lists the links of a software.
    *
    * @param software - The software.
    * @returns The links.
    * @throws {@link "domain/model/message.model".DomainError} When not signed in.
    */
-  public async links(software: Software): Promise<ExternalLink[]> {
-    return (await this.require(false)).catalog.externalLinks(software.id)
+  public async links(software: Software): Promise<SoftwareLink[]> {
+    return (await this.require(false)).catalog.links(software.id)
   }
 
   /**
-   * Lists the CI pipelines of the host.
+   * Lists the CI repositories of the host.
    *
-   * @returns The pipelines.
+   * @returns The CI repositories.
    * @throws {@link "domain/model/message.model".DomainError} When not signed in.
    */
-  public async pipelines(): Promise<Pipeline[]> {
-    return (await this.require(false)).pipelines.pipelines()
+  public async ciRepositories(): Promise<CiRepository[]> {
+    return (await this.require(false)).pipelines.repositories()
   }
 
   /**

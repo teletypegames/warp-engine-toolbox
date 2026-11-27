@@ -4,7 +4,7 @@
  * @module
  */
 import { Releases, type Release, type Software } from '../model/catalog.model'
-import type { Pipeline, PipelineRun } from '../model/pipeline.model'
+import type { CiRepository, PipelineRun } from '../model/pipeline.model'
 import type { Project } from '../model/project.model'
 import { HostError } from '../model/host-error.model'
 import { RemoteStates, type GitPosition, type RemoteState } from '../model/remote-state.model'
@@ -50,17 +50,17 @@ export class RemoteStateService {
 
   private async fill(empty: RemoteState, admin: AdminRepositories): Promise<RemoteState> {
     const software: Software | null = await admin.catalog.softwareByName(empty.project.name)
-    const pipeline: Pipeline | null = software ? await this.pipeline(admin, software, empty.project) : null
-    const runs: PipelineRun[] = pipeline ? await admin.pipelines.runs(pipeline.id).catch((): PipelineRun[] => []) : []
+    const ciRepository: CiRepository | null = software ? await this.ciRepository(admin, software, empty.project) : null
+    const runs: PipelineRun[] = ciRepository ? await admin.pipelines.runs(ciRepository.id).catch((): PipelineRun[] => []) : []
     const headRun: PipelineRun | null = runs.find((run: PipelineRun) => run.commit !== null && run.commit === empty.head) ?? null
     const releases: Release[] = software ? await admin.catalog.releases(software.id).catch((): Release[] => []) : []
-    return { ...empty, software, pipeline, runs, headRun, releases, branchBuild: this.branchBuild(empty, releases) }
+    return { ...empty, software, ciRepository, runs, headRun, releases, branchBuild: this.branchBuild(empty, releases) }
   }
 
-  private async pipeline(admin: AdminRepositories, software: Software, project: Project): Promise<Pipeline | null> {
-    const pipelines: Pipeline[] = await admin.pipelines.pipelines().catch((): Pipeline[] => [])
-    return pipelines.find((candidate: Pipeline) => candidate.softwareId === software.id)
-      ?? pipelines.find((candidate: Pipeline) => candidate.repoName === project.name) ?? null
+  private async ciRepository(admin: AdminRepositories, software: Software, project: Project): Promise<CiRepository | null> {
+    const repositories: CiRepository[] = await admin.pipelines.repositories().catch((): CiRepository[] => [])
+    return repositories.find((candidate: CiRepository) => candidate.softwareId === software.id)
+      ?? repositories.find((candidate: CiRepository) => candidate.repoName === project.name) ?? null
   }
 
   private branchBuild(position: GitPosition, releases: readonly Release[]): Release | null {

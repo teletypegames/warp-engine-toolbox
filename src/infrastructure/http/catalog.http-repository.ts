@@ -3,14 +3,15 @@
  *
  * @module
  */
-import type { ExternalLink, Principal, Release, ScaffoldRequest, ScaffoldResult, Software } from '../../domain/model/catalog.model'
+import { AssetKinds } from '../../domain/model/asset-kind.model'
+import type { SoftwareLink, Principal, Release, ScaffoldRequest, ScaffoldResult, Software } from '../../domain/model/catalog.model'
 import type { CatalogRepository } from '../../domain/repository/catalog.repository'
 import type { WarpEngineHttpClient } from './warp-engine.http-client'
 
 const PAGE = { perPage: '200' }
 
 /**
- * The catalog of a host over `/api/admin/v1`: softwares, releases, links, statistics
+ * The catalog of a host over `/api/admin/v2`: softwares, releases, links, statistics
  * and the scaffold endpoint. Lists read one page of up to 200 items.
  *
  * The requests throw a `WarpEngineError` when the host fails or cannot be reached.
@@ -24,7 +25,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   public constructor(private readonly client: WarpEngineHttpClient) {}
 
   /**
-   * Reads who the token belongs to (`GET /api/admin/v1/me`).
+   * Reads who the token belongs to (`GET /api/admin/v2/me`).
    *
    * @returns The signed-in principal.
    */
@@ -33,7 +34,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Reads the software statuses the host knows (`GET /api/admin/v1/software_statuses`).
+   * Reads the software statuses the host knows (`GET /api/admin/v2/software_statuses`).
    *
    * @returns The raw answer.
    */
@@ -42,7 +43,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Lists softwares (`GET /api/admin/v1/softwares`).
+   * Lists softwares (`GET /api/admin/v2/softwares`).
    *
    * @param query - Extra filters for the query string, such as `name`.
    * @returns The first page of matching softwares.
@@ -62,7 +63,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Changes fields of a software (`PATCH /api/admin/v1/softwares/:id`).
+   * Changes fields of a software (`PATCH /api/admin/v2/softwares/:id`).
    *
    * @param id - The software id.
    * @param changes - The fields to change.
@@ -73,7 +74,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Deletes a software from the host (`DELETE /api/admin/v1/softwares/:id`).
+   * Deletes a software from the host (`DELETE /api/admin/v2/softwares/:id`).
    *
    * @param id - The software id.
    */
@@ -82,7 +83,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Deletes a release from the host (`DELETE /api/admin/v1/releases/:id`).
+   * Deletes a release from the host (`DELETE /api/admin/v2/releases/:id`).
    *
    * @param id - The release id.
    */
@@ -91,27 +92,29 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Lists the releases of a software, newest first (`GET /api/admin/v1/softwares/:id/releases`).
+   * Lists the releases of a software, newest first (`GET /api/admin/v2/softwares/:id/releases`), with the asset
+   * kinds of WECP api 6 (an older host's `cartridge` reads as `package`).
    *
    * @param softwareId - The software id.
    * @returns The releases.
    */
   public async releases(softwareId: number): Promise<Release[]> {
-    return this.client.adminList<Release>(`/softwares/${String(softwareId)}/releases`, { ...PAGE, sort: '-createdAt' })
+    return (await this.client.adminList<Release>(`/softwares/${String(softwareId)}/releases`, { ...PAGE, sort: '-createdAt' }))
+      .map((release: Release) => AssetKinds.release(release))
   }
 
   /**
-   * Lists the external links of a software (`GET /api/admin/v1/softwares/:id/external_links`).
+   * Lists the links of a software (`GET /api/admin/v2/softwares/:id/links`); the source repository is not among them.
    *
    * @param softwareId - The software id.
    * @returns The links.
    */
-  public async externalLinks(softwareId: number): Promise<ExternalLink[]> {
-    return this.client.adminList<ExternalLink>(`/softwares/${String(softwareId)}/external_links`, PAGE)
+  public async links(softwareId: number): Promise<SoftwareLink[]> {
+    return this.client.adminList<SoftwareLink>(`/softwares/${String(softwareId)}/links`, PAGE)
   }
 
   /**
-   * Reads the download statistics of a software (`GET /api/admin/v1/softwares/:id/download_stats`).
+   * Reads the download statistics of a software (`GET /api/admin/v2/softwares/:id/download_stats`).
    *
    * @param softwareId - The software id.
    * @returns The raw statistics.
@@ -121,7 +124,7 @@ export class HttpCatalogRepository implements CatalogRepository {
   }
 
   /**
-   * Has the host create a software and its repository (`POST /api/admin/v1/softwares/scaffold`).
+   * Has the host create a software and its repository (`POST /api/admin/v2/softwares/scaffold`).
    *
    * @param request - The software to create.
    * @returns What the host created.

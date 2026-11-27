@@ -102,7 +102,7 @@ export class RemoteStateStore implements vscode.Disposable {
   private follow(state: RemoteState): void {
     const run: PipelineRun | null = state.headRun
     if (!run) return
-    const key = `${state.project.folder}#${String(state.pipeline?.id ?? '')}#${String(run.number)}`
+    const key = `${state.project.folder}#${String(state.ciRepository?.id ?? '')}#${String(run.number)}`
     if (PipelineRuns.isRunning(run)) {
       this.following = key
       return

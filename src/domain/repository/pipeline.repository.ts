@@ -1,35 +1,35 @@
 /**
- * Port to the CI pipelines of the host.
+ * Port to the CI repositories of the host and their pipeline runs.
  *
  * @module
  */
-import type { Pipeline, PipelineRun } from '../model/pipeline.model'
+import type { CiRepository, PipelineRun } from '../model/pipeline.model'
 
 /**
- * Port to the CI pipelines the host knows, through its admin API.
+ * Port to the CI repositories the host knows and their pipeline runs, through its admin API.
  *
  * Every member rejects with a {@link "domain/model/host-error.model".HostError} when the host answers with an error.
  */
 export interface PipelineRepository {
   /**
-   * Lists the pipelines.
+   * Lists the CI repositories.
    *
-   * @returns The pipelines, at most one page of 200.
+   * @returns The CI repositories, at most one page of 200.
    */
-  pipelines(): Promise<Pipeline[]>
+  repositories(): Promise<CiRepository[]>
   /**
-   * Lists the runs of a pipeline.
+   * Lists the pipeline runs of a CI repository.
    *
-   * @param pipelineId - The pipeline id.
+   * @param repositoryId - The CI repository id.
    * @returns The runs as the host orders them.
    */
-  runs(pipelineId: number): Promise<PipelineRun[]>
+  runs(repositoryId: number): Promise<PipelineRun[]>
   /**
-   * Starts a new run of a pipeline.
+   * Starts a new pipeline run of a CI repository.
    *
-   * @param pipelineId - The pipeline id.
+   * @param repositoryId - The CI repository id.
    * @param branch - The branch to build.
    * @returns The started run.
    */
-  trigger(pipelineId: number, branch: string): Promise<PipelineRun>
+  trigger(repositoryId: number, branch: string): Promise<PipelineRun>
 }

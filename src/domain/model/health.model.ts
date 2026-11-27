@@ -118,7 +118,7 @@ export class HealthChecks {
   }
 
   /**
-   * Checks the project: found, its name, its platform, its metadata, and on the host its catalog entry, pipeline and last run.
+   * Checks the project: found, its name, its platform, its metadata, and on the host its catalog entry, CI repository and last run.
    * @param facts - What is known about the project.
    * @returns The section.
    */
@@ -171,11 +171,11 @@ export class HealthChecks {
     const setup: Remedy = facts.local ? 'setupLocalCi' : 'connect'
     if (!state.software) return [HealthChecks.check(msg('Not on the host yet'), 'warning', { remedy: setup })]
     const entry: HealthCheck = HealthChecks.check(msg('In the catalog: {0}', state.software.title), 'ok', { detail: msg('{0}', state.software.status ?? '—'), url: facts.adminUrl })
-    if (!state.pipeline) return [entry, HealthChecks.check(msg('No pipeline is linked'), 'warning', { remedy: facts.local ? setup : null, url: facts.local ? null : facts.adminUrl })]
-    const pipeline: HealthCheck = state.pipeline.active
-      ? HealthChecks.check(msg('Pipeline: {0}/{1}', state.pipeline.repoOwner, state.pipeline.repoName), 'ok', {})
-      : HealthChecks.check(msg('The pipeline {0}/{1} is inactive', state.pipeline.repoOwner, state.pipeline.repoName), 'warning', { url: facts.adminUrl })
-    return [entry, pipeline, HealthChecks.run(RemoteStates.latestRun(state))]
+    if (!state.ciRepository) return [entry, HealthChecks.check(msg('No CI repository is linked'), 'warning', { remedy: facts.local ? setup : null, url: facts.local ? null : facts.adminUrl })]
+    const repository: HealthCheck = state.ciRepository.active
+      ? HealthChecks.check(msg('CI repository: {0}/{1}', state.ciRepository.repoOwner, state.ciRepository.repoName), 'ok', {})
+      : HealthChecks.check(msg('The CI repository {0}/{1} is inactive', state.ciRepository.repoOwner, state.ciRepository.repoName), 'warning', { url: facts.adminUrl })
+    return [entry, repository, HealthChecks.run(RemoteStates.latestRun(state))]
   }
 
   private static run(run: PipelineRun | null): HealthCheck {

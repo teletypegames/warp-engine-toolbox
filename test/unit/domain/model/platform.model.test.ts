@@ -14,7 +14,7 @@ describe('Platform', () => {
 
   it('finds the default web binding and the payload extension of a kind', () => {
     assert.equal(C64.defaultBinding()?.runtime, 'emulatorjs')
-    assert.equal(C64.payloadExtension('cartridge'), '.prg')
+    assert.equal(C64.payloadExtension('package'), '.prg')
     assert.equal(C64.payloadExtension('win_x64'), null)
   })
 })

@@ -8,7 +8,7 @@ import type { ImageRepository } from '../../domain/repository/image.repository'
 import type { WarpEngineHttpClient } from './warp-engine.http-client'
 
 /**
- * The images (screenshots, covers) of a software over `/api/admin/v1`.
+ * The images (screenshots, covers) of a software over `/api/admin/v2`.
  *
  * The requests throw a `WarpEngineError` when the host fails or cannot be reached.
  */
@@ -21,7 +21,7 @@ export class HttpImageRepository implements ImageRepository {
   public constructor(private readonly client: WarpEngineHttpClient) {}
 
   /**
-   * Lists the images of a software (`GET /api/admin/v1/softwares/:id/images`).
+   * Lists the images of a software (`GET /api/admin/v2/softwares/:id/images`).
    *
    * @param softwareId - The software id.
    * @returns The images.
@@ -31,7 +31,7 @@ export class HttpImageRepository implements ImageRepository {
   }
 
   /**
-   * Uploads an image as a multipart `file` field (`POST /api/admin/v1/softwares/:id/images/upload`).
+   * Uploads an image as a multipart `file` field (`POST /api/admin/v2/softwares/:id/images/upload`).
    *
    * @param softwareId - The software id.
    * @param file - The image's name, content type and bytes.
@@ -44,7 +44,7 @@ export class HttpImageRepository implements ImageRepository {
   }
 
   /**
-   * Makes an image the default or moves it (`PATCH /api/admin/v1/software_images/:id`).
+   * Makes an image the default or moves it (`PATCH /api/admin/v2/software_images/:id`).
    *
    * @param id - The image id.
    * @param changes - The new default flag or position.
@@ -55,11 +55,11 @@ export class HttpImageRepository implements ImageRepository {
   }
 
   /**
-   * Deletes an image (`DELETE /api/admin/v1/software_images/:id`).
+   * Deletes an image (`DELETE /api/admin/v2/software_images/:id`).
    *
    * @param id - The image id.
    */
   public async remove(id: number): Promise<void> {
-    await this.client.json<unknown>('DELETE', `/api/admin/v1/software_images/${String(id)}`)
+    await this.client.json<unknown>('DELETE', `/api/admin/v2/software_images/${String(id)}`)
   }
 }

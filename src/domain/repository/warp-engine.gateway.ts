@@ -6,7 +6,7 @@
 import type { BuildRepository } from './build.repository'
 import type { CatalogRepository } from './catalog.repository'
 import type { ImageRepository } from './image.repository'
-import type { LocalComponentRepository } from './local-component.repository'
+import type { LocalProviderRepository } from './local-provider.repository'
 import type { PipelineRepository } from './pipeline.repository'
 import type { PublicCatalogRepository } from './public-catalog.repository'
 import type { SignInRepository } from './sign-in.repository'
@@ -24,8 +24,8 @@ export interface AdminRepositories {
   readonly syncPeers: SyncPeerRepository
   /** The sync pairings. */
   readonly syncPairings: SyncPairingRepository
-  /** The local components of a local engine. */
-  readonly local: LocalComponentRepository
+  /** The local providers of a local engine. */
+  readonly local: LocalProviderRepository
 }
 
 /** Creates the repositories that talk to a WarpEngine host; creating one makes no request. */

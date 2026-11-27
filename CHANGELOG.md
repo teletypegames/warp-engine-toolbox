@@ -1,7 +1,15 @@
 # Changelog
 
-## Unreleased
+## 2.0.0
 
+- **WarpEngine 6**: the toolbox speaks the Admin API v2 (`/api/admin/v2`): CI repositories (`/ci_repositories`, the
+  *CI repositories* node of the Catalog view), software links (`/softwares/:id/links`, without the source
+  repository), local providers (`/local_providers`) and local tasks (`/local_tasks/:id`). A host before WarpEngine 6
+  has no Admin API v2: update it first.
+- The asset kind `cartridge` is called `package` (WECP `api: 6`); an older host's `cartridge` still reads as
+  `package` in the asset checklist, the release nodes and Play.
+- The metadata form puts `directory_name` (the file name on a platform directory) where `shelf_name` was; a
+  project's existing `shelf_name` is still shown.
 - **Release keeps `package.json` in step**: a project whose `package.json` names a version (a bundled Phaser
   game, say) gets the new version there too, beside the metadata; WarpEngine 5.10.2's version step warns when the
   two disagree.

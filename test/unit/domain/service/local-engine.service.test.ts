@@ -10,7 +10,7 @@ import { HostService } from '../../../../src/domain/service/host.service'
 import { LocalEngineService } from '../../../../src/domain/service/local-engine.service'
 
 function wellKnown(profile: 'local' | 'server'): WellKnown {
-  return { engine: 'warp-engine', version: '5.2.0', api: 2, name: 'Local', profile, signIn: ['token-file'], adminApi: '/api/admin/v1',
+  return { engine: 'warp-engine', version: '5.2.0', api: 2, name: 'Local', profile, signIn: ['token-file'], adminApi: '/api/admin/v2',
            admin: false, sync: { inbound: false, target: 'https://games.example.org' } }
 }
 

@@ -17,7 +17,7 @@ const PRIORITY = 50
 
 /**
  * Shows the platform and name of the current project in the status bar with the state of its latest pipeline run; a click
- * signs in (again, when the host refused the token), connects, sets up the local CI, opens the software's admin page (where a pipeline is linked) or opens the run.
+ * signs in (again, when the host refused the token), connects, sets up the local CI, opens the software's admin page (where a CI repository is linked) or opens the run.
  */
 export class PipelineStatusBar implements vscode.Disposable {
   private readonly item: vscode.StatusBarItem = vscode.window.createStatusBarItem('warpengine.pipeline', vscode.StatusBarAlignment.Left, PRIORITY)
@@ -51,7 +51,7 @@ export class PipelineStatusBar implements vscode.Disposable {
     const label = `${state.project.platformLabel} · ${state.project.name}`
     if (!state.signedIn) this.renderSignedOut(label)
     else if (state.unauthorized) this.renderUnauthorized(label)
-    else if (!state.pipeline) this.renderUnlinked(label, state)
+    else if (!state.ciRepository) this.renderUnlinked(label, state)
     else this.renderRun(label, state, RemoteStates.latestRun(state))
     this.item.show()
   }
@@ -74,7 +74,7 @@ export class PipelineStatusBar implements vscode.Disposable {
       this.item.tooltip = t('Not built here yet: Set up local CI puts it on the local git server and builds every push')
       this.item.command = 'warpengine.setupLocalCi'
     } else if (state.software) {
-      this.item.tooltip = t('No pipeline is linked to this software')
+      this.item.tooltip = t('No CI repository is linked to this software')
       this.item.command = 'warpengine.refresh'
       void this.linkAdminPage(state)
     } else {
@@ -87,7 +87,7 @@ export class PipelineStatusBar implements vscode.Disposable {
     const rendering: number = this.rendering
     const url: string | null = state.software ? await this.hostInfo.adminUrl(state.software).catch(() => null) : null
     if (!url || rendering !== this.rendering) return
-    this.item.tooltip = t('No pipeline is linked to this software: link one on its admin page')
+    this.item.tooltip = t('No CI repository is linked to this software: link one on its admin page')
     this.item.command = TreeNode.openUrl(url)
   }
 

@@ -5,7 +5,7 @@ catalog entry without leaving VS Code.
 
 WarpEngine is the engine behind a game catalog: a repository holds one line
 (`platform: c64`), the host generates its pipeline, the build is published into the
-catalog and goes out to the web, the desktop client and the store outlets. The toolbox is
+catalog and goes out to the web, the desktop client and the store feeds. The toolbox is
 the developer's side of it.
 
 **It needs a WarpEngine host.** The toolbox works against a site that runs WarpEngine 3.9 or
@@ -21,7 +21,7 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **New Game…** | Pick a platform, name the game, and get a project from the host's template (and demo): Makefile, tasks, pipeline marker (with `app:` for the variant you pick, such as Go's `cli` or `gui`), metadata, README, `LICENSE` (for MIT), a git repository. |
 | **Add WarpEngine to This Project** | The marker, the metadata and the template's files for a project you already have; your own files are kept. |
 | **Dev container** | A template with a dev container gives the project `.devcontainer/` on the platform's CI builder image: with Docker alone on the computer, the project builds with the same toolchain as the pipeline (see [Develop with only Docker](#develop-with-only-docker)). **Add Dev Container** adds it to a project you have. |
-| **Connect** | One step on the host: repository on the forge, CI for it, a CI token in its secret and a draft catalog entry. The working copy gets the remote and is pushed: the first build starts. |
+| **Connect** | One step on the host: repository on the host's git server, CI for it, a CI token in its secret and a draft catalog entry. The working copy gets the remote and is pushed: the first build starts. |
 | **Metadata** | `metadata.json` is validated against the host's schema for the platform (or edited in a form), and on every save the host says what a publish would refuse. TIC-80 headers are read the same way. |
 | **Pipeline marker** | Completion and hover in `.woodpecker.yaml`: the platforms, and the keys and values the platform takes (`release`, `app`, `build`…, as the host describes them); a lens that shows the full pipeline the host serves. |
 | **Build** | The Makefile's targets as tasks with problem matchers (ACME, cc65, gcc-style, Lua), and **Build Like CI**: the same builder image the pipeline uses, in Docker. |
@@ -30,16 +30,16 @@ so set `warpengine.url` first. Without one, there is nothing for it to do.
 | **Pipeline** | The status bar follows the run of your current commit, wherever it was pushed from; when it ends, a notification says so: a failure with its log, a published release with *Play*. |
 | **Release…** | Asks for the version in one list (the stable bumps, the betas such as `1.3.0-beta.1`), connects the project first when it has no remote, bumps the version where the platform reads it, writes the changelog from the commits, tags and pushes; the CI publishes. |
 | **This branch** | On a branch other than the default one: its development build (not listed in the catalog), with a play link to share with testers; a notification when a push has built it. |
-| **Catalog** | Your own game first, then your host's softwares, releases with an asset checklist, images, links, pipelines and download statistics; it redraws by itself when a build publishes; status, category and highlight can be changed in place; *Delete from Catalog…* and *Delete Release…* remove a software or a release. A host that refuses the stored token shows *Not authorized*: one click signs in again. |
+| **Catalog** | Your own game first, then your host's softwares, releases with an asset checklist, images, links, CI repositories and download statistics; it redraws by itself when a build publishes; status, category and highlight can be changed in place; *Delete from Catalog…* and *Delete Release…* remove a software or a release. A host that refuses the stored token shows *Not authorized*: one click signs in again. |
 | **Images** | A software's gallery under *Images* in the catalog: **Add Image…** uploads PNG, JPEG, GIF or WebP files, a star makes one the default, the order changes with *Move Up* / *Move Down*. |
 | **Admin page** | The project panel links the software's page in the host's admin web UI. |
 | **Local CI** | When the local engine runs a git server and a CI, the toolbox offers to set the open project up on them (a `wplocal` remote); *Release…* asks which remote a tag goes to. |
 | **Local Server** | The WarpEngine containers on this machine (the engine, the git server, the CI) with their state and ports, and the dev containers of the projects (a stopped one can be started there, a running one stopped); **Purge Local Engine…** removes all of the WarpEngine's: containers, data, volumes, network and images. |
 | **Dashboard** | **WarpEngine: Open Dashboard** (the dashboard button of the project panel) opens a tab that sums up the sidebar in tables: health with its fixes, the latest pipeline runs, the releases with play links, the local containers, the sync partners and the catalog as a table — with *Open* on the entries whose project you opened in VS Code before; its buttons run the same commands. |
-| **Health** | What is set up and what is not — the host, the sign-in, the local engine and its CI, the project's metadata, catalog entry, pipeline and last run — green, yellow or red; a click on a gap runs the step that fixes it. |
+| **Health** | What is set up and what is not — the host, the sign-in, the local engine and its CI, the project's metadata, catalog entry, CI repository and last run — green, yellow or red; a click on a gap runs the step that fixes it. |
 | **Sync** | A local engine's releases go on to another WarpEngine instance (e.g. `https://games.example.org`): **Sync to…** pairs them once, the *Sync* view shows each partner, its channels and what went over. |
 | **Clone, Fork** | A software whose catalog entry gives a source: **Clone…** on its node clones it into a folder of yours and opens it; **Fork…** (when the author allows it) makes it your own version under a new name on a host you can connect to; *Forks* lists the versions others made (see [Clone and fork](#clone-and-fork)). |
-| **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the pipelines. |
+| **AI** | The host's Admin API is registered as an MCP server, so Copilot or Claude in the editor see the catalog and the CI repositories. |
 
 A template repository can say exactly what a new game gets in a `warp-template.json`:
 
@@ -185,7 +185,7 @@ restarts the engine from there too; installing or removing it needs a window on 
 The local engine's installer asks whether you want a local CI: a git server (Gitea,
 `127.0.0.1:7471`) and a CI (Woodpecker) beside the engine, started and wired by it — no sign-in,
 no browser (`--ci on` later turns it on, `--ci off` stops it). With it running, the toolbox
-offers to set up a project without a pipeline there (*Not for this project* stops asking);
+offers to set up a project without a CI repository there (*Not for this project* stops asking);
 **Set up local CI** in the project panel and in the command palette does it any time:
 
 1. puts the project into the local catalog if it is not there, and gives it its repository, CI
@@ -235,7 +235,7 @@ container *Reset…* offers *Reopen Folder Locally* instead, as it would remove 
 The *Health* view checks everything the toolbox depends on, in three groups: the **host**
 (set, answering, signed in, the token taken), the **local engine** (shown when it is installed
 or it is the host: its container, its git server and CI) and the **project** (its platform, the
-host's publish check of its metadata, its catalog entry, pipeline and last run). A click on a
+host's publish check of its metadata, its catalog entry, CI repository and last run). A click on a
 yellow or red line runs the step that fixes it — *Fix…*, *Start Docker*, *Start the Local
 Engine*, *Set Host…*, *Sign in*, *Sign In Again*, *Install Local Engine*, *Connect*, *Set up local
 CI*, *Edit Metadata*, *Add WarpEngine to This Project* — or opens the page that tells more (a

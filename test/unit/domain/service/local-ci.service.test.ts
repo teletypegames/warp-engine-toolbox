@@ -2,14 +2,14 @@ import { strict as assert } from 'node:assert'
 import { describe, it } from 'node:test'
 import type { ScaffoldRequest, ScaffoldResult, Software } from '../../../../src/domain/model/catalog.model'
 import { GitRemotes } from '../../../../src/domain/model/git-remote.model'
-import type { LocalComponent, LocalOperation } from '../../../../src/domain/model/local-ci.model'
+import type { LocalProvider, LocalTask } from '../../../../src/domain/model/local-ci.model'
 import type { WellKnown } from '../../../../src/domain/model/local-engine.model'
 import { Marker } from '../../../../src/domain/model/marker.model'
 import { DomainError, type Message } from '../../../../src/domain/model/message.model'
 import { Metadata } from '../../../../src/domain/model/metadata.model'
 import { Project } from '../../../../src/domain/model/project.model'
 import { RemoteStates, type RemoteState } from '../../../../src/domain/model/remote-state.model'
-import type { LocalComponentRepository } from '../../../../src/domain/repository/local-component.repository'
+import type { LocalProviderRepository } from '../../../../src/domain/repository/local-provider.repository'
 import type { AdminRepositories, WarpEngineGateway } from '../../../../src/domain/repository/warp-engine.gateway'
 import type { ConnectionService } from '../../../../src/domain/service/connection.service'
 import { HostService } from '../../../../src/domain/service/host.service'
@@ -23,24 +23,24 @@ import { C64 } from '../../fixtures'
 const LOCAL = 'http://127.0.0.1:7470'
 const PUSH = 'http://warp:tok@localhost:7471/games/rabbit.git'
 
-function component(key: string, state: LocalComponent['state']): LocalComponent {
-  return { key, label: key, role: key === 'gitea' ? 'forge' : 'ci', requires: [], description: '', state, message: null }
+function provider(key: string, state: LocalProvider['state']): LocalProvider {
+  return { key, label: key, role: key === 'gitea' ? 'scm' : 'ci', requires: [], description: '', state, message: null }
 }
 
-function operation(state: LocalOperation['state'], steps: string[], result: Record<string, unknown> | null = null, error: string | null = null): LocalOperation {
+function task(state: LocalTask['state'], steps: string[], result: Record<string, unknown> | null = null, error: string | null = null): LocalTask {
   return { id: 3, kind: 'local_ci', target: '1', state, steps: steps.map((text: string) => ({ at: '', text })), result, error }
 }
 
-class Components implements LocalComponentRepository {
-  public polls: LocalOperation[] = []
+class Providers implements LocalProviderRepository {
+  public polls: LocalTask[] = []
   public setUpFor: number[] = []
-  public states: LocalComponent[] = [component('gitea', 'ready'), component('woodpecker', 'ready')]
-  public async components(): Promise<LocalComponent[]> { return Promise.resolve(this.states) }
-  public async operation(): Promise<LocalOperation> {
-    const next: LocalOperation | undefined = this.polls.shift()
+  public states: LocalProvider[] = [provider('gitea', 'ready'), provider('woodpecker', 'ready')]
+  public async providers(): Promise<LocalProvider[]> { return Promise.resolve(this.states) }
+  public async task(): Promise<LocalTask> {
+    const next: LocalTask | undefined = this.polls.shift()
     return next ? Promise.resolve(next) : Promise.reject(new Error('no more polls'))
   }
-  public async setUpCi(softwareId: number): Promise<LocalOperation> { this.setUpFor.push(softwareId); return Promise.resolve(operation('queued', ['queued'])) }
+  public async setUpCi(softwareId: number): Promise<LocalTask> { this.setUpFor.push(softwareId); return Promise.resolve(task('queued', ['queued'])) }
 }
 
 function project(): Project {
@@ -50,37 +50,37 @@ function project(): Project {
   })
 }
 
-async function world(known: Software | null): Promise<{ service: LocalCiService, components: Components, git: FakeGitFactory, scaffolded: string[], host: { url: string } }> {
-  const wellKnown: WellKnown = { engine: 'warp-engine', version: '5.4.0', api: 2, name: 'Local', profile: 'local', signIn: [], adminApi: '/api/admin/v1',
+async function world(known: Software | null): Promise<{ service: LocalCiService, providers: Providers, git: FakeGitFactory, scaffolded: string[], host: { url: string } }> {
+  const wellKnown: WellKnown = { engine: 'warp-engine', version: '5.4.0', api: 2, name: 'Local', profile: 'local', signIn: [], adminApi: '/api/admin/v2',
                                  admin: false, sync: { inbound: false, target: null } }
   const host: { url: string } = { url: LOCAL }
   const hosts: HostService = new HostService({ configuredUrl: () => host.url, configuredHosts: () => [], saveUrl: async () => Promise.resolve(), saveHosts: async () => Promise.resolve() })
   const local: LocalEngineService = new LocalEngineService({ probe: async (url: string) => Promise.resolve(url === LOCAL ? wellKnown : null) },
                                                            { port: async () => Promise.resolve(null), tokenFile: async () => Promise.resolve('tok'), tokenFromContainer: async () => Promise.resolve(null), dataFolder: async () => Promise.resolve(null), configured: async () => Promise.resolve(false) }, hosts)
   await local.discover()
-  const components: Components = new Components()
+  const providers: Providers = new Providers()
   const scaffolded: string[] = []
   const catalog = {
     softwareByName: async (): Promise<Software | null> => Promise.resolve(known),
     scaffold: async (request: ScaffoldRequest): Promise<ScaffoldResult> => {
       scaffolded.push(request.name)
-      return Promise.resolve({ software: { id: 9, name: request.name } as Software, repository: { owner: 'games', name: request.name, htmlUrl: null, cloneUrl: null, sshUrl: null }, pipelineId: null, warnings: [] } as ScaffoldResult)
+      return Promise.resolve({ software: { id: 9, name: request.name } as Software, repository: { owner: 'games', name: request.name, htmlUrl: null, cloneUrl: null, sshUrl: null }, ciRepositoryId: null, warnings: [] } as ScaffoldResult)
     }
   }
-  const gateway = { admin: (): AdminRepositories => ({ catalog, local: components } as unknown as AdminRepositories) } as unknown as WarpEngineGateway
+  const gateway = { admin: (): AdminRepositories => ({ catalog, local: providers } as unknown as AdminRepositories) } as unknown as WarpEngineGateway
   const git: FakeGitFactory = new FakeGitFactory()
-  return { service: new LocalCiService({ gateway, local, sourceControl: git, wait: async () => Promise.resolve() }), components, git, scaffolded, host }
+  return { service: new LocalCiService({ gateway, local, sourceControl: git, wait: async () => Promise.resolve() }), providers, git, scaffolded, host }
 }
 
 describe('LocalCiService', () => {
-  it('offers the local CI only on the local host, signed in, to a project without a pipeline', async () => {
+  it('offers the local CI only on the local host, signed in, to a project without a CI repository', async () => {
     const { service, host } = await world(null)
     const state: RemoteState = RemoteStates.empty(project(), { head: null, branch: 'master', defaultBranch: 'master' }, true)
 
     assert.equal(service.needsSetUp(state), true)
     assert.equal(service.needsSetUp({ ...state, signedIn: false }), false)
     assert.equal(service.needsSetUp({ ...state, error: 'Unauthorized', unauthorized: true }), false)
-    assert.equal(service.needsSetUp({ ...state, pipeline: { id: 1 } as RemoteState['pipeline'] }), false)
+    assert.equal(service.needsSetUp({ ...state, ciRepository: { id: 1 } as RemoteState['ciRepository'] }), false)
     assert.equal(await service.ready(), true)
     assert.equal(await service.offerable(state, []), true)
     assert.equal(await service.offerable(state, ['rabbit']), false)
@@ -89,15 +89,15 @@ describe('LocalCiService', () => {
     assert.equal(await service.offerable(state, []), false)
   })
 
-  it('follows the operation, reports its steps once, and pushes to the wplocal remote', async () => {
-    const { service, components, git, scaffolded } = await world({ id: 4, name: 'rabbit' } as Software)
-    components.polls = [operation('running', ['queued', 'start warp-engine-local-gitea']),
-                        operation('succeeded', ['queued', 'start warp-engine-local-gitea', 'let warp push'], { pushUrl: PUSH, remoteName: 'wplocal', warnings: [] })]
+  it('follows the task, reports its steps once, and pushes to the wplocal remote', async () => {
+    const { service, providers, git, scaffolded } = await world({ id: 4, name: 'rabbit' } as Software)
+    providers.polls = [task('running', ['queued', 'start warp-engine-local-gitea']),
+                        task('succeeded', ['queued', 'start warp-engine-local-gitea', 'let warp push'], { pushUrl: PUSH, remoteName: 'wplocal', warnings: [] })]
     const reported: string[] = []
 
     const setup = await service.setUp(project(), (message: Message) => { reported.push(String(message.args[0] ?? message.text)) })
 
-    assert.deepEqual(components.setUpFor, [4])
+    assert.deepEqual(providers.setUpFor, [4])
     assert.deepEqual(scaffolded, [])
     assert.equal(setup.pushUrl, PUSH)
     assert.deepEqual(reported.filter((text: string) => ['queued', 'start warp-engine-local-gitea', 'let warp push'].includes(text)), ['queued', 'start warp-engine-local-gitea', 'let warp push'])
@@ -106,28 +106,28 @@ describe('LocalCiService', () => {
   })
 
   it('puts a project the local catalog does not know there first', async () => {
-    const { service, components, scaffolded } = await world(null)
-    components.polls = [operation('succeeded', [], { pushUrl: PUSH })]
+    const { service, providers, scaffolded } = await world(null)
+    providers.polls = [task('succeeded', [], { pushUrl: PUSH })]
 
     await service.setUp(project(), () => undefined)
 
     assert.deepEqual(scaffolded, ['rabbit'])
-    assert.deepEqual(components.setUpFor, [9])
+    assert.deepEqual(providers.setUpFor, [9])
   })
 
   it('fails with the engine\'s reason', async () => {
-    const { service, components } = await world({ id: 4, name: 'rabbit' } as Software)
-    components.polls = [operation('failed', ['pull gitea'], null, 'no Docker socket')]
+    const { service, providers } = await world({ id: 4, name: 'rabbit' } as Software)
+    providers.polls = [task('failed', ['pull gitea'], null, 'no Docker socket')]
 
     await assert.rejects(service.setUp(project(), () => undefined), (error: unknown) => error instanceof DomainError && error.message.includes('no Docker socket'))
   })
 
   it('asks for the installer when the local CI is not running', async () => {
-    const { service, components } = await world({ id: 4, name: 'rabbit' } as Software)
-    components.states = [component('gitea', 'ready'), component('woodpecker', 'off')]
+    const { service, providers } = await world({ id: 4, name: 'rabbit' } as Software)
+    providers.states = [provider('gitea', 'ready'), provider('woodpecker', 'off')]
 
     await assert.rejects(service.setUp(project(), () => undefined), (error: unknown) => error instanceof DomainError && error.message.includes('--ci on'))
-    assert.deepEqual(components.setUpFor, [])
+    assert.deepEqual(providers.setUpFor, [])
   })
 })
 

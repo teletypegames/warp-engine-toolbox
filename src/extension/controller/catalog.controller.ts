@@ -1,5 +1,5 @@
 /**
- * The actions of the catalog view: software fields, deletes, the asset checklist, download statistics and pipelines.
+ * The actions of the catalog view: software fields, deletes, the asset checklist, download statistics and CI repositories.
  *
  * @packageDocumentation
  */
@@ -8,7 +8,7 @@ import * as vscode from 'vscode'
 import { AssetChecklist, type ChecklistEntry } from '../../domain/model/asset-checklist.model'
 import type { Category, Software } from '../../domain/model/catalog.model'
 import { DomainError, msg } from '../../domain/model/message.model'
-import type { Pipeline } from '../../domain/model/pipeline.model'
+import type { CiRepository } from '../../domain/model/pipeline.model'
 import type { CatalogService } from '../../domain/service/catalog.service'
 import type { LocalEngineService } from '../../domain/service/local-engine.service'
 import type { PipelineService } from '../../domain/service/pipeline.service'
@@ -123,17 +123,17 @@ export class CatalogController {
   }
 
   /**
-   * `warpengine.triggerPipeline`: starts a run of a pipeline and reports its number and branch in a notification.
+   * `warpengine.triggerPipeline`: starts a pipeline run of a CI repository and reports its number and branch in a notification.
    *
    * Then polls the remote state, so the status bar and the project view follow the run.
    *
-   * @param node - The pipeline node; without one, the current project's pipeline is started.
-   * @throws {@link "domain/model/message.model".DomainError} Without a node, when the current project has no pipeline.
+   * @param node - The CI repository node; without one, the current project's CI repository is built.
+   * @throws {@link "domain/model/message.model".DomainError} Without a node, when the current project has no CI repository.
    */
   public async triggerPipeline(node?: TreeNode): Promise<void> {
-    const pipeline: Pipeline | null = (node?.data as Pipeline | undefined) ?? this.deps.states.current()?.pipeline ?? null
-    if (!pipeline) throw new DomainError(msg('This project has no pipeline on the host yet.'), this.deps.local.setupRemedy())
-    const started = await this.deps.pipelines.trigger(pipeline, this.deps.projects.current())
+    const ciRepository: CiRepository | null = (node?.data as CiRepository | undefined) ?? this.deps.states.current()?.ciRepository ?? null
+    if (!ciRepository) throw new DomainError(msg('This project has no CI repository on the host yet.'), this.deps.local.setupRemedy())
+    const started = await this.deps.pipelines.trigger(ciRepository, this.deps.projects.current())
     if (!started) return
     Dialogs.info(t('Pipeline #{0} started on {1}.', started.run.number, started.branch))
     this.deps.states.watch()

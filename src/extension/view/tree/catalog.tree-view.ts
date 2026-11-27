@@ -1,13 +1,13 @@
 /**
- * The catalog view: the host's softwares, their releases, images and links, and the pipelines.
+ * The catalog view: the host's softwares, their releases, images and links, and the CI repositories.
  *
  * @packageDocumentation
  */
 
-import type { ExternalLink, Release, Software, SoftwareField } from '../../../domain/model/catalog.model'
+import type { SoftwareLink, Release, Software, SoftwareField } from '../../../domain/model/catalog.model'
 import type { Host } from '../../../domain/model/host.model'
 import type { SoftwareImage } from '../../../domain/model/image.model'
-import type { Pipeline } from '../../../domain/model/pipeline.model'
+import type { CiRepository } from '../../../domain/model/pipeline.model'
 import type { Platform } from '../../../domain/model/platform.model'
 import type { PublicSoftware } from '../../../domain/model/fork.model'
 import type { CatalogOverview, CatalogService } from '../../../domain/service/catalog.service'
@@ -61,7 +61,7 @@ export interface CatalogTreeDependencies {
 /**
  * The content of the catalog view (`warpengine.catalog`): the host and the signed-in principal, the current project's
  * software (expanded), the softwares by platform with their fields, releases (with the asset checklist), images and links,
- * and the pipelines.
+ * and the CI repositories.
  */
 export class CatalogTreeView implements TreeView {
   private readonly hosts: HostService
@@ -89,7 +89,7 @@ export class CatalogTreeView implements TreeView {
   }
 
   /**
-   * Returns the host, the current project's software (when it is in the catalog), the softwares and the pipelines nodes;
+   * Returns the host, the current project's software (when it is in the catalog), the softwares and the CI repositories nodes;
    * sets the `warpengine.signedIn` context key. Reads the public catalog too, for the Clone… and Fork… entries and the
    * *Forks* nodes.
    *
@@ -104,7 +104,7 @@ export class CatalogTreeView implements TreeView {
     if (!overview) return []
     this.published = await this.sources.softwares()
     const described: Platform[] = await this.platforms.all().catch((): Platform[] => [])
-    return [this.hostNode(host, overview), ...this.projectNode(overview, described), this.softwaresNode(overview, described), this.pipelinesNode()]
+    return [this.hostNode(host, overview), ...this.projectNode(overview, described), this.softwaresNode(overview, described), this.ciRepositoriesNode()]
   }
 
   private projectNode(overview: CatalogOverview, described: readonly Platform[]): TreeNode[] {
@@ -133,12 +133,12 @@ export class CatalogTreeView implements TreeView {
     })
   }
 
-  private pipelinesNode(): TreeNode {
-    return new TreeNode(t('Pipelines'), {
+  private ciRepositoriesNode(): TreeNode {
+    return new TreeNode(t('CI repositories'), {
       icon: 'server-process',
-      load: async (): Promise<TreeNode[]> => (await this.catalog.pipelines()).map((pipeline: Pipeline) => new TreeNode(`${pipeline.repoOwner}/${pipeline.repoName}`, {
-        description: `${pipeline.platform}${pipeline.active ? '' : ` · ${t('inactive')}`}`, icon: pipeline.active ? 'server-process' : 'circle-slash',
-        context: 'pipeline', data: pipeline
+      load: async (): Promise<TreeNode[]> => (await this.catalog.ciRepositories()).map((ciRepository: CiRepository) => new TreeNode(`${ciRepository.repoOwner}/${ciRepository.repoName}`, {
+        description: `${ciRepository.platform}${ciRepository.active ? '' : ` · ${t('inactive')}`}`, icon: ciRepository.active ? 'server-process' : 'circle-slash',
+        context: 'ciRepository', data: ciRepository
       }))
     })
   }
@@ -181,7 +181,7 @@ export class CatalogTreeView implements TreeView {
   private linksNode(software: Software): TreeNode {
     return new TreeNode(t('Links'), {
       icon: 'link',
-      load: async (): Promise<TreeNode[]> => (await this.catalog.links(software)).map((link: ExternalLink) =>
+      load: async (): Promise<TreeNode[]> => (await this.catalog.links(software)).map((link: SoftwareLink) =>
         new TreeNode(link.label, { description: link.url, icon: 'link-external', command: TreeNode.openUrl(link.url), context: 'link' }))
     })
   }

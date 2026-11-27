@@ -8,7 +8,7 @@ import type { Host } from '../../domain/model/host.model'
 import type { ConnectionService } from '../../domain/service/connection.service'
 import type { HostService } from '../../domain/service/host.service'
 
-/** Offers the current host's admin MCP endpoint (`/api/admin/v1/mcp`) to VS Code's MCP clients, with the signed-in token. */
+/** Offers the current host's admin MCP endpoint (`/api/admin/v2/mcp`) to VS Code's MCP clients, with the signed-in token. */
 export class McpProvider implements vscode.McpServerDefinitionProvider<vscode.McpHttpServerDefinition>, vscode.Disposable {
   private readonly changed: vscode.EventEmitter<void> = new vscode.EventEmitter<void>()
   /** Fires when the definitions may have changed; see {@link McpProvider.announce}. */
@@ -23,7 +23,7 @@ export class McpProvider implements vscode.McpServerDefinitionProvider<vscode.Mc
   public constructor(private readonly hosts: HostService, private readonly connection: ConnectionService) {}
 
   /**
-   * Provides one HTTP server, `WarpEngine (<host name>)`, at `<host>/api/admin/v1/mcp` with an
+   * Provides one HTTP server, `WarpEngine (<host name>)`, at `<host>/api/admin/v2/mcp` with an
    * `Authorization: Bearer` header; does not prompt to sign in.
    *
    * @returns The definition, or none when no host is set or there is no session.
@@ -33,7 +33,7 @@ export class McpProvider implements vscode.McpServerDefinitionProvider<vscode.Mc
     if (!host) return []
     const token: string | null = await this.connection.token(false)
     if (!token) return []
-    return [new vscode.McpHttpServerDefinition(`WarpEngine (${host.name})`, vscode.Uri.parse(`${host.url}/api/admin/v1/mcp`), { Authorization: `Bearer ${token}` })]
+    return [new vscode.McpHttpServerDefinition(`WarpEngine (${host.name})`, vscode.Uri.parse(`${host.url}/api/admin/v2/mcp`), { Authorization: `Bearer ${token}` })]
   }
 
   /** Tells VS Code to ask for the definitions again, after the host or the session changed. */

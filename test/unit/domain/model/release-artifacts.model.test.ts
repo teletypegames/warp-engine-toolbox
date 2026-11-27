@@ -6,8 +6,8 @@ import { C64 } from '../../fixtures'
 
 describe('AssetChecklist', () => {
   it('marks what a release has, misses, and what the pipeline does not build', () => {
-    const checklist: AssetChecklist = new AssetChecklist(C64, [{ id: 1, kind: 'cartridge', path: '/x.prg' }])
-    assert.deepEqual(checklist.entries.map((entry: ChecklistEntry) => `${AssetChecklist.mark(entry.state)} ${entry.kind}`), ['[x] cartridge', '[ ] win_x64', '[-] mac_arm64'])
+    const checklist: AssetChecklist = new AssetChecklist(C64, [{ id: 1, kind: 'package', path: '/x.prg' }])
+    assert.deepEqual(checklist.entries.map((entry: ChecklistEntry) => `${AssetChecklist.mark(entry.state)} ${entry.kind}`), ['[x] package', '[ ] win_x64', '[-] mac_arm64'])
     assert.equal(checklist.missing, 1)
   })
 })

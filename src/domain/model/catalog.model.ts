@@ -38,8 +38,8 @@ export interface Release {
   readonly updatedAt?: string | null
 }
 
-/** A labelled link shown with a software in the catalog (homepage, source, store page). */
-export interface ExternalLink {
+/** A labelled link shown with a software in the catalog (homepage, store page); the source repository is its own field. */
+export interface SoftwareLink {
   /** The link's id on the host. */
   readonly id: number
   /** The text shown for the link. */
@@ -105,14 +105,14 @@ export interface ScaffoldRepository {
   readonly sshUrl: string | null
 }
 
-/** What the host answers to a {@link ScaffoldRequest}: the software, its repository and its pipeline. */
+/** What the host answers to a {@link ScaffoldRequest}: the software, its repository and its CI repository. */
 export interface ScaffoldResult {
   /** The catalog entry created (or found) for the project. */
   readonly software: Software
   /** The repository created for it. */
   readonly repository: ScaffoldRepository
-  /** The id of the build pipeline set up for it, or `null` when none was. */
-  readonly pipelineId: number | null
+  /** The id of the CI repository set up for it, or `null` when none was. */
+  readonly ciRepositoryId: number | null
   /** Non-fatal problems the host reports. */
   readonly warnings: readonly string[]
 }

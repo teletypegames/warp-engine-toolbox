@@ -55,7 +55,7 @@ the message and turns the remedy into a button. The Health checks carry remedies
 
 | Folder | Implements |
 |---|---|
-| `http/` | `WarpEngineHttpClient` (fetch, errors, the admin envelope) and the HTTP repositories on it: build, catalog, pipeline, sign-in; `WarpEngineHttpGateway` hands them out for the current host and token; `Loopback` turns `127.0.0.1` into `host.docker.internal` inside a dev container, for every fetch. |
+| `http/` | `WarpEngineHttpClient` (fetch, errors, the admin envelope) and the HTTP repositories on it: build, catalog, pipeline (CI repositories and their runs), local provider, sign-in; `WarpEngineHttpGateway` hands them out for the current host and token; `Loopback` turns `127.0.0.1` into `host.docker.internal` inside a dev container, for every fetch. |
 | `git/` | `SourceControl` with the `git` CLI. |
 | `process/` | Running a command (`execFile`) and a shell line; `ContainerRuntime` with the `docker` CLI (the Servers view, the purge); `CliDevContainerRepository`: the dev containers through the bundled `@devcontainers/cli`, run on the editor's Electron as Node. |
 | `template/` | `TemplateRepository`: a repository's archive downloaded and unpacked. |

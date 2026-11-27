@@ -120,7 +120,7 @@ export class ProjectTreeView implements TreeView {
     nodes.push(...this.startNodes(state))
     if (!state.software) return nodes
     nodes.push(new TreeNode(t('Release…'), { description: t('bump, tag, push'), icon: 'rocket', command: { title: t('Release'), command: 'warpengine.release' } }))
-    if (state.pipeline) nodes.push(this.pipelineNode(state))
+    if (state.ciRepository) nodes.push(this.pipelineNode(state))
     if (RemoteStates.isOnSideBranch(state)) nodes.push(this.branchNode(project, state))
     nodes.push(this.releasesNode(project, state))
     return nodes
@@ -129,7 +129,7 @@ export class ProjectTreeView implements TreeView {
   private startNodes(state: RemoteState): TreeNode[] {
     if (state.error !== null) return []
     if (this.local.isCurrentHost()) {
-      return state.pipeline ? [] : [new TreeNode(t('Set up local CI'), { icon: 'server-environment', command: { title: t('Set up local CI'), command: 'warpengine.setupLocalCi' } })]
+      return state.ciRepository ? [] : [new TreeNode(t('Set up local CI'), { icon: 'server-environment', command: { title: t('Set up local CI'), command: 'warpengine.setupLocalCi' } })]
     }
     return state.software ? [] : [new TreeNode(t('Connect'), { description: t('repository, CI and catalog entry'), icon: 'plug', command: { title: t('Connect'), command: 'warpengine.connect' } })]
   }
@@ -138,7 +138,7 @@ export class ProjectTreeView implements TreeView {
     const run: PipelineRun | null = RemoteStates.latestRun(state)
     const description: string = run ? `#${String(run.number)} ${run.status}${state.headRun ? '' : ` ${t('(not HEAD)')}`}` : t('no runs')
     return new TreeNode(t('Pipeline'), {
-      description, icon: 'server-process', context: 'pipeline', data: state.pipeline, expanded: false,
+      description, icon: 'server-process', context: 'ciRepository', data: state.ciRepository, expanded: false,
       load: (): TreeNode[] => state.runs.slice(0, RUN_LIMIT).map((item: PipelineRun) => ProjectTreeView.runNode(item))
     })
   }

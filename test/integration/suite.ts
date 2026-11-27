@@ -55,7 +55,7 @@ async function runLocalCi(api: ToolboxApi): Promise<void> {
   })
 
   await step('lists the local git server and CI', async () => {
-    const keys: string[] = (await api.localCi.components()).map((component) => component.key)
+    const keys: string[] = (await api.localCi.providers()).map((provider) => provider.key)
     assert.deepEqual(keys, ['gitea', 'woodpecker'])
   })
 

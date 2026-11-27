@@ -44,7 +44,7 @@ export class HttpSignInRepository implements SignInRepository {
   }
 
   /**
-   * Reads who a token belongs to (`GET /api/admin/v1/me` with that token).
+   * Reads who a token belongs to (`GET /api/admin/v2/me` with that token).
    *
    * @param token - The API token.
    * @returns The principal.

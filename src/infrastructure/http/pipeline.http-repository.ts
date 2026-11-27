@@ -3,12 +3,12 @@
  *
  * @module
  */
-import type { Pipeline, PipelineRun } from '../../domain/model/pipeline.model'
+import type { CiRepository, PipelineRun } from '../../domain/model/pipeline.model'
 import type { PipelineRepository } from '../../domain/repository/pipeline.repository'
 import type { WarpEngineHttpClient } from './warp-engine.http-client'
 
 /**
- * The CI pipelines the host knows and their runs, over `/api/admin/v1`.
+ * The CI repositories the host knows and their pipeline runs, over `/api/admin/v2`.
  *
  * The requests throw a `WarpEngineError` when the host fails or cannot be reached.
  */
@@ -21,32 +21,32 @@ export class HttpPipelineRepository implements PipelineRepository {
   public constructor(private readonly client: WarpEngineHttpClient) {}
 
   /**
-   * Lists the pipelines, up to 200 (`GET /api/admin/v1/pipelines`).
+   * Lists the CI repositories, up to 200 (`GET /api/admin/v2/ci_repositories`).
    *
-   * @returns The pipelines.
+   * @returns The CI repositories.
    */
-  public async pipelines(): Promise<Pipeline[]> {
-    return this.client.adminList<Pipeline>('/pipelines', { perPage: '200' })
+  public async repositories(): Promise<CiRepository[]> {
+    return this.client.adminList<CiRepository>('/ci_repositories', { perPage: '200' })
   }
 
   /**
-   * Lists the recent runs of a pipeline (`GET /api/admin/v1/pipelines/:id/runs`).
+   * Lists the recent pipeline runs of a CI repository (`GET /api/admin/v2/ci_repositories/:id/runs`).
    *
-   * @param pipelineId - The pipeline id.
+   * @param repositoryId - The CI repository id.
    * @returns The runs.
    */
-  public async runs(pipelineId: number): Promise<PipelineRun[]> {
-    return this.client.admin<PipelineRun[]>('GET', `/pipelines/${String(pipelineId)}/runs`)
+  public async runs(repositoryId: number): Promise<PipelineRun[]> {
+    return this.client.admin<PipelineRun[]>('GET', `/ci_repositories/${String(repositoryId)}/runs`)
   }
 
   /**
-   * Starts a pipeline run on a branch (`POST /api/admin/v1/pipelines/:id/trigger`).
+   * Starts a pipeline run of a CI repository on a branch (`POST /api/admin/v2/ci_repositories/:id/trigger`).
    *
-   * @param pipelineId - The pipeline id.
+   * @param repositoryId - The CI repository id.
    * @param branch - The branch to build.
    * @returns The started run.
    */
-  public async trigger(pipelineId: number, branch: string): Promise<PipelineRun> {
-    return this.client.admin<PipelineRun>('POST', `/pipelines/${String(pipelineId)}/trigger`, { branch })
+  public async trigger(repositoryId: number, branch: string): Promise<PipelineRun> {
+    return this.client.admin<PipelineRun>('POST', `/ci_repositories/${String(repositoryId)}/trigger`, { branch })
   }
 }

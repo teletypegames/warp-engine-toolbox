@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { ExternalLink, Principal, Release, ScaffoldRequest, ScaffoldResult, Software } from '../model/catalog.model'
+import type { SoftwareLink, Principal, Release, ScaffoldRequest, ScaffoldResult, Software } from '../model/catalog.model'
 
 /**
  * Port to the software catalog of a WarpEngine host through its admin API: the signed-in
@@ -67,12 +67,12 @@ export interface CatalogRepository {
    */
   releases(softwareId: number): Promise<Release[]>
   /**
-   * Lists the external links (stores, pages) of a software.
+   * Lists the links (stores, pages) of a software; the source repository is not among them.
    *
    * @param softwareId - The software id.
    * @returns The links, at most one page of 200.
    */
-  externalLinks(softwareId: number): Promise<ExternalLink[]>
+  links(softwareId: number): Promise<SoftwareLink[]>
   /**
    * Fetches the download statistics of a software.
    *

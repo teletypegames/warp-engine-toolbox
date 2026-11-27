@@ -4,12 +4,12 @@
  * @module
  */
 import type { ScaffoldResult, Software } from '../model/catalog.model'
-import { LocalCi, type LocalCiSetup, type LocalComponent, type LocalOperation, type OperationStep } from '../model/local-ci.model'
+import { LocalCi, type LocalCiSetup, type LocalProvider, type LocalTask, type TaskStep } from '../model/local-ci.model'
 import type { LocalEngine } from '../model/local-engine.model'
 import { DomainError, msg, type Message } from '../model/message.model'
 import type { Project } from '../model/project.model'
 import type { RemoteState } from '../model/remote-state.model'
-import type { LocalComponentRepository } from '../repository/local-component.repository'
+import type { LocalProviderRepository } from '../repository/local-provider.repository'
 import type { SourceControl, SourceControlFactory } from '../repository/source-control.repository'
 import type { AdminRepositories, WarpEngineGateway } from '../repository/warp-engine.gateway'
 import type { LocalEngineService } from './local-engine.service'
@@ -33,7 +33,7 @@ const POLL_MS = 2000
 const LIMIT_MS = 30 * 60 * 1000
 const FIRST_BRANCH = 'master'
 
-/** Connects a project to the Git server and CI that run beside the local WarpEngine, and follows the engine's long operations. */
+/** Connects a project to the Git server and CI that run beside the local WarpEngine, and follows the engine's long tasks. */
 export class LocalCiService {
   private readonly wait: (ms: number) => Promise<void>
 
@@ -62,22 +62,22 @@ export class LocalCiService {
    */
   public async ready(): Promise<boolean> {
     if (!this.available()) return false
-    return LocalCi.ready(await this.components().catch((): LocalComponent[] => []))
+    return LocalCi.ready(await this.providers().catch((): LocalProvider[] => []))
   }
 
   /**
-   * Tells whether a project on the local engine still lacks its CI: signed in, no error, the current host is the local engine, and no pipeline yet.
+   * Tells whether a project on the local engine still lacks its CI: signed in, no error, the current host is the local engine, and no CI repository yet.
    *
    * @param state - The remote state of the project, or `null`.
    * @returns `true` when the local CI should be set up.
    */
   public needsSetUp(state: RemoteState | null): boolean {
     if (!state?.signedIn || state.error !== null || !this.deps.local.isCurrentHost()) return false
-    return state.pipeline === null
+    return state.ciRepository === null
   }
 
   /**
-   * Tells whether to offer setting up the local CI for a project: it needs it, the user has not skipped it, and the components are ready.
+   * Tells whether to offer setting up the local CI for a project: it needs it, the user has not skipped it, and the providers are ready.
    *
    * @param state - The remote state of the project.
    * @param skipped - The project names the user declined the offer for.
@@ -89,60 +89,60 @@ export class LocalCiService {
   }
 
   /**
-   * Lists the local engine's components and their state.
+   * Lists the local engine's providers and their state.
    *
-   * @returns The components; empty without a local engine.
+   * @returns The providers; empty without a local engine.
    * @throws {@link "domain/model/message.model".DomainError} When the local engine's token is not found.
    */
-  public async components(): Promise<LocalComponent[]> {
+  public async providers(): Promise<LocalProvider[]> {
     if (!this.available()) return []
-    return (await this.repository()).components()
+    return (await this.repository()).providers()
   }
 
   /**
-   * Polls a local engine operation every two seconds until it finishes, reporting each new step.
+   * Polls a local engine task every two seconds until it finishes, reporting each new step.
    *
-   * @param started - The operation as it was started.
+   * @param started - The task as it was started.
    * @param report - Receives the steps.
-   * @returns The finished operation.
-   * @throws {@link "domain/model/message.model".DomainError} When the operation fails, takes longer than 30 minutes, or no local engine runs.
+   * @returns The finished task.
+   * @throws {@link "domain/model/message.model".DomainError} When the task fails, takes longer than 30 minutes, or no local engine runs.
    */
-  public async follow(started: LocalOperation, report: Report): Promise<LocalOperation> {
-    const repository: LocalComponentRepository = await this.repository()
+  public async follow(started: LocalTask, report: Report): Promise<LocalTask> {
+    const repository: LocalProviderRepository = await this.repository()
     const deadline: number = Date.now() + LIMIT_MS
-    let operation: LocalOperation = started
+    let task: LocalTask = started
     let shown = 0
     for (;;) {
-      operation.steps.slice(shown).forEach((step: OperationStep) => { report(msg('{0}', step.text)) })
-      shown = operation.steps.length
-      if (LocalCi.finished(operation)) break
+      task.steps.slice(shown).forEach((step: TaskStep) => { report(msg('{0}', step.text)) })
+      shown = task.steps.length
+      if (LocalCi.finished(task)) break
       if (Date.now() > deadline) throw new DomainError(msg('The local engine is still working on it; look again later.'))
       await this.wait(POLL_MS)
-      operation = await repository.operation(operation.id)
+      task = await repository.task(task.id)
     }
-    if (operation.state === 'failed') throw new DomainError(msg('The local engine could not do it: {0}', operation.error ?? '?'))
-    return operation
+    if (task.state === 'failed') throw new DomainError(msg('The local engine could not do it: {0}', task.error ?? '?'))
+    return task
   }
 
   /**
    * Sets up the local CI for a project: finds or scaffolds its software on the local engine, has
-   * the engine create the repository and pipeline, then sets the local remote, commits and pushes,
+   * the engine create the repository and its CI, then sets the local remote, commits and pushes,
    * which starts the first build.
    *
    * @param project - The project.
    * @param report - Receives the progress steps.
    * @returns The remote name and push URL the engine gave.
-   * @throws {@link "domain/model/message.model".DomainError} When no local engine runs, its CI is not running, the operation fails or no push address comes back.
+   * @throws {@link "domain/model/message.model".DomainError} When no local engine runs, its CI is not running, the task fails or no push address comes back.
    */
   public async setUp(project: Project, report: Report): Promise<LocalCiSetup> {
     const admin: AdminRepositories = await this.admin()
-    if (!LocalCi.ready(await admin.local.components())) {
+    if (!LocalCi.ready(await admin.local.providers())) {
       throw new DomainError(msg('The local CI is not running: run the local engine\'s installer again and answer yes to "Local CI" (or --ci on).'), 'installLocalEngine')
     }
     report(msg('finding {0} in the local catalog…', project.name))
     const software: Software = (await admin.catalog.softwareByName(project.name)) ?? (await this.scaffold(admin, project)).software
     report(msg('connecting {0} to the local git server and CI…', project.name))
-    const done: LocalOperation = await this.follow(await admin.local.setUpCi(software.id), report)
+    const done: LocalTask = await this.follow(await admin.local.setUpCi(software.id), report)
     const setup: LocalCiSetup | null = LocalCi.setupOf(done)
     if (!setup) throw new DomainError(msg('The local engine sent no push address.'))
     await this.push(project, setup, report)
@@ -174,7 +174,7 @@ export class LocalCiService {
     return this.deps.gateway.admin(local.url, await this.deps.local.token())
   }
 
-  private async repository(): Promise<LocalComponentRepository> {
+  private async repository(): Promise<LocalProviderRepository> {
     return (await this.admin()).local
   }
 }

@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { Pipeline, PipelineRun } from '../model/pipeline.model'
+import type { CiRepository, PipelineRun } from '../model/pipeline.model'
 import type { Project } from '../model/project.model'
 import type { SourceControlFactory } from '../repository/source-control.repository'
 import type { ConnectionService } from './connection.service'
@@ -32,13 +32,13 @@ export class PipelineService {
   }
 
   /**
-   * Starts a run of a pipeline on the branch the project has checked out (`master` without a project or branch); signs in when needed.
+   * Starts a pipeline run of a CI repository on the branch the project has checked out (`master` without a project or branch); signs in when needed.
    *
-   * @param pipeline - The pipeline.
+   * @param ciRepository - The CI repository.
    * @param project - The project to take the branch from, or `null`.
    * @returns The started run and its branch, or `null` when no session can be had.
    */
-  public async trigger(pipeline: Pipeline, project: Project | null): Promise<{
+  public async trigger(ciRepository: CiRepository, project: Project | null): Promise<{
     /** The started run. */
     run: PipelineRun
     /** The branch it builds. */
@@ -47,6 +47,6 @@ export class PipelineService {
     const admin = await this.connection.admin(true)
     if (!admin) return null
     const branch: string = (project ? await this.sourceControl.at(project.folder).branch() : null) ?? DEFAULT_BRANCH
-    return { run: await admin.pipelines.trigger(pipeline.id, branch), branch }
+    return { run: await admin.pipelines.trigger(ciRepository.id, branch), branch }
   }
 }

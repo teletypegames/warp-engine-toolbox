@@ -20,7 +20,7 @@ const REMOTE = 'https://games.example.org'
 const SANDBOX = 'http://localhost:8081'
 
 function wellKnown(profile: 'local' | 'server', inbound: boolean, features: string[] = ['pairing']): WellKnown {
-  return { engine: 'warp-engine', version: '5.3.0', api: 2, name: profile, profile, signIn: [], adminApi: '/api/admin/v1', admin: false,
+  return { engine: 'warp-engine', version: '5.3.0', api: 2, name: profile, profile, signIn: [], adminApi: '/api/admin/v2', admin: false,
            sync: { inbound, target: null, pairing: inbound ? 'anyone' : null, features } }
 }
 

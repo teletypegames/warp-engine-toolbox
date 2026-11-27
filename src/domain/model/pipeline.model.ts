@@ -1,25 +1,25 @@
 /**
- * The host's CI pipelines and their runs.
+ * The host's CI repositories and their pipeline runs.
  *
  * @module
  */
-/** The CI pipeline the host keeps for a repository, as the admin API sends it. */
-export interface Pipeline {
-  /** The host's id of the pipeline. */
+/** A repository the host's CI builds, as the admin API sends it. */
+export interface CiRepository {
+  /** The host's id of the CI repository. */
   readonly id: number
   /** The owner (user or organisation) of the repository. */
   readonly repoOwner: string
   /** The repository's name. */
   readonly repoName: string
-  /** The platform the pipeline builds for. */
+  /** The platform the repository builds for. */
   readonly platform: string
   /** Whether the host builds on pushes to the repository. */
   readonly active: boolean
-  /** The id of the catalog software the pipeline publishes, or `null` when not linked yet. */
+  /** The id of the catalog software the repository publishes, or `null` when not linked yet. */
   readonly softwareId: number | null
 }
 
-/** One run (build) of a {@link Pipeline}. */
+/** One pipeline run (build) of a {@link CiRepository}. */
 export interface PipelineRun {
   /** The run's number within the pipeline. */
   readonly number: number

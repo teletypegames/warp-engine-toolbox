@@ -3,6 +3,7 @@
  *
  * @module
  */
+import { AssetKinds } from '../../domain/model/asset-kind.model'
 import type { Category } from '../../domain/model/catalog.model'
 import { DomainError, msg } from '../../domain/model/message.model'
 import type { PlatformDescription } from '../../domain/model/platform-description.model'
@@ -28,12 +29,14 @@ export class HttpBuildRepository implements BuildRepository {
   public constructor(private readonly client: WarpEngineHttpClient) {}
 
   /**
-   * Lists the platforms the host builds (`GET /build/platforms`).
+   * Lists the platforms the host builds (`GET /build/platforms`), with the kind names of WECP api 6
+   * (an older host's `cartridge` reads as `package`).
    *
    * @returns The platform descriptions.
    */
   public async platforms(): Promise<PlatformDescription[]> {
     return (await this.client.json<{ platforms: PlatformDescription[] }>('GET', '/build/platforms')).platforms
+      .map((platform: PlatformDescription) => AssetKinds.platform(platform))
   }
 
   /**

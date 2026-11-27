@@ -7,12 +7,12 @@ import { WarpEngineError } from './warp-engine.error'
 import { Loopback } from './loopback'
 
 const TIMEOUT_MS = 30_000
-const ADMIN = '/api/admin/v1'
+const ADMIN = '/api/admin/v2'
 
 /**
  * A `fetch` wrapper for one WarpEngine host: JSON in and out, an optional bearer
  * token, a 30-second timeout, and the `{ data: … }` envelope of the admin API
- * (`/api/admin/v1`) unwrapped.
+ * (`/api/admin/v2`) unwrapped.
  *
  * Every request throws a {@link infrastructure/http/warp-engine.error!WarpEngineError} when the host cannot be reached
  * (status `0`) or answers with a non-2xx status.
@@ -71,7 +71,7 @@ export class WarpEngineHttpClient {
    * Calls the admin API and unwraps its `data` envelope.
    *
    * @param method - The HTTP method.
-   * @param path - The path below `/api/admin/v1`, such as `/me`.
+   * @param path - The path below `/api/admin/v2`, such as `/me`.
    * @param body - Sent as JSON; omitted when `undefined`.
    * @returns The `data` field of the answer.
    * @throws {@link infrastructure/http/warp-engine.error!WarpEngineError} when the request fails.
@@ -83,7 +83,7 @@ export class WarpEngineHttpClient {
   /**
    * Sends a `DELETE` to the admin API and ignores the answer body.
    *
-   * @param path - The path below `/api/admin/v1`.
+   * @param path - The path below `/api/admin/v2`.
    * @throws {@link infrastructure/http/warp-engine.error!WarpEngineError} when the request fails.
    */
   public async adminDelete(path: string): Promise<void> {
@@ -93,7 +93,7 @@ export class WarpEngineHttpClient {
   /**
    * Posts a multipart form to the admin API and unwraps its `data` envelope.
    *
-   * @param path - The path below `/api/admin/v1`.
+   * @param path - The path below `/api/admin/v2`.
    * @param form - The form, files included.
    * @returns The `data` field of the answer.
    * @throws {@link infrastructure/http/warp-engine.error!WarpEngineError} when the request fails.
@@ -106,7 +106,7 @@ export class WarpEngineHttpClient {
   /**
    * Reads one page of an admin API list (`GET` with a query string).
    *
-   * @param path - The collection path below `/api/admin/v1`, such as `/softwares`.
+   * @param path - The collection path below `/api/admin/v2`, such as `/softwares`.
    * @param query - The query parameters, such as `perPage`, `sort` and filters.
    * @returns The items of the `data` field.
    * @throws {@link infrastructure/http/warp-engine.error!WarpEngineError} when the request fails.

@@ -10,7 +10,7 @@ import type { AdminRepositories, WarpEngineGateway } from '../../domain/reposito
 import { HttpBuildRepository } from './build.http-repository'
 import { HttpCatalogRepository } from './catalog.http-repository'
 import { HttpImageRepository } from './image.http-repository'
-import { HttpLocalComponentRepository } from './local-component.http-repository'
+import { HttpLocalProviderRepository } from './local-provider.http-repository'
 import { HttpPipelineRepository } from './pipeline.http-repository'
 import { HttpPublicCatalogRepository } from './public-catalog.http-repository'
 import { HttpSignInRepository } from './sign-in.http-repository'
@@ -46,7 +46,7 @@ export class WarpEngineHttpGateway implements WarpEngineGateway {
 
   /**
    * Opens the admin API of a host: catalog, pipelines, images, sync peers and pairings,
-   * local components, all sharing one client.
+   * local providers, all sharing one client.
    *
    * @param hostUrl - The host URL.
    * @param token - The API token of an administrator.
@@ -57,7 +57,7 @@ export class WarpEngineHttpGateway implements WarpEngineGateway {
     return {
       catalog: new HttpCatalogRepository(client), pipelines: new HttpPipelineRepository(client), images: new HttpImageRepository(client),
       syncPeers: new HttpSyncPeerRepository(client), syncPairings: new HttpSyncPairingRepository(client),
-      local: new HttpLocalComponentRepository(client)
+      local: new HttpLocalProviderRepository(client)
     }
   }
 

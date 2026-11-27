@@ -4,7 +4,7 @@
  * @module
  */
 import { Releases, type Release, type Software } from './catalog.model'
-import { PipelineRuns, type Pipeline, type PipelineRun } from './pipeline.model'
+import { PipelineRuns, type CiRepository, type PipelineRun } from './pipeline.model'
 import type { Project } from './project.model'
 
 /** Where the local git checkout of a project stands. */
@@ -25,9 +25,9 @@ export interface RemoteState extends GitPosition {
   readonly signedIn: boolean
   /** The project's software in the catalog, or `null` when not published yet. */
   readonly software: Software | null
-  /** The project's CI pipeline, or `null` when not set up. */
-  readonly pipeline: Pipeline | null
-  /** The pipeline's recent runs, newest first. */
+  /** The project's CI repository, or `null` when not set up. */
+  readonly ciRepository: CiRepository | null
+  /** The recent pipeline runs of the CI repository, newest first. */
   readonly runs: readonly PipelineRun[]
   /** The run that built the checked-out commit, if any. */
   readonly headRun: PipelineRun | null
@@ -61,10 +61,10 @@ export class RemoteStates {
    * @param project - The project.
    * @param position - The local git position.
    * @param signedIn - Whether there is a session for the host.
-   * @returns A state with no software, pipeline, runs or releases and no error.
+   * @returns A state with no software, CI repository, runs or releases and no error.
    */
   public static empty(project: Project, position: GitPosition, signedIn: boolean): RemoteState {
-    return { project, ...position, signedIn, software: null, pipeline: null, runs: [], headRun: null, releases: [], branchBuild: null, error: null, unauthorized: false }
+    return { project, ...position, signedIn, software: null, ciRepository: null, runs: [], headRun: null, releases: [], branchBuild: null, error: null, unauthorized: false }
   }
 
   /**
@@ -117,16 +117,16 @@ export class RemoteStates {
   }
 
   /**
-   * Sums up what of a state the catalog also shows: the software, its pipeline and its releases with their assets.
+   * Sums up what of a state the catalog also shows: the software, its CI repository and its releases with their assets.
    * Two states with the same key need no redraw of the catalog.
    * @param state - The state, or `null` without a project.
-   * @returns A key that changes when a software appears or changes, a pipeline is linked, or a release is added, updated or removed.
+   * @returns A key that changes when a software appears or changes, a CI repository is linked, or a release is added, updated or removed.
    */
   public static catalogKey(state: RemoteState | null): string {
     if (!state?.signedIn || state.error) return ''
     const software: string = state.software ? `${String(state.software.id)}:${state.software.status ?? ''}:${state.software.title}` : '-'
     const releases: string[] = state.releases.map((release: Release) => `${String(release.id)}@${release.updatedAt ?? release.createdAt ?? ''}#${String(release.assets.length)}`)
-    return [software, String(state.pipeline?.id ?? '-'), ...releases].join('|')
+    return [software, String(state.ciRepository?.id ?? '-'), ...releases].join('|')
   }
 
   /**
