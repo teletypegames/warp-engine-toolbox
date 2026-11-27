@@ -481,5 +481,10 @@
   "writing the fork into the metadata…": "a fork beírása a metaadatokba…",
   "Delete {0} from the catalog": "{0} törlése a katalógusból",
   "{0} and all its releases leave every listing. Type {1} to delete it.": "A(z) {0} az összes kiadásával együtt minden listából eltűnik. A törléshez gépeld be: {1}",
-  "Type {0} exactly to delete it.": "A törléshez pontosan ezt gépeld be: {0}"
+  "Type {0} exactly to delete it.": "A törléshez pontosan ezt gépeld be: {0}",
+  "Change the address or the name": "A cím vagy a név módosítása",
+  "Remove from the hosts": "Törlés a hostok közül",
+  "WarpEngine host name": "WarpEngine host neve",
+  "The name the toolbox shows for the host; empty: made of the address": "A név, amellyel a toolbox a hostot mutatja; üresen a címből készül",
+  "Remove {0} from the WarpEngine hosts?": "Törlöd a(z) {0} hostot a WarpEngine hostok közül?"
 }

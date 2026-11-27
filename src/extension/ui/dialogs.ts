@@ -17,6 +17,30 @@ export interface PickItem<T> extends vscode.QuickPickItem {
   readonly value: T
 }
 
+/** A button on a quick pick item: the action it stands for and how it looks. */
+export interface PickAction {
+  /** The action {@link Dialogs.pickWithActions} returns when the button is pressed. */
+  readonly id: string
+  /** The codicon of the button, such as `edit` or `trash`. */
+  readonly icon: string
+  /** The tooltip of the button. */
+  readonly tooltip: string
+}
+
+/** A quick pick item with buttons of its own. */
+export interface ActionPickItem<T> extends PickItem<T> {
+  /** The buttons of the item; none when left out. */
+  readonly actions?: readonly PickAction[]
+}
+
+/** What {@link Dialogs.pickWithActions} answers: the value of the item, and the action of the button when one was pressed instead of the item. */
+export interface PickAnswer<T> {
+  /** The value of the item. */
+  readonly value: T
+  /** The id of the button pressed on the item; `undefined` when the item itself was chosen. */
+  readonly action?: string
+}
+
 /** Reports a step of a long task, shown as the message of the progress notification. */
 export type Report = (message: Message) => void
 
@@ -31,6 +55,42 @@ export class Dialogs {
    */
   public static async pick<T>(items: readonly PickItem<T>[], options: vscode.QuickPickOptions): Promise<T | undefined> {
     return (await vscode.window.showQuickPick(items, options))?.value
+  }
+
+  /**
+   * Shows a quick pick whose items may carry buttons (edit, remove…): choosing an item or pressing one of its buttons closes it.
+   *
+   * @param items - The items with their values and buttons.
+   * @param options - The title and the placeholder.
+   * @returns The value chosen and the button pressed, or `undefined` when the pick is dismissed.
+   */
+  public static async pickWithActions<T>(items: readonly ActionPickItem<T>[], options: { readonly title: string; readonly placeHolder: string }): Promise<PickAnswer<T> | undefined> {
+    const quick: vscode.QuickPick<ActionPickItem<T>> = vscode.window.createQuickPick<ActionPickItem<T>>()
+    const buttons: Map<vscode.QuickInputButton, string> = new Map<vscode.QuickInputButton, string>()
+    quick.title = options.title
+    quick.placeholder = options.placeHolder
+    quick.items = items.map((item: ActionPickItem<T>) => ({ ...item, buttons: Dialogs.buttonsOf(item, buttons) }))
+    return new Promise((resolve: (answer: PickAnswer<T> | undefined) => void) => {
+      let answer: PickAnswer<T> | undefined
+      quick.onDidAccept(() => {
+        answer = quick.selectedItems[0] ? { value: quick.selectedItems[0].value } : undefined
+        quick.hide()
+      })
+      quick.onDidTriggerItemButton((event: vscode.QuickPickItemButtonEvent<ActionPickItem<T>>) => {
+        answer = { value: event.item.value, action: buttons.get(event.button) }
+        quick.hide()
+      })
+      quick.onDidHide(() => { quick.dispose(); resolve(answer) })
+      quick.show()
+    })
+  }
+
+  private static buttonsOf<T>(item: ActionPickItem<T>, buttons: Map<vscode.QuickInputButton, string>): vscode.QuickInputButton[] {
+    return (item.actions ?? []).map((action: PickAction) => {
+      const button: vscode.QuickInputButton = { iconPath: new vscode.ThemeIcon(action.icon), tooltip: action.tooltip }
+      buttons.set(button, action.id)
+      return button
+    })
   }
 
   /**

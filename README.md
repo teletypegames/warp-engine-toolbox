@@ -148,7 +148,7 @@ the pipeline status and releases; templates, metadata checks, builds and play wo
 
 The toolbox knows no host of its own: set `warpengine.url` to the address of the site that runs
 WarpEngine (or run **WarpEngine: Set Host…**, which asks for it). `warpengine.hosts` may list more
-hosts for Set Host to switch between. A host needs WarpEngine 4.0 or later (3.9 works without the release channels).
+hosts for Set Host to switch between; in its list the pencil of a saved host changes its address or name and the bin removes it (a host only found running on this machine has neither). A host needs WarpEngine 4.0 or later (3.9 works without the release channels).
 
 ## A local engine
 
