@@ -51,6 +51,19 @@ describe('HostService: changing and removing a host', () => {
     assert.equal(hosts.current(), null)
   })
 
+  it('has a local engine when a host is on a loopback address or one was found running here', () => {
+    const repository: MemoryHosts = new MemoryHosts()
+    repository.hosts = [{ name: 'Games', url: 'https://games.example.org' }]
+    repository.url = 'https://games.example.org'
+    const hosts: HostService = new HostService(repository)
+    assert.equal(hosts.hasLocal(), false)
+    hosts.setDiscovered([{ name: 'Local', url: 'http://127.0.0.1:7470' }])
+    assert.equal(hosts.hasLocal(), true)
+    hosts.setDiscovered([])
+    repository.hosts.push({ name: 'Local', url: 'http://localhost:7470' })
+    assert.equal(hosts.hasLocal(), true)
+  })
+
   it('lets a configured or a current-only host be changed, not one only found on this machine', () => {
     const { repository, hosts } = setup()
     repository.url = 'https://other.example.org'

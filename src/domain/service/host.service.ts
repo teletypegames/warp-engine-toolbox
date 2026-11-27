@@ -4,6 +4,7 @@
  * @module
  */
 import { HostUrl, type Host } from '../model/host.model'
+import { LocalEngine } from '../model/local-engine.model'
 import { DomainError, msg } from '../model/message.model'
 import type { HostRepository } from '../repository/host.repository'
 
@@ -95,6 +96,15 @@ export class HostService {
     const host: Host = HostUrl.host(url)
     if (!this.choices().some((known: Host) => known.url === host.url)) await this.repository.saveHosts([...this.known(), host])
     return host
+  }
+
+  /**
+   * Tells whether a local engine is among the hosts: one found running on this machine, or a configured or current host on a loopback address.
+   *
+   * @returns `true` when the hosts have a local engine.
+   */
+  public hasLocal(): boolean {
+    return this.choices().some((host: Host) => LocalEngine.isLoopback(host.url))
   }
 
   /**

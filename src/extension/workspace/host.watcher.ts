@@ -9,7 +9,7 @@ import { Dialogs } from '../ui/dialogs'
 
 const SETTINGS: readonly string[] = ['warpengine.url', 'warpengine.hosts']
 
-/** Watches the `warpengine.url` and `warpengine.hosts` settings and keeps the `warpengine.hasHost` context key up to date. */
+/** Watches the `warpengine.url` and `warpengine.hosts` settings and keeps the `warpengine.hasHost` and `warpengine.localHost` context keys up to date. */
 export class HostWatcher implements vscode.Disposable {
   private readonly changed: vscode.EventEmitter<void> = new vscode.EventEmitter<void>()
   /** Fires after one of the host settings changed. */
@@ -17,7 +17,7 @@ export class HostWatcher implements vscode.Disposable {
   private readonly subscription: vscode.Disposable
 
   /**
-   * Starts watching and sets `warpengine.hasHost` for the first time.
+   * Starts watching and sets `warpengine.hasHost` and `warpengine.localHost` for the first time.
    *
    * @param hosts - Tells whether a host is set.
    */
@@ -38,5 +38,6 @@ export class HostWatcher implements vscode.Disposable {
 
   private async publishContext(): Promise<void> {
     await Dialogs.setContext('warpengine.hasHost', this.hosts.current() !== null)
+    await Dialogs.setContext('warpengine.localHost', this.hosts.hasLocal())
   }
 }

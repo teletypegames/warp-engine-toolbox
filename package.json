@@ -721,7 +721,8 @@
         {
           "id": "warpengine.servers",
           "name": "%view.servers%",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "warpengine.localHost"
         },
         {
           "id": "warpengine.health",
@@ -731,7 +732,8 @@
         {
           "id": "warpengine.sync",
           "name": "%view.sync%",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "warpengine.localHost"
         }
       ]
     },

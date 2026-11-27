@@ -48,7 +48,7 @@ export class LocalEngineController {
   public constructor(private readonly deps: LocalEngineDependencies) {}
 
   /**
-   * Looks for a WarpEngine running on this machine and sets the `warpengine.localEngine` context key.
+   * Looks for a WarpEngine running on this machine and sets the `warpengine.localEngine` and `warpengine.localHost` context keys (the Local Server and Sync views show only with a local engine among the hosts).
    *
    * When one is found and it is the current host without a token, offers once to connect to it (runs `warpengine.signIn`); when none is found and no host is set, offers once to install one or to set a host.
    *
@@ -57,6 +57,7 @@ export class LocalEngineController {
   public async discover(): Promise<LocalEngine | null> {
     const found: LocalEngine | null = await this.deps.local.discover()
     await Dialogs.setContext('warpengine.localEngine', found !== null)
+    await Dialogs.setContext('warpengine.localHost', this.deps.hosts.hasLocal())
     if (found) void this.connect(found)
     else if (LocalEngine.isLoopback(this.deps.hosts.current()?.url ?? '')) this.missing(false)
     else void this.offerInstall()
